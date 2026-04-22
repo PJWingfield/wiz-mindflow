@@ -5,12 +5,11 @@
 require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
-const Anthropic = require('@anthropic-ai/sdk');
 const crypto   = require('crypto');
 
 const app    = express();
 const port   = process.env.PORT || 3000;
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 app.use(express.json({ limit: '50kb' }));
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN || '*', methods: ['GET','POST'] }));
@@ -115,19 +114,32 @@ app.post('/api/chat', rateLimit, async (req, res) => {
   if (last) logSession(sid, turn, last.role, last.content);
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: WIZ_SYSTEM,
-      messages,
+    const apiResponse = await fetch(ANTHROPIC_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: WIZ_SYSTEM,
+        messages,
+      }),
     });
-    const text = response.content.map(b => b.text || '').join('').trim();
+    const data = await apiResponse.json();
+    if (!apiResponse.ok) {
+      console.error('Anthropic API error:', apiResponse.status, JSON.stringify(data));
+      if (apiResponse.status === 401) return res.status(500).json({ error: 'API key error. Please contact info@mindflowpro.com' });
+      if (apiResponse.status === 429) return res.status(429).json({ error: 'WIZ is momentarily busy. Please try again in 30 seconds.' });
+      return res.status(500).json({ error: 'WIZ encountered a technical issue. Please try again.' });
+    }
+    const text = (data.content || []).map(b => b.text || '').join('').trim();
     logSession(sid, turn, 'assistant', text);
     res.json({ content: text, sessionId: sid, turnCount: turn });
   } catch (err) {
-    console.error('API error:', err.message);
-    if (err.status === 401) return res.status(500).json({ error: 'API configuration error. Please contact support at info@mindflowpro.com' });
-    if (err.status === 429) return res.status(429).json({ error: 'WIZ is momentarily busy. Please try again in 30 seconds.' });
+    console.error('Server error:', err.message);
     res.status(500).json({ error: 'WIZ encountered a technical issue. Please try again.' });
   }
 });
