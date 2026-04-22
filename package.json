@@ -1,6 +1,6 @@
 {
   "name": "wiz-mindflow-server",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "WIZ Mind Flow AI Coaching Platform",
   "main": "server.js",
   "scripts": {
