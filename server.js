@@ -81,9 +81,9 @@ CONVERSATION RULES:
 - Crisis: stop coaching, provide Samaritans 116 123 (24/7 free).
 
 POSITIVE INTENT LANGUAGE reframes:
-- "I can't" → "I'm learning to"
-- "I always fail" → "I'm building the skill"  
-- "I'm nervous" → "I'm excited — my energy is ready"
+- "I can't" -> "I'm learning to"
+- "I always fail" -> "I'm building the skill"  
+- "I'm nervous" -> "I'm excited — my energy is ready"
 
 REPORT FORMAT — output ONLY this JSON when generating report:
 {
@@ -168,7 +168,7 @@ const HTML = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WIZ — Mind Flow Coaching</title>
+<title>WIZ &mdash; Mind Flow Coaching</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -343,7 +343,8 @@ function addMessage(role,text){
   const now=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   const div=document.createElement("div");
   div.className="msg "+role;
-  div.innerHTML='<div class="msg-avatar">'+(role==="wiz"?"W":"U")+'</div><div><div class="msg-bubble">'+text.replace(/\n/g,"<br>")+'</div><div class="msg-meta">'+(role==="wiz"?"WIZ":"You")+' &bull; '+now+'</div></div>';
+  const safe=text.split("\\n").join("<br>");
+  div.innerHTML='<div class="msg-avatar">'+(role==="wiz"?"W":"U")+'</div><div><div class="msg-bubble">'+safe+'</div><div class="msg-meta">'+(role==="wiz"?"WIZ":"You")+' &bull; '+now+'</div></div>';
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
 }
 function showTyping(){const msgs=document.getElementById("messages");const div=document.createElement("div");div.className="msg wiz";div.id="typing-indicator";div.innerHTML='<div class="msg-avatar">W</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight}
@@ -396,7 +397,7 @@ document.getElementById("userInput").addEventListener("input",function(){this.st
 async function startSession(){
   setLoading(true,"Starting your session...","WIZ is ready to meet you");
   try{const opening=await callWIZ(null);setLoading(false);addMessage("wiz",opening)}
-  catch(e){setLoading(false);addMessage("wiz","Hello, and welcome to your Mind Flow session. I'm WIZ — your personal coaching companion, built on the Mind Flow methodology.\n\nThis session is completely yours. There are no wrong answers, no judgements. Just a real conversation about where you are and where you want to go.\n\nTo start — what's your name, and in one sentence, what's brought you here today?")}
+  catch(e){setLoading(false);addMessage("wiz","Hello, and welcome to your Mind Flow session. I am WIZ, your personal coaching companion, built on the Mind Flow methodology. This session is completely yours. There are no wrong answers, no judgements. Just a real conversation about where you are and where you want to go. To start, what is your name, and in one sentence, what has brought you here today?")}
 }
 startSession();
 </script>
