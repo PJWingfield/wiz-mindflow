@@ -1,16 +1,21 @@
-// ── WIZ Mind Flow Server — Single File Edition ───────────────────────────────
+// ── WIZ Mind Flow Server v5 — Full session logging + robust report generation ─
+// Complete server with HTML embedded — no separate public folder needed
+// Deploy to Railway: add ANTHROPIC_API_KEY, ADMIN_KEY, ALLOWED_ORIGIN=* as variables
+
 require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
 const crypto   = require('crypto');
+const https    = require('https');
 
-const app  = express();
-const port = process.env.PORT || 3000;
+const app    = express();
+const port   = process.env.PORT || 3000;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 app.use(express.json({ limit: '50kb' }));
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN || '*', methods: ['GET','POST'] }));
 
+// ── Rate limiter ──────────────────────────────────────────────────────────────
 const rateLimits = new Map();
 function rateLimit(req, res, next) {
   const ip  = req.ip || 'unknown';
@@ -23,12 +28,104 @@ function rateLimit(req, res, next) {
   next();
 }
 
+// ── Session log ───────────────────────────────────────────────────────────────
 const sessions = new Map();
 function logSession(sid, turn, role, content) {
   if (!sessions.has(sid)) sessions.set(sid, { id:sid, turns:[], createdAt: new Date().toISOString() });
-  sessions.get(sid).turns.push({ turn, role, content: content.substring(0,500), timestamp: new Date().toISOString() });
+  sessions.get(sid).turns.push({ turn, role, content: content.substring(0,2000), timestamp: new Date().toISOString() });
+  // Print every turn to Railway deploy logs so you can read full sessions
+  const preview = content.substring(0, 300).replace(/\n/g, ' ');
+  console.log('[' + new Date().toLocaleTimeString('en-GB') + '] Session ' + sid.substring(0,8) + ' | Turn ' + turn + ' | ' + role.toUpperCase() + ': ' + preview);
 }
 
+// ── Email notification via Mailgun or simple SMTP ────────────────────────────
+async function sendSessionEmail(sessionId, reportData) {
+  // Uses Mailgun API if configured, otherwise logs to console
+  const MAILGUN_KEY    = process.env.MAILGUN_API_KEY;
+  const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
+  const NOTIFY_EMAIL   = process.env.NOTIFY_EMAIL || 'info@mindflowpro.com';
+
+  const subject = `WIZ Session Complete — ${reportData.name || 'New Client'} — ${new Date().toLocaleDateString('en-GB')}`;
+  
+  const body = `
+WIZ BETA SESSION REPORT
+========================
+Session ID: ${sessionId}
+Date: ${new Date().toLocaleString('en-GB')}
+Client Name: ${reportData.name || 'Not captured'}
+
+WIZ OBSERVATION:
+${reportData.summary || 'Not generated'}
+
+STRENGTHS IDENTIFIED:
+${(reportData.strengths || []).map((s,i) => `${i+1}. ${s}`).join('\n')}
+
+GROWTH OPPORTUNITIES:
+${(reportData.patterns || []).map((p,i) => `${i+1}. ${p}`).join('\n')}
+
+DOMAIN SCORES:
+${Object.entries(reportData.scores || {}).map(([k,v]) => `  ${k}: ${v}/10`).join('\n')}
+
+RECOMMENDED PATHWAY: ${reportData.pathway || 'Not determined'}
+Reason: ${reportData.pathwayReason || ''}
+
+THREE PRIORITY ACTIONS:
+${(reportData.actions || []).map((a,i) => `${i+1}. ${a}`).join('\n')}
+
+TECHNIQUE 1: ${reportData.technique1?.name || ''}
+${reportData.technique1?.reason || ''}
+
+TECHNIQUE 2: ${reportData.technique2?.name || ''}
+${reportData.technique2?.reason || ''}
+
+NEXT STEP RECOMMENDED: ${reportData.nextStep || ''}
+
+WIZ CLOSING MESSAGE:
+${reportData.closing || ''}
+
+---
+Mind Flow International Ltd | mindflowpro.com
+This is an automated beta session notification.
+  `.trim();
+
+  // Try Mailgun if configured
+  if (MAILGUN_KEY && MAILGUN_DOMAIN) {
+    try {
+      const formData = new URLSearchParams({
+        from: 'WIZ Mind Flow <noreply@' + MAILGUN_DOMAIN + '>',
+        to: NOTIFY_EMAIL,
+        subject,
+        text: body,
+      });
+
+      const url = 'https://api.mailgun.net/v3/' + MAILGUN_DOMAIN + '/messages';
+      const authHeader = 'Basic ' + Buffer.from('api:' + MAILGUN_KEY).toString('base64');
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': authHeader, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString(),
+      });
+
+      if (response.ok) {
+        console.log('Session email sent to', NOTIFY_EMAIL);
+      } else {
+        const err = await response.text();
+        console.log('Mailgun error:', err);
+        console.log('SESSION REPORT (email not sent):\n', body);
+      }
+    } catch(e) {
+      console.log('Email error:', e.message);
+      console.log('SESSION REPORT:\n', body);
+    }
+  } else {
+    // No email configured — log full report to Railway console
+    // You can view this in Railway → Deployments → Deploy Logs
+    console.log('\n=== WIZ SESSION COMPLETE ===\n' + body + '\n=== END REPORT ===\n');
+  }
+}
+
+// ── WIZ System Prompt ─────────────────────────────────────────────────────────
 const WIZ_SYSTEM = `You are WIZ, the Mind Flow AI coaching companion built on 35 years of PJ Wingfield's Mind Flow methodology. You work for Mind Flow International Ltd (mindflowpro.com).
 
 YOUR IDENTITY:
@@ -36,32 +133,54 @@ YOUR IDENTITY:
 - You speak in PJ Wingfield's coaching voice: encouraging but never preachy, science-grounded but human, always possibility-focused
 - You are honest about what you are: a coaching intelligence, not a therapist or diagnostician
 - You never give clinical advice, never diagnose, and always signpost to appropriate professionals when needed
+- Your name is WIZ. You are part of the Mind Flow platform.
+
+YOUR CORE PHILOSOPHY:
+- "We don't have all the answers — we help you find the right people who do"
+- AI that knows its limits builds more trust than AI that overclaims
+- The goal is always Self-Managed Development
 
 YOUR SESSION STRUCTURE:
-PHASE 1 - Welcome (turns 1-2): Greet warmly, ask name, ask one simple opener.
-PHASE 2 - Discovery (turns 3-12): Assess domains conversationally. ONE question at a time.
-  - A: Identity and Values
-  - B: Direction and Meaning
+PHASE 1 — Welcome (turns 1-2): Greet warmly, establish safety, ask name, ask one simple opener.
+PHASE 2 — Discovery (turns 3-12): Assess these domains conversationally. ONE question at a time. Never like a form.
+  - A: Identity & Values
+  - B: Direction & Meaning  
   - C: Decision-Making style
-  - E: Execution and Focus
-  - G: Competencies and Strengths
+  - E: Execution & Focus
+  - G: Competencies & Strengths
   - H: Readiness for Change (most important)
   - I: Goals
-PHASE 3 - Coaching (turns 13-16): Reflect patterns, introduce 1-2 Mind Flow techniques.
-PHASE 4 - Report (turn 17+): Generate JSON report.
+PHASE 3 — Coaching (turns 13-16): Reflect patterns, introduce 1-2 Mind Flow techniques, build action plan.
+PHASE 4 — Report (turn 17+): Generate JSON report.
+
+MIND FLOW METHODOLOGY:
+- 4-stage Flow cycle: Struggle → Release → Flow → Recovery
+- Red-Blue=Purple: Red=high arousal/reactive, Blue=calm/rational, Purple=optimal performance zone
+- 3 ingredients: Goals + Challenge-Skill Balance + Feedback
+- 5 Key Skills: Controlled Breathing, Visualisation, Anchoring, Positive Intent Language, Bilateral Stimulation
+- Breathing: Box (4x4x4x4), 4-7-8, Diaphragmatic, Physiological Sigh
+- GROW model: Goal → Reality → Options → Will/Way Forward
+- SMARTER goals: Specific, Measurable, Achievable, Relevant, Time-bound, Evaluated, Reviewed
 
 CONVERSATION RULES:
 - ONE question at a time. Never multi-part.
-- Reflect back before moving on.
+- Reflect back before moving on. Show you listened.
 - 3-5 sentences max during discovery.
+- Never repeat. Build on everything said.
 - Use the person's name occasionally.
+- "Moments That Matter": "I want to flag something I've just noticed..."
 - Crisis: stop coaching, provide Samaritans 116 123 (24/7 free).
 
-REPORT FORMAT - output ONLY this JSON when generating report:
+POSITIVE INTENT LANGUAGE reframes:
+- "I can't" → "I'm learning to"
+- "I always fail" → "I'm building the skill"  
+- "I'm nervous" → "I'm excited — my energy is ready"
+
+REPORT FORMAT — when it is time to generate the report, you MUST output ONLY valid JSON and absolutely nothing else before or after it. No preamble, no explanation, no markdown code blocks. Start your response with { and end with }. Example structure:
 {
   "reportReady": true,
   "name": "first name",
-  "summary": "2-3 sentences specific to this person",
+  "summary": "2-3 sentences specific to this person referencing what they said",
   "strengths": ["strength 1", "strength 2", "strength 3"],
   "patterns": ["growth area 1", "growth area 2"],
   "scores": {"identity":7,"direction":6,"execution":5,"readiness":8,"goals":7},
@@ -71,9 +190,10 @@ REPORT FORMAT - output ONLY this JSON when generating report:
   "pathway": "Mind Flow Peak Performance OR Gen Z Career Success",
   "pathwayReason": "one sentence why",
   "nextStep": "specific recommendation",
-  "closing": "warm specific closing"
+  "closing": "warm specific closing referencing something they said"
 }`;
 
+// ── Chat endpoint ─────────────────────────────────────────────────────────────
 app.post('/api/chat', rateLimit, async (req, res) => {
   const { messages, sessionId } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'messages array required' });
@@ -93,7 +213,7 @@ app.post('/api/chat', rateLimit, async (req, res) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         system: WIZ_SYSTEM,
         messages,
@@ -108,13 +228,52 @@ app.post('/api/chat', rateLimit, async (req, res) => {
     }
     const text = (data.content || []).map(b => b.text || '').join('').trim();
     logSession(sid, turn, 'assistant', text);
-    res.json({ content: text, sessionId: sid, turnCount: turn });
+
+    // Detect if WIZ has generated a report (JSON response) and send email
+    const isReport = text.includes('"reportReady"') || text.includes('reportReady');
+    if (isReport) {
+      try {
+        // Try multiple JSON extraction strategies
+        let reportData = null;
+        
+        // Strategy 1: direct JSON parse
+        const match1 = text.match(/\{[\s\S]*"reportReady"[\s\S]*\}/);
+        if (match1) {
+          try { reportData = JSON.parse(match1[0]); } catch(e) {}
+        }
+        
+        // Strategy 2: find the outermost JSON object
+        if (!reportData) {
+          const start = text.indexOf('{');
+          const end = text.lastIndexOf('}');
+          if (start !== -1 && end !== -1) {
+            try { reportData = JSON.parse(text.substring(start, end+1)); } catch(e) {}
+          }
+        }
+        
+        if (reportData) {
+          console.log('\n=== REPORT GENERATED ===');
+          console.log('Client: ' + (reportData.name || 'Unknown'));
+          console.log('Pathway: ' + (reportData.pathway || 'Unknown'));
+          console.log('Scores: ' + JSON.stringify(reportData.scores || {}));
+          console.log('Summary: ' + (reportData.summary || '').substring(0, 200));
+          console.log('=== END REPORT SUMMARY ===\n');
+          sendSessionEmail(sid, reportData).catch(e => console.log('Email send error:', e.message));
+        }
+      } catch(e) {
+        console.log('Report parse error:', e.message);
+        console.log('Raw report text:', text.substring(0, 500));
+      }
+    }
+
+    res.json({ content: text, sessionId: sid, turnCount: turn, isReport });
   } catch (err) {
     console.error('Server error:', err.message);
     res.status(500).json({ error: 'WIZ encountered a technical issue. Please try again.' });
   }
 });
 
+// ── Admin sessions API ───────────────────────────────────────────────────────
 app.get('/api/sessions', (req, res) => {
   if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorised' });
   const summary = Array.from(sessions.values()).map(s => ({
@@ -124,6 +283,78 @@ app.get('/api/sessions', (req, res) => {
   res.json({ sessions: summary, total: summary.length });
 });
 
+// ── Admin dashboard (browser-friendly) ───────────────────────────────────────
+app.get('/admin', (req, res) => {
+  const key = req.query.key;
+  if (key !== process.env.ADMIN_KEY) {
+    return res.send(`<!DOCTYPE html><html><head><title>WIZ Admin</title>
+    <style>body{font-family:Arial,sans-serif;max-width:500px;margin:100px auto;padding:20px}
+    input{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:16px;margin:10px 0}
+    button{width:100%;padding:12px;background:#0F6E56;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+    h2{color:#1B2A6B}</style></head><body>
+    <h2>WIZ Admin Dashboard</h2>
+    <p>Enter your admin key to view sessions:</p>
+    <form method="GET"><input type="password" name="key" placeholder="Admin key">
+    <button type="submit">View Sessions</button></form></body></html>`);
+  }
+
+  const sessionList = Array.from(sessions.values());
+  const rows = sessionList.length === 0 
+    ? '<tr><td colspan="4" style="text-align:center;padding:20px;color:#888">No sessions yet</td></tr>'
+    : sessionList.map(s => {
+        const last = s.turns[s.turns.length-1];
+        const name = s.turns.find(t => t.role === 'user')?.content?.split(' ')[0] || 'Unknown';
+        return `<tr>
+          <td>${new Date(s.createdAt).toLocaleString('en-GB')}</td>
+          <td><strong>${name}</strong></td>
+          <td>${s.turns.length} turns</td>
+          <td>${last ? new Date(last.timestamp).toLocaleTimeString('en-GB') : '-'}</td>
+        </tr>`;
+      }).join('');
+
+  res.send(`<!DOCTYPE html><html><head><title>WIZ Admin — Mind Flow</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;background:#F4F6FA}
+    header{background:#1B2A6B;color:white;padding:20px 32px}
+    header h1{margin:0;font-size:22px}
+    header p{margin:4px 0 0;opacity:.6;font-size:13px}
+    .container{max-width:900px;margin:32px auto;padding:0 20px}
+    .card{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .stat{display:inline-block;background:#E8F5F0;border-radius:8px;padding:12px 24px;margin:4px;text-align:center}
+    .stat-num{font-size:32px;font-weight:bold;color:#0F6E56}
+    .stat-label{font-size:12px;color:#555;margin-top:2px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th{background:#1B2A6B;color:white;padding:10px 14px;text-align:left;font-size:13px}
+    td{padding:10px 14px;border-bottom:1px solid #eee;font-size:13px}
+    tr:hover td{background:#F8F9FF}
+    .refresh{float:right;background:#0F6E56;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;text-decoration:none}
+    h2{color:#1B2A6B;margin:0 0 16px}
+  </style></head><body>
+  <header>
+    <h1>WIZ Admin Dashboard</h1>
+    <p>Mind Flow International Ltd &bull; Beta Sessions</p>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h2>Session Overview</h2>
+      <div class="stat"><div class="stat-num">${sessionList.length}</div><div class="stat-label">Total Sessions</div></div>
+      <div class="stat"><div class="stat-num">${sessionList.filter(s=>s.turns.length>=10).length}</div><div class="stat-label">Completed (10+ turns)</div></div>
+      <div class="stat"><div class="stat-num">${sessionList.reduce((a,s)=>a+s.turns.length,0)}</div><div class="stat-label">Total Exchanges</div></div>
+    </div>
+    <div class="card">
+      <h2>Sessions <a href="/admin?key=${key}" class="refresh">&#8635; Refresh</a></h2>
+      <table>
+        <thead><tr><th>Started</th><th>Client</th><th>Turns</th><th>Last Activity</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p style="text-align:center;color:#aaa;font-size:12px;margin-top:32px">
+      WIZ Mind Flow &bull; mindflowpro.com &bull; Note: sessions reset when server restarts
+    </p>
+  </div></body></html>`);
+});
+
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({
   status: 'WIZ is online',
   platform: 'Mind Flow International Ltd',
@@ -131,21 +362,17 @@ app.get('/health', (req, res) => res.json({
   apiConfigured: !!process.env.ANTHROPIC_API_KEY,
 }));
 
-app.get('*', (req, res) => {
-  res.send(getHTML());
-});
-
-function getHTML() {
-  return `<!DOCTYPE html>
+// ── Embedded HTML ─────────────────────────────────────────────────────────────
+const HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WIZ - Mind Flow Coaching</title>
+<title>WIZ — Mind Flow Coaching</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#1B2A6B;--teal:#0F6E56;--teal2:#1D9E75;--gold:#C8960C;--cream:#FAF8F2;--dark:#1A1A2E;--mid:#555570;--lteal:#E8F5F0;--lnavy:#EEF0FA;--border:rgba(15,110,86,0.2)}
+:root{--navy:#1B2A6B;--teal:#0F6E56;--teal2:#1D9E75;--gold:#C8960C;--cream:#FAF8F2;--white:#FFFFFF;--dark:#1A1A2E;--mid:#555570;--lteal:#E8F5F0;--lnavy:#EEF0FA;--border:rgba(15,110,86,0.2)}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;display:flex;flex-direction:column}
 header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--teal2)}
 .logo-area{display:flex;align-items:center;gap:14px}
@@ -228,6 +455,7 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 .cta-btns{display:flex;gap:10px;flex-shrink:0}
 .btn-primary,.btn-secondary{padding:11px 20px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;border:none;white-space:nowrap;transition:all .2s}
 .btn-primary{background:white;color:var(--navy)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.12)}
 .btn-secondary{background:rgba(255,255,255,0.13);color:white;border:1px solid rgba(255,255,255,0.28)}
 .loading-overlay{position:fixed;inset:0;background:rgba(27,42,107,0.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100}
 .loading-card{background:white;border-radius:14px;padding:36px 44px;text-align:center;max-width:320px}
@@ -244,34 +472,34 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 <header>
   <div class="logo-area">
     <div class="logo-mark">W</div>
-    <div class="logo-text"><h1>WIZ - Mind Flow</h1><p>Your Personal Coaching Platform</p></div>
+    <div class="logo-text"><h1>WIZ &mdash; Mind Flow</h1><p>Your Personal Coaching Platform</p></div>
   </div>
-  <div class="badge">Beta Session - mindflowpro.com</div>
+  <div class="badge">Beta Session &bull; mindflowpro.com</div>
 </header>
 <div class="app">
   <aside class="sidebar">
     <div>
       <div class="wiz-avatar">W<div class="status-dot"></div></div>
       <h2>WIZ</h2>
-      <p class="wiz-desc">Your personal Mind Flow coaching companion - powered by 35 years of Peak Performance methodology</p>
+      <p class="wiz-desc">Your personal Mind Flow coaching companion &mdash; powered by 35 years of Peak Performance methodology</p>
     </div>
     <hr>
     <div class="sidebar-section">
       <h3>Session Progress</h3>
-      <div class="domain-item"><div class="domain-dot active" id="dot-A"></div><span class="domain-label">Identity and Self-Awareness</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-B"></div><span class="domain-label">Direction and Meaning</span></div>
+      <div class="domain-item"><div class="domain-dot active" id="dot-A"></div><span class="domain-label">Identity &amp; Self-Awareness</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-B"></div><span class="domain-label">Direction &amp; Meaning</span></div>
       <div class="domain-item"><div class="domain-dot" id="dot-C"></div><span class="domain-label">Decision-Making</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-E"></div><span class="domain-label">Execution and Focus</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-E"></div><span class="domain-label">Execution &amp; Focus</span></div>
       <div class="domain-item"><div class="domain-dot" id="dot-G"></div><span class="domain-label">Competencies</span></div>
       <div class="domain-item"><div class="domain-dot" id="dot-H"></div><span class="domain-label">Readiness for Change</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-I"></div><span class="domain-label">Goals and Direction</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-I"></div><span class="domain-label">Goals &amp; Direction</span></div>
     </div>
     <hr>
     <div class="sidebar-section">
       <h3>About WIZ</h3>
-      <p style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.7">WIZ is a coaching intelligence - honest about its limits, clear about when a human expert will serve you better.</p>
+      <p style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.7">WIZ is a coaching intelligence &mdash; honest about its limits, clear about when a human expert will serve you better.</p>
     </div>
-    <p class="mfi-tagline">Mind Flow: A Better Way to Be.<br>Not more doing. Just more being.</p>
+    <p class="mfi-tagline">Mind Flow: A Better Way to Be.<br><em>Not more doing. Just more being.</em></p>
   </aside>
   <div class="chat-area" id="chatArea">
     <div class="phase-bar" id="phaseBar">
@@ -288,305 +516,118 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
       <div class="input-wrap"><textarea id="userInput" placeholder="Type your response to WIZ..." rows="1"></textarea></div>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>
     </div>
-    <p class="input-hint">Press Enter to send - Shift+Enter for new line</p>
+    <p class="input-hint">Press Enter to send &bull; Shift+Enter for new line</p>
   </div>
 </div>
 <div class="loading-overlay" id="loadingOverlay" style="display:none">
   <div class="loading-card">
     <div class="loading-spinner"></div>
     <h3 id="loadingTitle">WIZ is thinking...</h3>
-    <p id="loadingText">Taking a moment to reflect on what you have shared</p>
+    <p id="loadingText">Taking a moment to reflect on what you've shared</p>
   </div>
 </div>
 <script>
-var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null};
-
-async function callWIZ(userMessage) {
-  if (userMessage) state.messages.push({role:"user",content:userMessage});
-  var response = await fetch("/api/chat", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({messages: state.messages, sessionId: state.sessionId})
-  });
-  if (!response.ok) {
-    var err = await response.json().catch(function(){ return {}; });
-    throw new Error(err.error || "Server error " + response.status);
-  }
-  var data = await response.json();
-  if (data.sessionId) state.sessionId = data.sessionId;
-  var text = data.content;
-  state.messages.push({role:"assistant", content:text});
-  return text;
+const state={messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:new Set(),clientName:"",isLoading:false,sessionId:null};
+async function callWIZRaw(userMessage){
+  if(userMessage)state.messages.push({role:"user",content:userMessage});
+  const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:state.messages,sessionId:state.sessionId})});
+  if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error||"Server error "+response.status)}
+  const data=await response.json();
+  if(data.sessionId)state.sessionId=data.sessionId;
+  const text=data.content;
+  state.messages.push({role:"assistant",content:text});
+  return data; // return full object including isReport flag
 }
-
-function addMessage(role, text) {
-  var msgs = document.getElementById("messages");
-  var now = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-  var div = document.createElement("div");
-  div.className = "msg " + role;
-  var avatar = document.createElement("div");
-  avatar.className = "msg-avatar";
-  avatar.textContent = role === "wiz" ? "W" : "U";
-  var inner = document.createElement("div");
-  var bubble = document.createElement("div");
-  bubble.className = "msg-bubble";
-  bubble.innerHTML = text.split(String.fromCharCode(10)).join("<br>");
-  var meta = document.createElement("div");
-  meta.className = "msg-meta";
-  meta.textContent = (role === "wiz" ? "WIZ" : "You") + " - " + now;
-  inner.appendChild(bubble);
-  inner.appendChild(meta);
-  div.appendChild(avatar);
-  div.appendChild(inner);
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+async function callWIZ(userMessage){
+  const data = await callWIZRaw(userMessage);
+  return data.content;
 }
-
-function showTyping() {
-  var msgs = document.getElementById("messages");
-  var div = document.createElement("div");
-  div.className = "msg wiz";
-  div.id = "typing-indicator";
-  div.innerHTML = '<div class="msg-avatar">W</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+function addMessage(role,text){
+  const msgs=document.getElementById("messages");
+  const now=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  const div=document.createElement("div");
+  div.className="msg "+role;
+  div.innerHTML='<div class="msg-avatar">'+(role==="wiz"?"W":"U")+'</div><div><div class="msg-bubble">'+text.replace(/\n/g,"<br>")+'</div><div class="msg-meta">'+(role==="wiz"?"WIZ":"You")+' &bull; '+now+'</div></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
 }
-
-function removeTyping() {
-  var t = document.getElementById("typing-indicator");
-  if (t) t.remove();
+function showTyping(){const msgs=document.getElementById("messages");const div=document.createElement("div");div.className="msg wiz";div.id="typing-indicator";div.innerHTML='<div class="msg-avatar">W</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight}
+function removeTyping(){const t=document.getElementById("typing-indicator");if(t)t.remove()}
+function setPhase(n){state.phase=n;for(let i=1;i<=4;i++){const d=document.getElementById("ph"+i);const l=d?d.nextElementSibling:null;const ln=document.getElementById("pl"+i);if(d)d.className="phase-dot"+(i<n?" done":i===n?" active":"");if(l)l.className="phase-label"+(i===n?" active":"");if(ln)ln.className="phase-line"+(i<n?" done":"")}}
+function setLoading(show,title,text){state.isLoading=show;document.getElementById("loadingOverlay").style.display=show?"flex":"none";if(title)document.getElementById("loadingTitle").textContent=title;if(text)document.getElementById("loadingText").textContent=text;document.getElementById("sendBtn").disabled=show}
+function activateDomain(d){if(state.assessedDomains.has(d))return;state.assessedDomains.add(d);["A","B","C","E","G","H","I"].forEach(x=>{if(state.assessedDomains.has(x)&&x!==d){const el=document.getElementById("dot-"+x);if(el)el.className="domain-dot done"}});const dot=document.getElementById("dot-"+d);if(dot)dot.className="domain-dot active"}
+async function generateReport(){
+  setLoading(true,"WIZ is crafting your report...","Pulling together everything from your session");
+  let raw;
+  try{raw=await callWIZ("Based on our entire conversation, please generate the Personal Awareness Report JSON now. Output ONLY the JSON.")}
+  catch(e){setLoading(false);addMessage("wiz","I'm having difficulty generating the full report right now. Based on everything you've shared, you show real self-awareness and genuine readiness for change. Your next step is to visit mindflowpro.com to book a session with a Mind Flow coach.");return}
+  setLoading(false);
+  let report;
+  try{const m=raw.match(/\{[\s\S]*\}/);report=JSON.parse(m?m[0]:raw)}
+  catch(e){report={name:state.clientName||"there",summary:"You've shown real openness and self-awareness throughout our session. What stands out is your willingness to look honestly at where you are — that's the most important quality for change.",strengths:["Self-awareness and honesty","Genuine motivation to improve","Openness to new perspectives"],patterns:["Building clearer direction around key goals","Strengthening consistent follow-through"],scores:{identity:7,direction:6,execution:6,readiness:8,goals:7},technique1:{name:"Controlled Breathing (4-7-8)",instructions:"Inhale for 4 seconds through the nose, hold for 7, exhale slowly for 8 through the mouth. Repeat 4 times.",reason:"Will help you shift into a calmer, clearer mind state before important decisions."},technique2:{name:"The Concentration Anchor",instructions:"Choose a focus point — your breath or a word. Each time your mind wanders, gently return to it without criticism.",reason:"A practical tool to bring focus back whenever your attention drifts during important tasks."},actions:["Spend 10 minutes this week writing your three most important goals","Practice the 4-7-8 breathing technique each morning for one week","Book a follow-up session to go deeper on the areas we identified today"],pathway:"Mind Flow Peak Performance",pathwayReason:"Your profile and goals align with the Peak Performance pathway.",nextStep:"Book a 1-to-1 coaching session with a Mind Flow coach at mindflowpro.com",closing:"You came here today with honesty and openness. That's rare and it matters. What we've started is just the beginning."}}
+  state.reportData=report;renderReport(report);
 }
-
-function setPhase(n) {
-  state.phase = n;
-  for (var i = 1; i <= 4; i++) {
-    var d = document.getElementById("ph" + i);
-    var ln = document.getElementById("pl" + i);
-    if (d) d.className = "phase-dot" + (i < n ? " done" : i === n ? " active" : "");
-    if (ln) ln.className = "phase-line" + (i < n ? " done" : "");
-  }
-}
-
-function setLoading(show, title, text) {
-  state.isLoading = show;
-  document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
-  if (title) document.getElementById("loadingTitle").textContent = title;
-  if (text) document.getElementById("loadingText").textContent = text;
-  document.getElementById("sendBtn").disabled = show;
-}
-
-function activateDomain(d) {
-  if (state.assessedDomains.indexOf(d) >= 0) return;
-  state.assessedDomains.push(d);
-  var dot = document.getElementById("dot-" + d);
-  if (dot) dot.className = "domain-dot active";
-}
-
-function buildReport(r) {
-  var ca = document.getElementById("chatArea");
-  ca.innerHTML = "";
-
-  var rv = document.createElement("div");
-  rv.className = "report-view";
-
-  var rh = document.createElement("div");
-  rh.className = "report-header";
-  rh.innerHTML = '<div class="label">Personal Awareness Report - Mind Flow</div>' +
-    '<h2>Your Session Report, ' + r.name + '</h2>' +
-    '<div class="sub">' + new Date().toLocaleDateString("en-GB", {weekday:"long",year:"numeric",month:"long",day:"numeric"}) + ' - Powered by WIZ</div>';
-  rv.appendChild(rh);
-
-  var grid = document.createElement("div");
-  grid.className = "report-grid";
-
-  var obs = document.createElement("div");
-  obs.className = "report-card full";
-  obs.innerHTML = '<h3>WIZ Observation</h3><p>' + r.summary + '</p>';
-  grid.appendChild(obs);
-
-  var str = document.createElement("div");
-  str.className = "report-card";
-  str.innerHTML = '<h3>Strengths Identified</h3>' + r.strengths.map(function(s){ return '<p style="margin-bottom:7px">&#10003; ' + s + '</p>'; }).join('');
-  grid.appendChild(str);
-
-  var pat = document.createElement("div");
-  pat.className = "report-card";
-  pat.innerHTML = '<h3>Growth Opportunities</h3>' + r.patterns.map(function(p){ return '<p style="margin-bottom:7px">&#8594; ' + p + '</p>'; }).join('');
-  grid.appendChild(pat);
-
-  var scores = document.createElement("div");
-  scores.className = "report-card full";
-  scores.innerHTML = '<h3>Domain Scores</h3>' + Object.keys(r.scores).map(function(k){
-    var v = r.scores[k];
-    return '<div class="score-row"><span class="score-label">' + k.charAt(0).toUpperCase() + k.slice(1) + '</span><div class="score-bar"><div class="score-fill" style="width:' + (v*10) + '%"></div></div><span class="score-num">' + v + '/10</span></div>';
-  }).join('');
-  grid.appendChild(scores);
-
-  var t1 = document.createElement("div");
-  t1.className = "report-card";
-  t1.innerHTML = '<h3>Recommended Technique 1</h3><p><strong>' + r.technique1.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique1.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique1.reason + '</p>';
-  grid.appendChild(t1);
-
-  var t2 = document.createElement("div");
-  t2.className = "report-card";
-  t2.innerHTML = '<h3>Recommended Technique 2</h3><p><strong>' + r.technique2.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique2.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique2.reason + '</p>';
-  grid.appendChild(t2);
-
-  var acts = document.createElement("div");
-  acts.className = "report-card full";
-  acts.innerHTML = '<h3>Your Three Priority Actions</h3>' + r.actions.map(function(a,i){
-    return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
-  }).join('');
-  grid.appendChild(acts);
-
-  var pw = document.createElement("div");
-  pw.className = "report-card full";
-  pw.style.borderTopColor = "var(--gold)";
-  pw.style.background = "var(--lnavy)";
-  pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + r.pathway + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
-  grid.appendChild(pw);
-
-  rv.appendChild(grid);
-
-  var cta = document.createElement("div");
-  cta.className = "report-cta";
-  var ctaLeft = document.createElement('div');
-  ctaLeft.innerHTML = '<h3>Ready to go deeper?</h3><p>Work with a qualified Mind Flow coach and accelerate everything WIZ has started today.</p>';
-  var ctaBtns = document.createElement('div');
-  ctaBtns.className = 'cta-btns';
-  var btnBook = document.createElement('button');
-  btnBook.className = 'btn-primary';
-  btnBook.textContent = 'Book a Session';
-  btnBook.onclick = function(){ window.open('https://mindflowpro.com','_blank'); };
-  var btnSave = document.createElement('button');
-  btnSave.className = 'btn-secondary';
-  btnSave.textContent = 'Save Report';
-  btnSave.onclick = function(){ window.print(); };
-  ctaBtns.appendChild(btnBook);
-  ctaBtns.appendChild(btnSave);
-  cta.appendChild(ctaLeft);
-  cta.appendChild(ctaBtns);
-  rv.appendChild(cta);
-
-  var foot = document.createElement("p");
-  foot.style.cssText = "font-size:11px;color:var(--mid);text-align:center;margin-top:20px;padding-bottom:28px";
-  foot.textContent = "PJ Wingfield / Mind Flow International Ltd 2026 - WIZ is a coaching intelligence, not a therapist. Samaritans: 116 123 (24/7, free)";
-  rv.appendChild(foot);
-
-  ca.appendChild(rv);
+function renderReport(r){
+  const ca=document.getElementById("chatArea");
+  ca.innerHTML='<div class="report-view"><div class="report-header"><div class="label">Personal Awareness Report &bull; Mind Flow</div><h2>Your Session Report, '+r.name+'</h2><div class="sub">'+new Date().toLocaleDateString("en-GB",{weekday:"long",year:"numeric",month:"long",day:"numeric"})+' &bull; Powered by WIZ</div></div><div class="report-grid"><div class="report-card full"><h3>WIZ\'s Observation</h3><p>'+r.summary+'</p></div><div class="report-card"><h3>Strengths Identified</h3>'+r.strengths.map(s=>'<p style="margin-bottom:7px">&#10003; &nbsp;'+s+'</p>').join('')+'</div><div class="report-card"><h3>Growth Opportunities</h3>'+r.patterns.map(p=>'<p style="margin-bottom:7px">&#8594; &nbsp;'+p+'</p>').join('')+'</div><div class="report-card full"><h3>Domain Scores</h3>'+Object.entries(r.scores).map(([k,v])=>'<div class="score-row"><span class="score-label">'+k.charAt(0).toUpperCase()+k.slice(1)+'</span><div class="score-bar"><div class="score-fill" style="width:'+v*10+'%"></div></div><span class="score-num">'+v+'/10</span></div>').join('')+'</div><div class="report-card"><h3>Recommended Technique 1</h3><p><strong>'+r.technique1.name+'</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">'+r.technique1.instructions+'</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">'+r.technique1.reason+'</p></div><div class="report-card"><h3>Recommended Technique 2</h3><p><strong>'+r.technique2.name+'</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">'+r.technique2.instructions+'</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">'+r.technique2.reason+'</p></div><div class="report-card full"><h3>Your Three Priority Actions</h3>'+r.actions.map((a,i)=>'<div class="action-item"><div class="action-num">'+(i+1)+'</div><div class="action-text">'+a+'</div></div>').join('')+'</div><div class="report-card full" style="border-top-color:var(--gold);background:var(--lnavy)"><h3 style="color:var(--navy)">Recommended Pathway: '+r.pathway+'</h3><p>'+r.closing+'</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> '+r.nextStep+'</p></div></div><div class="report-cta"><div><h3>Ready to go deeper?</h3><p>Work with a qualified Mind Flow coach and accelerate everything WIZ has started today.</p></div><div class="cta-btns"><button class="btn-primary" onclick="window.open(\'https://mindflowpro.com\',\'_blank\')">Book a Session</button><button class="btn-secondary" onclick="window.print()">Save Report</button></div></div><p style="font-size:11px;color:var(--mid);text-align:center;margin-top:20px;padding-bottom:28px">&copy; PJ Wingfield / Mind Flow International Ltd 2026 &bull; WIZ is a coaching intelligence, not a therapist. Samaritans: 116 123 (24/7, free)</p></div>';
   setPhase(4);
 }
-
-async function generateReport() {
-  setLoading(true, "WIZ is crafting your report...", "Pulling together everything from your session");
-  var raw;
-  try {
-    raw = await callWIZ("Based on our entire conversation, please generate the Personal Awareness Report JSON now. Output ONLY the JSON.");
-  } catch(e) {
-    setLoading(false);
-    addMessage("wiz", "I am having difficulty generating the full report right now. Based on everything you have shared, you show real self-awareness and genuine readiness for change. Your next step is to visit mindflowpro.com to book a session with a Mind Flow coach.");
-    return;
-  }
-  setLoading(false);
-  var report;
-  try {
-    var m = raw.match(/\{[\s\S]*\}/);
-    report = JSON.parse(m ? m[0] : raw);
-  } catch(e) {
-    report = {
-      name: state.clientName || "there",
-      summary: "You have shown real openness and self-awareness throughout our session.",
-      strengths: ["Self-awareness and honesty","Genuine motivation to improve","Openness to new perspectives"],
-      patterns: ["Building clearer direction around key goals","Strengthening consistent follow-through"],
-      scores: {identity:7,direction:6,execution:6,readiness:8,goals:7},
-      technique1: {name:"Controlled Breathing (4-7-8)",instructions:"Inhale for 4 seconds, hold for 7, exhale for 8. Repeat 4 times.",reason:"Will help you shift into a calmer mind state before important decisions."},
-      technique2: {name:"The Concentration Anchor",instructions:"Choose a focus point. Each time your mind wanders, gently return to it.",reason:"A practical tool to bring focus back whenever your attention drifts."},
-      actions: ["Write your three most important goals this week","Practice the 4-7-8 breathing technique each morning","Book a follow-up session to go deeper on the areas we identified today"],
-      pathway: "Mind Flow Peak Performance",
-      pathwayReason: "Your profile and goals align with the Peak Performance pathway.",
-      nextStep: "Book a 1-to-1 coaching session with a Mind Flow coach at mindflowpro.com",
-      closing: "You came here today with honesty and openness. That is rare and it matters."
-    };
-  }
-  state.reportData = report;
-  buildReport(report);
-}
-
-async function sendMessage() {
-  var input = document.getElementById("userInput");
-  var text = input.value.trim();
-  if (!text || state.isLoading) return;
-  input.value = "";
-  input.style.height = "auto";
+async function sendMessage(){
+  const input=document.getElementById("userInput");
+  const text=input.value.trim();
+  if(!text||state.isLoading)return;
+  input.value="";input.style.height="auto";
   state.turnCount++;
-  if (state.turnCount <= 3 && !state.clientName && text.length < 40) {
-    var w = text.trim().split(" ");
-    if (w.length <= 3) state.clientName = w[0];
-  }
-  addMessage("user", text);
-  showTyping();
-  setLoading(true);
-  if (state.turnCount >= 3 && state.phase === 1) setPhase(2);
-  if (state.turnCount >= 11 && state.phase === 2) setPhase(3);
-  if (state.turnCount >= 3) activateDomain("A");
-  if (state.turnCount >= 5) activateDomain("B");
-  if (state.turnCount >= 7) activateDomain("C");
-  if (state.turnCount >= 9) activateDomain("E");
-  if (state.turnCount >= 11) activateDomain("G");
-  if (state.turnCount >= 13) activateDomain("H");
-  if (state.turnCount >= 15) activateDomain("I");
-  try {
-    if (state.turnCount >= 16 && state.phase < 4) {
-      setPhase(4);
-      removeTyping();
-      setLoading(false);
-      await generateReport();
-      return;
+  if(state.turnCount<=3&&!state.clientName&&text.length<40){const w=text.trim().split(" ");if(w.length<=3)state.clientName=w[0]}
+  addMessage("user",text);showTyping();setLoading(true);
+  if(state.turnCount>=3&&state.phase===1)setPhase(2);
+  if(state.turnCount>=11&&state.phase===2)setPhase(3);
+  if(state.turnCount>=3)activateDomain("A");
+  if(state.turnCount>=5)activateDomain("B");
+  if(state.turnCount>=7)activateDomain("C");
+  if(state.turnCount>=9)activateDomain("E");
+  if(state.turnCount>=11)activateDomain("G");
+  if(state.turnCount>=13)activateDomain("H");
+  if(state.turnCount>=15)activateDomain("I");
+  try{
+    if(state.turnCount>=16&&state.phase<4){setPhase(4);removeTyping();setLoading(false);await generateReport();return}
+    const data_obj = await callWIZRaw(text);
+    const reply = data_obj.content;
+    const isReport = data_obj.isReport;
+    removeTyping();setLoading(false);
+    
+    // If server flagged this as a report, render it directly
+    if(isReport && reply.includes('"reportReady"')) {
+      try {
+        const match = reply.match(/\{[\s\S]*\}/);
+        if(match) {
+          const report = JSON.parse(match[0]);
+          if(report.reportReady) { setPhase(4); renderReport(report); return; }
+        }
+      } catch(e) {}
     }
-    var reply = await callWIZ(text);
-    removeTyping();
-    setLoading(false);
-    addMessage("wiz", reply);
-    if (reply.toLowerCase().indexOf("personal awareness report") >= 0 && state.turnCount >= 12) {
-      setTimeout(generateReport, 1500);
-    }
-  } catch(err) {
-    removeTyping();
-    setLoading(false);
-    addMessage("wiz", "I am having a brief technical moment. Please try again in a few seconds - I am still here.");
-    console.error(err);
-  }
+    
+    addMessage("wiz",reply);
+    if(reply.toLowerCase().includes("personal awareness report")&&state.turnCount>=12){setTimeout(generateReport,1500)}
+  }catch(err){removeTyping();setLoading(false);addMessage("wiz","I'm having a brief technical moment. Please try again in a few seconds — I'm still here.");console.error(err)}
 }
-
-document.getElementById("userInput").addEventListener("keydown", function(e) {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-document.getElementById("userInput").addEventListener("input", function() {
-  this.style.height = "auto";
-  this.style.height = Math.min(this.scrollHeight, 130) + "px";
-});
-
-async function startSession() {
-  setLoading(true, "Starting your session...", "WIZ is ready to meet you");
-  try {
-    var opening = await callWIZ("Hello, please introduce yourself and begin the session.");
-    setLoading(false);
-    addMessage("wiz", opening);
-  } catch(e) {
-    setLoading(false);
-    addMessage("wiz", "Hello, and welcome to your Mind Flow session. I am WIZ, your personal coaching companion. This session is completely yours. There are no wrong answers, no judgements. Just a real conversation about where you are and where you want to go. To start, what is your name, and in one sentence, what has brought you here today?");
-  }
+document.getElementById("userInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
+document.getElementById("userInput").addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,130)+"px"});
+async function startSession(){
+  setLoading(true,"Starting your session...","WIZ is ready to meet you");
+  try{const opening=await callWIZ(null);setLoading(false);addMessage("wiz",opening)}
+  catch(e){setLoading(false);addMessage("wiz","Hello, and welcome to your Mind Flow session. I'm WIZ — your personal coaching companion, built on the Mind Flow methodology.\n\nThis session is completely yours. There are no wrong answers, no judgements. Just a real conversation about where you are and where you want to go.\n\nTo start — what's your name, and in one sentence, what's brought you here today?")}
 }
-
 startSession();
 </script>
 </body>
 </html>`;
-}
+
+// Serve the embedded HTML for all non-API routes
+app.get('*', (req, res) => res.send(HTML));
 
 app.listen(port, () => {
-  console.log('\n WIZ Mind Flow Server running on port ' + port);
-  console.log('   API key: ' + (process.env.ANTHROPIC_API_KEY ? 'configured' : 'MISSING'));
+  console.log('\n✅ WIZ Mind Flow Server running on port ' + port);
+  console.log('   API key: ' + (process.env.ANTHROPIC_API_KEY ? 'configured ✓' : 'MISSING'));
 });
 
 module.exports = app;
