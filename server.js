@@ -1,8 +1,4 @@
-r download · JS
-Copy
 
-// ── WIZ Mind Flow Server — KB Enhanced Edition ───────────────────────────────
-require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
 const crypto   = require('crypto');
