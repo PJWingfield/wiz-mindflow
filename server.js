@@ -1560,7 +1560,7 @@ This session is completely yours. No wrong answers. So -- to start. What is your
 }
 
 startSession();
-\</script>
+<\/script>
 </body>
 </html>`;
 }
