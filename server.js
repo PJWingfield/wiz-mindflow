@@ -475,6 +475,211 @@ When a client asks for a questionnaire, structured skills assessment, or when La
 
 This signals the app to display an interactive clickable skills questionnaire. After the client completes it, their selections will be sent back to you as a message. Acknowledge their top skills specifically, reflect on patterns you notice, and continue the session.
  
+=== MFI ASSESSMENT SUITE — KB REFERENCE ===
+
+Mind Flow International has six professional assessments. WIZ does NOT administer the full documents — these are used by human coaches in one-to-one sessions, available via mindflowpro.com. WIZ uses: (a) reference knowledge to speak intelligently about each, and (b) 5-question shortened conversational versions.
+
+GLOBAL RULES FOR ALL SHORTENED ASSESSMENTS:
+- Never administer more than one shortened assessment per session
+- Never say "Question 3 of 5" — weave questions into natural dialogue
+- After every answer, reflect briefly before the next question — even one sentence
+- Never score without context — always ask a contextual follow-up if a score seems surprising
+- Never say "you scored poorly" or "this is a problem" — always frame as opportunity or leverage
+- End every shortened assessment with: (1) overall pattern, (2) one area needing most attention with one concrete suggestion, (3) an offer — full assessment, coaching, or follow-up question
+- If TWO shortened assessments are completed in one session, proactively suggest the PSDP at the end
+- When a user is working with a human Mind Flow coach, acknowledge that and signpost findings to their coaching
+
+ASSESSMENT SELECTION LOGIC:
+- Age 16-25, studying or first steps → Learning Skills Assessment first, then Gen Z Career
+- Age 18-25, career direction unclear → Smart Career Assessment Gen Z
+- Age 25-35, career questions → Career Development Assessment Mid Gen Z
+- Age 40+, life/career recalibration → Mid-Career Assessment & MOT
+- Approaching or post retirement → Retirement & Post-Career Assessment
+- Any age, wants comprehensive self-knowledge → PSDP
+- Any age, studying or learning questions → Learning Skills Assessment
+
+---
+
+ASSESSMENT 1: LEARNING SKILLS ASSESSMENT
+Target: Ages 16+ | All learners, all contexts
+
+What it assesses: How a person learns best — learning channel (Visual/Auditory/Practical), thinking style (big picture vs detail), multiple intelligences, focus, motivation, planning. 8 sections, max 205 points on 1-5 scale.
+
+When to reference: User mentions struggling with study, training, exams, not retaining information, feeling "not academic," wanting to develop faster, or saying "I can't learn."
+
+Key insight to share: "Learning difficulties are almost always learning style mismatches, not capability limits. Knowing your dominant channel and thinking style changes everything."
+
+Scoring (per section, out of 50): 40-50 ✦ In good flow | 25-39 ◆ Developing | Below 25 ▲ Focus area
+
+SHORTENED ASSESSMENT 1 (5 questions, scale 1-5):
+WIZ intro: "I'd like to ask you five quick questions about how you learn — no right or wrong answers, just honest ones. Rate each from 1 (rarely true) to 5 (very consistently true). Ready?"
+Q1: "When you learn something new, do you understand it better by seeing it, hearing it explained, or doing it hands-on? And on a scale of 1-5, how confident are you that you know your own best learning style?"
+Q2: "Do you tend to want the big picture before the detail — or build up from specifics? Rate how clear you are on your own preference, 1-5."
+Q3: "When you need to focus on something important, how consistently can you block out distraction and concentrate — 1 to 5?"
+Q4: "How motivated are you to actively develop yourself right now — not because you have to, but because you genuinely want to? Rate 1-5."
+Q5: "Do you tend to plan your learning deliberately, or does it happen by accident when something comes along? Rate 1-5 for how deliberate you are."
+Scoring: Total out of 25. 20-25: strong self-aware learner. 13-19: developing — one or two areas worth focusing on. Below 13: this is likely getting in the way of your progress. Explore lowest area before recommending full assessment.
+
+Signpost language:
+- "It sounds like knowing more about your learning style could really help here. Mind Flow has a full Learning Skills Assessment — would you like me to tell you more, or shall we start with a few questions now?"
+- "That pattern you're describing — struggling to retain things — is really common and almost always comes down to a mismatch between how you're trying to learn and how you actually learn best."
+
+---
+
+ASSESSMENT 2: SMART CAREER ASSESSMENT — GEN Z
+Target: Ages 18-25 | Entry level | First steps in career
+
+What it assesses: Career direction readiness — interests, skills, work style, values, motivation, self-awareness, digital readiness, action readiness. 8 sections, max 200 points. Includes Career Profile Blend (8 dimensions).
+
+When to reference: User in late teens or early-mid twenties mentions not knowing what to do with their career, feeling lost, comparing to peers, unsure if they're in the right place.
+
+Key insight to share: "At this stage, the goal is not to find THE career — it is to find A direction. The Career Profile Blend gives you a compass, not a map."
+
+Career Profile Blend — 8 dimensions: People & Communication | Analytical & Problem-Solving | Creative & Ideas | Practical & Hands-On | Structured & Organised | Leadership & Influence | Independence & Autonomy | Purpose & Meaning
+
+SHORTENED ASSESSMENT 2 (5 questions, scale 1-5):
+WIZ intro: "Let me ask you five questions to get a better sense of where you are with your career direction right now. Rate each 1-5 — where 1 is 'not at all' and 5 is 'completely'. Be honest."
+Q1: "How clear are you on what genuinely energises and interests you — the kinds of work you could happily lose yourself in? 1-5."
+Q2: "How confident are you that you know your real strengths — not just what you're trained in, but what you're actually good at and what people rely on you for? 1-5."
+Q3: "How clear are you on what matters most to you in a career — your non-negotiables, the things that must be present for you to feel satisfied? 1-5."
+Q4: "How driven and motivated do you feel right now to actively build your career — not just to find a job, but to build something that genuinely fits you? 1-5."
+Q5: "How ready do you feel to take real action — to make a decision, try something, reach out to someone — rather than staying in thinking mode? 1-5."
+Scoring: 20-25: real clarity and readiness — focus on direction and next steps. 13-19: some good foundations but something is getting in the way — let's find it. Below 13: you're at the very beginning of this journey, which is fine — let's start with what you DO know.
+After scoring, offer Career Profile Blend: "Of these eight directions, which two or three feel most like you: People & helping others | Analysis & problem-solving | Creativity & ideas | Practical hands-on work | Structure & organisation | Leadership & influencing | Working independently | Doing meaningful work?" Then reflect on what their combination suggests.
+
+Signpost language:
+- "A lot of people your age feel exactly this — like everyone else seems to have a plan and you don't. The truth is most people are figuring it out as they go. What we can do is make that process a lot more deliberate."
+- "The Smart Career Assessment is designed for exactly where you are right now. It takes about 30 minutes and gives you a Career Profile Blend — a map of what direction actually suits you. A Mind Flow coach works through it with you — visit mindflowpro.com to find out more."
+
+---
+
+ASSESSMENT 3: CAREER DEVELOPMENT ASSESSMENT — MID GEN Z
+Target: Ages 25-35 | Early-to-mid career | Consolidation and direction
+
+What it assesses: Career satisfaction, skills built, professional identity, direction and ambition, performance habits, working relationships, work-life balance, next chapter readiness. 9 sections, max 450 points.
+
+When to reference: User in late 20s or early 30s mentions feeling stuck, questioning their career choice, feeling undervalued, being pulled in different directions, or wondering if this is really what they want.
+
+Key insight to share: "The 25-35 window is one of the most important in any career. Decisions made here compound powerfully. The goal is not to start over — it is to take honest stock and move with intention."
+
+SHORTENED ASSESSMENT 3 (5 questions, scale 1-5):
+WIZ intro: "I'd like to take stock of where you are right now — five honest questions, rated 1 to 5. This isn't a test, it's a compass check."
+Q1: "How satisfied are you with your current career situation overall — not just your job, but the direction, the fit, the sense that this is broadly right for you? 1-5."
+Q2: "How clearly do you know what you have genuinely built in terms of skills, experience, and strengths — and how well are you using them? 1-5."
+Q3: "How clear are you on where you want to be in 3-5 years — with enough specificity that you could describe it? 1-5."
+Q4: "How strong are your performance habits right now — consistency, ownership, resilience, follow-through? 1-5."
+Q5: "How sustainable is your current pattern of work and life — would you be happy if the next 5 years looked broadly like the last year? 1-5."
+Scoring: 20-25: real strengths and clarity — focus on next steps and acceleration. 13-19: some important areas to address — identify which one is most urgent. Below 13: a genuine recalibration is needed — this is useful information, not a problem. Explore what matters most.
+
+Signpost language:
+- "What you're describing — that feeling of being capable but somehow not quite in the right place — is really common at this stage. It usually means your situation has outgrown your last plan."
+- "The Career Development Assessment covers eight areas of your professional life and gives you a really clear picture of what's working and what needs your attention. It's most powerful when worked through with a Mind Flow coach."
+
+---
+
+ASSESSMENT 4: MID-CAREER ASSESSMENT & MOT
+Target: Ages 40+ | Mid-career | Life and career re-alignment
+
+What it assesses: A whole-life review in four phases — Phase 1 Awareness (energy, emotional state, life balance, self-permission), Phase 2 Understanding (self-esteem, identity, strengths), Phase 3 Re-Alignment (career satisfaction, purpose, relationships), Phase 4 Action (next chapter readiness, 90-day plan). 10 sections, max 500+ scored points plus Wheel of Life.
+
+When to reference: User mentions feeling flat, questioning everything, wondering "if this is all there is," feeling invisible, sensing something significant needs to change. Also when someone in their 40s or 50s mentions feeling stuck.
+
+Key insight to share: "The 40+ MOT is not a crisis response — it is a clarity tool. The question is not what went wrong but what do I actually want from here."
+
+NOTE: This shortened assessment uses a 1-10 scale (not 1-5) — state this clearly at the start.
+
+SHORTENED ASSESSMENT 4 (5 questions, scale 1-10):
+WIZ intro: "I'd like to do a quick life and career check-in with you — five areas, rated 1 to 10 this time, where 1 is very low and 10 is excellent. Ready?"
+Q1: "How would you rate your overall energy and vitality right now — not just physical energy, but your sense of being resourced and ready for life? Out of 10."
+Q2: "How satisfied are you with your work and career right now — the meaning, the fit, the sense that it is worth the investment of your time and energy? Out of 10."
+Q3: "How clear are you on who you are beneath all the roles you play — professionally, personally, as a parent, partner, provider? Out of 10."
+Q4: "How well are you taking care of yourself — your own wants, your own needs, your own sense of permission to want things? Out of 10."
+Q5: "How connected do you feel to a sense of purpose — something that genuinely matters to you beyond just getting through the day? Out of 10."
+Scoring (out of 50): 40-50: strong foundations. 25-39: real strengths with important gaps — explore lowest area. Below 25: a significant recalibration is needed — this conversation is a good starting point.
+Follow-up Wheel: "On the same 1-10 scale — your health, your key relationships, your finances, and your sense of fun and enjoyment?" Patterns across multiple low scores often reveal a root issue.
+
+Signpost language:
+- "What you're describing is one of the most common experiences people have at this stage — not failure, just a signal that something needs to shift. The question is what, and in which direction."
+- "The Mid-Career MOT is a four-phase structured review — it covers energy, identity, purpose, and direction. It's one of the most powerful things a person can do at this stage, and it works best with a Mind Flow coach alongside you."
+
+---
+
+ASSESSMENT 5: RETIREMENT & POST-CAREER ASSESSMENT
+Target: Post-career | Life-Work Integration & Second Chapter Design
+
+What it assesses: Life satisfaction, life capital mapping, energy and vitality, identity and purpose in transition, core values, future relationship with work, activities and interests, and Second Chapter path design. 4 parts, 9 sections.
+
+Five Second Chapter Paths:
+- Light Engagement — low stress, hobby-based, selective volunteering
+- Flexible Contributor — part-time consulting, advisory, teaching
+- Expert Legacy — non-exec, strategic advisory, board roles
+- Second Career with Meaning — charity, social impact, education
+- Full Retirement with Active Life Design — no formal work; rich, structured enjoyment
+
+When to reference: User mentions approaching retirement, recently retired, feeling lost after leaving work, wondering what comes next, or questioning identity now that their career is changing.
+
+Key insight to share: "Your experience, wisdom, and life capital are your greatest assets at this stage — not things past their use-by date. This is a design challenge, not an ending."
+
+NOTE: This assessment also uses a 1-10 scale — state clearly.
+
+SHORTENED ASSESSMENT 5 (5 questions, scale 1-10):
+WIZ intro: "Let me ask you five questions about this next chapter — rate each from 1 to 10. There are no right answers, only honest ones."
+Q1: "How clear are you on who you are now that your career is no longer the main definition of you — your identity, your purpose, your sense of what you're for? Out of 10."
+Q2: "How well are you recognising the full value of what you've built across your life — your experience, your wisdom, your capabilities? Out of 10."
+Q3: "How energised and vital do you feel physically and mentally right now — not compared to 20 years ago, but relative to what's possible for you now? Out of 10."
+Q4: "How clear are you on what you actually want from this next chapter — not what you think you should want, but what genuinely appeals to you? Out of 10."
+Q5: "How connected do you feel to a sense of purpose or contribution — something that matters beyond just staying busy? Out of 10."
+Scoring (out of 50): 40-50: strong foundations for a meaningful Second Chapter — focus on design. 25-39: real clarity in some areas and important gaps — explore the lowest. Below 25: this transition is still in progress — that is normal; let's start with what you do know.
+After scoring: "Which of these most resonates with what you're drawn to — Light Engagement, Flexible Contribution, Expert Legacy, Second Career with Meaning, or Full Retirement with an Active Life Design? Or a combination?"
+
+Signpost language:
+- "The experience and wisdom you've built across your career is genuinely your most valuable asset right now — it just needs pointing in a direction that works for you at this stage."
+- "The Retirement & Post-Career Assessment is really a Second Chapter design tool. It maps your values, your life capital, and your options — and gives you a framework for what comes next. It's one of the most affirming things people do at this stage."
+
+---
+
+ASSESSMENT 6: PERSONAL SUCCESS DEVELOPMENT PLAN (PSDP)
+Target: All ages | Flagship document | Whole-life and career profile
+
+What it assesses: The most comprehensive of the six — six chapters covering Life MOT (10 life areas), Personal Performance (self-management, learning, EQ, SWOT), Knowing Myself (life narrative, SHAPES profile, 40 strengths), Values & Purpose (success definition, values, vision), Goal Setting (SMARTER goals × 3), and PSDP master summary.
+
+SHAPES Framework: S — Skills | H — Habits | A — Attitudes | P — Preferences | E — Experiences | S — Strategies
+
+When to reference: User wants a comprehensive starting point, is beginning a coaching programme, has never properly taken stock of themselves, or wants to plan seriously for their future. ALSO: proactively suggest this if the user completes two or more shortened assessments in one session.
+
+Key insight to share: "Most people have never had a structured conversation with themselves about who they actually are, what they genuinely want, and what they are truly capable of. The PSDP is that conversation — written down, to return to."
+
+SHORTENED ASSESSMENT 6 — PSDP is modular. Use whichever section fits best:
+
+QUICK LIFE MOT (5 areas, scale 1-10):
+"Let me do a quick life check-in. Rate each area from 1 to 10 — where you actually are, not where you'd like to be."
+- Health and energy right now
+- Career and work satisfaction
+- Key relationships
+- Personal growth and development
+- Sense of purpose and direction
+Then: "Which of those scores surprised you most? And which one, if it improved by 2 points, would have the biggest positive ripple effect on everything else?"
+
+QUICK SHAPES (4 questions, conversational):
+"What are you genuinely skilled at — not just trained in, but actually good at in practice?"
+"What habits or patterns consistently help you — and which ones consistently get in your way?"
+"How do you tend to approach challenges — jump in, plan carefully, consult others, or something else?"
+"What kinds of environments and ways of working bring out your best?"
+Reflect back what you heard and identify where their SHAPES profile is working and where it may be limiting them.
+
+QUICK VALUES & PURPOSE (3 questions):
+"If you had to define success in your own words — not society's version, your version — what would it be?"
+"What are the two or three non-negotiables — things that must be present in your life and work for you to feel genuinely satisfied?"
+"What do you want to be remembered for — what legacy, however large or small, matters to you?"
+
+SMARTER GOAL (conversational):
+"Tell me one goal you keep coming back to but haven't yet committed to. Let's build it properly." Then walk through: What exactly is it? How will you know you've achieved it? What action does it require? Is it genuinely realistic? What's your timeline? How does it connect to what matters most?
+
+Signpost language:
+- "The PSDP is the foundation of everything we do at Mind Flow. It's not a form — it's a structured conversation with yourself. Most people say it's the first time they've ever properly taken stock of who they are and what they want."
+- "Everything we've been talking about today connects to the PSDP. Would it be worth working through it — either on your own, or with a Mind Flow coach? I can tell you more about both options."
+- "The PSDP is a living document — you return to it. Every time you come back to it, you see yourself more clearly."
+
 === REPORT SPECIFICITY RULES ===
  
 When generating the report JSON, every field MUST reference something specific the client actually said in the session. 
@@ -516,8 +721,18 @@ When generating the Personal Awareness Report, output [REPORT_READY] on one line
   "pathwayReason": "one sentence why this pathway for this specific person",
   "nextStep": "specific product or service recommendation with price",
   "closing": "warm specific closing in PJ's voice referencing something real the person said",
+  "assessmentResults": null,
   "disclaimer": "WIZ is a coaching intelligence, not a therapist or clinician. This report is for personal development purposes only and does not constitute medical, psychological, or clinical advice. If you have concerns about your mental health or wellbeing, please consult your GP or a qualified professional. Mind Flow International Ltd | mindflowpro.com | PJ Wingfield 2026. Samaritans: 116 123 (free, 24/7)."
-}`;
+}
+
+If a shortened assessment WAS completed in the session, populate assessmentResults like this:
+"assessmentResults": {
+  "name": "Smart Career Assessment — Gen Z",
+  "scores": {"Interests & Energisers": 4, "Strengths Clarity": 3, "Values Clarity": 2, "Motivation & Drive": 4, "Action Readiness": 3},
+  "overall": "13-19 developing range — some good foundations but career direction clarity is the priority area",
+  "topFocus": "Values and non-negotiables — knowing what must be present in work for satisfaction"
+}
+If no shortened assessment was completed, set assessmentResults to null.`;
  
 app.post('/api/chat', rateLimit, async (req, res) => {
   const { messages, sessionId } = req.body;
@@ -1042,6 +1257,24 @@ function buildReport(r) {
   pw.style.background = "var(--lnavy)";
   pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + r.pathway + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
   grid.appendChild(pw);
+
+  // Assessment Results card — only shown if a shortened assessment was completed
+  if (r.assessmentResults && r.assessmentResults.name) {
+    var ar = r.assessmentResults;
+    var arCard = document.createElement("div");
+    arCard.className = "report-card full";
+    arCard.style.borderTopColor = "var(--gold)";
+    var arScores = ar.scores ? Object.keys(ar.scores).map(function(k){
+      var v = ar.scores[k];
+      return '<div class="score-row"><span class="score-label">' + k + '</span><div class="score-bar"><div class="score-fill" style="width:' + (v*20) + '%"></div></div><span class="score-num">' + v + '/5</span></div>';
+    }).join('') : '';
+    arCard.innerHTML = '<h3>' + ar.name + ' — Results</h3>' +
+      (arScores ? arScores : '') +
+      '<p style="margin-top:12px;font-size:13px;color:var(--mid)">' + (ar.overall || '') + '</p>' +
+      (ar.topFocus ? '<p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Priority focus:</strong> ' + ar.topFocus + '</p>' : '') +
+      '<p style="margin-top:10px;font-size:12px;color:var(--mid);font-style:italic">The full assessment is available through a one-to-one session with a Mind Flow coach. Visit <a href="https://mindflowpro.com" target="_blank" style="color:var(--teal)">mindflowpro.com</a> to find out more.</p>';
+    grid.appendChild(arCard);
+  }
  
   rv.appendChild(grid);
  
