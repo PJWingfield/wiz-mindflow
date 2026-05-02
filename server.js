@@ -790,13 +790,13 @@ app.post('/api/report', rateLimit, async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
+        max_tokens: 3000,
         system: WIZ_SYSTEM,
         messages: [
           ...messages,
           {
             role: 'user',
-            content: 'Please generate the Personal Awareness Report now. Output [REPORT_READY] on one line, then the JSON object only — no other text before or after the JSON.'
+            content: 'Generate the Personal Awareness Report JSON now. Output ONLY the raw JSON object — no markdown fences, no backticks, no [REPORT_READY] marker, no explanation text before or after. Start your response with { and end with }.'
           }
         ],
       }),
@@ -973,13 +973,13 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
     <hr>
     <div class="sidebar-section">
       <h3>Session Progress</h3>
-      <div class="domain-item"><div class="domain-dot active" id="dot-A"></div><span class="domain-label">Identity and Values</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-B"></div><span class="domain-label">Direction and Meaning</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-C"></div><span class="domain-label">Decision-Making</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-D"></div><span class="domain-label">Execution and Focus</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-E"></div><span class="domain-label">Competencies</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-F"></div><span class="domain-label">Readiness for Change</span></div>
-      <div class="domain-item"><div class="domain-dot" id="dot-G"></div><span class="domain-label">Goals and Direction</span></div>
+      <div class="domain-item"><div class="domain-dot active" id="dot-A"></div><span class="domain-label">Welcome & Introduction</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-B"></div><span class="domain-label">Your Situation Today</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-C"></div><span class="domain-label">Life & Career Audit</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-D"></div><span class="domain-label">Deeper Exploration</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-E"></div><span class="domain-label">Coaching & Techniques</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-F"></div><span class="domain-label">Goals & Next Steps</span></div>
+      <div class="domain-item"><div class="domain-dot" id="dot-G"></div><span class="domain-label">Your Personal Report</span></div>
     </div>
     <hr>
     <div class="sidebar-section">
@@ -1042,20 +1042,34 @@ var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],
  
 async function callWIZ(userMessage) {
   if (userMessage) state.messages.push({role:"user",content:userMessage});
-  var response = await fetch("/api/chat", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({messages: state.messages, sessionId: state.sessionId})
-  });
-  if (!response.ok) {
-    var err = await response.json().catch(function(){ return {}; });
-    throw new Error(err.error || "Server error " + response.status);
+  var lastErr;
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      var response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({messages: state.messages, sessionId: state.sessionId})
+      });
+      if (!response.ok) {
+        var err = await response.json().catch(function(){ return {}; });
+        // Retry on 429/529 (rate limit / overload)
+        if ((response.status === 429 || response.status === 529) && attempt < 2) {
+          await new Promise(function(r){ setTimeout(r, 3000 + attempt * 2000); });
+          continue;
+        }
+        throw new Error(err.error || "Server error " + response.status);
+      }
+      var data = await response.json();
+      if (data.sessionId) state.sessionId = data.sessionId;
+      var text = data.content;
+      state.messages.push({role:"assistant", content:text});
+      return text;
+    } catch(e) {
+      lastErr = e;
+      if (attempt < 2) await new Promise(function(r){ setTimeout(r, 2000); });
+    }
   }
-  var data = await response.json();
-  if (data.sessionId) state.sessionId = data.sessionId;
-  var text = data.content;
-  state.messages.push({role:"assistant", content:text});
-  return text;
+  throw lastErr || new Error("Failed after retries");
 }
 
 async function callReport() {
@@ -1197,6 +1211,51 @@ function activateDomain(d) {
   if (dot) dot.className = "domain-dot active";
 }
  
+function makeContBtn(label, message) {
+  return '<button onclick="continueFromReport(\'' + message.replace(/'/g,"\\'") + '\')" style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--cream);color:var(--dark);font-family:\'DM Sans\',sans-serif;font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor=\'var(--teal)\';this.style.color=\'var(--teal)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--dark)\'">' + label + '</button>';
+}
+
+function continueFromReport(message) {
+  // Restore chat interface
+  var ca = document.getElementById("chatArea");
+  ca.innerHTML = '';
+  // Re-add phase bar
+  var pb = document.createElement("div");
+  pb.className = "phase-bar";
+  pb.id = "phaseBar";
+  pb.innerHTML = '<div class="phase-step"><div class="phase-dot done" id="ph1">1</div><span class="phase-label">Welcome</span></div><div class="phase-line done" id="pl1"></div><div class="phase-step"><div class="phase-dot done" id="ph2">2</div><span class="phase-label">Discovery</span></div><div class="phase-line done" id="pl2"></div><div class="phase-step"><div class="phase-dot done" id="ph3">3</div><span class="phase-label">Coaching</span></div><div class="phase-line done" id="pl3"></div><div class="phase-step"><div class="phase-dot active" id="ph4">4</div><span class="phase-label active">Continuing</span></div>';
+  ca.appendChild(pb);
+  // Re-add messages area
+  var msgs = document.createElement("div");
+  msgs.className = "messages";
+  msgs.id = "messages";
+  var continueMsg = document.createElement("div");
+  continueMsg.className = "msg wiz";
+  continueMsg.innerHTML = '<div class="msg-avatar">W</div><div><div class="msg-bubble" style="background:white;border:1px solid var(--border);border-top-left-radius:3px;color:var(--dark);box-shadow:0 2px 6px rgba(0,0,0,0.04)">Great — let\'s keep going. One moment...</div></div>';
+  msgs.appendChild(continueMsg);
+  ca.appendChild(msgs);
+  // Re-add input area
+  var ia = document.createElement("div");
+  ia.className = "input-area";
+  ia.id = "inputArea";
+  ia.innerHTML = '<div class="input-wrap"><textarea id="userInput" placeholder="Type your response to WIZ..." rows="1"></textarea></div><button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>';
+  ca.appendChild(ia);
+  var hint = document.createElement("p");
+  hint.className = "input-hint";
+  hint.textContent = "Press Enter to send - Shift+Enter for new line";
+  ca.appendChild(hint);
+  // Re-attach event listeners
+  document.getElementById("userInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  document.getElementById("userInput").addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 130) + "px";
+  });
+  // Send the chosen message
+  setTimeout(function(){ handleWIZResponse(message); }, 300);
+}
+
 function buildReport(r) {
   var ca = document.getElementById("chatArea");
   ca.innerHTML = "";
@@ -1297,6 +1356,20 @@ function buildReport(r) {
   cta.appendChild(ctaLeft);
   cta.appendChild(ctaBtns);
   rv.appendChild(cta);
+
+  // Post-report continuation panel — WIZ offers to keep going
+  var cont = document.createElement("div");
+  cont.style.cssText = "background:white;border:1px solid var(--border);border-radius:13px;padding:26px 30px;margin-top:20px;border-top:3px solid var(--teal2)";
+  cont.innerHTML = '<h3 style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:var(--navy);margin-bottom:10px">Continue Your Session with WIZ</h3>' +
+    '<p style="font-size:13px;color:var(--mid);margin-bottom:16px">Your report is a starting point, not an ending. WIZ can continue working with you right now — choose what would be most useful:</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:9px">' +
+    makeContBtn("Run a SWOT Analysis", "I'd like to do a SWOT analysis now") +
+    makeContBtn("Learn a Mind Flow technique", "Can you teach me a Mind Flow technique relevant to my session?") +
+    makeContBtn("Build my first SMARTER goal", "I want to build a proper SMARTER goal based on what we discussed") +
+    makeContBtn("Explore the PSDP", "Tell me more about the PSDP and whether it's right for me") +
+    makeContBtn("Ask WIZ a question", "I have a question about my results") +
+    '</div>';
+  rv.appendChild(cont);
  
   var foot = document.createElement("p");
   foot.style.cssText = "font-size:11px;color:var(--mid);text-align:center;margin-top:20px;padding-bottom:28px";
@@ -1319,18 +1392,44 @@ async function generateReport() {
   }
   setLoading(false);
 
-  // Try to parse JSON from response
+  // Robust JSON extraction - strip everything before first { and after last }
   var report;
   try {
-    // Strip [REPORT_READY] marker if present
-    var cleaned = raw.replace(/\[REPORT_READY\]/g, '').trim();
-    var m = cleaned.match(/\{[\s\S]*\}/);
-    report = JSON.parse(m ? m[0] : cleaned);
+    var text = raw;
+    // Remove markdown fences (using charCode 96 to avoid template literal conflict)
+    var tick = String.fromCharCode(96);
+    text = text.split(tick+tick+tick+'json').join('').split(tick+tick+tick).join('');
+    // Remove [REPORT_READY] marker
+    text = text.replace(/\[REPORT_READY\]/g, '');
+    // Remove [] that appears before JSON (seen in logs)
+    text = text.replace(/^\s*\[\s*\]\s*/,'');
+    // Extract from first { to last }
+    var start = text.indexOf('{');
+    var end = text.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON object found');
+    var jsonStr = text.substring(start, end + 1);
+    report = JSON.parse(jsonStr);
   } catch(e) {
-    // If JSON parse fails, show a friendly message and the raw text — no generic fallback
+    console.error('Report parse error:', e.message, 'Raw:', raw.substring(0, 200));
+    // Second attempt: ask again with even more explicit instruction
+    setLoading(true, "Retrying report...", "One moment");
+    try {
+      var retry = await fetch("/api/report", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({messages: state.messages, sessionId: state.sessionId, forceJSON: true})
+      });
+      var retryData = await retry.json();
+      var retryText = retryData.content || '';
+      var rs = retryText.indexOf('{');
+      var re = retryText.lastIndexOf('}');
+      if (rs >= 0 && re >= 0) report = JSON.parse(retryText.substring(rs, re + 1));
+    } catch(e2) {}
     setLoading(false);
-    addMessage("wiz", "I have completed your session summary. Here is what I have observed:\\n\\n" + raw.replace(/\[REPORT_READY\]/g, '').replace(/\{[\s\S]*\}/, '').trim() + "\\n\\nTo view your full formatted report, please type 'generate report' and I will try again.");
-    return;
+    if (!report) {
+      addMessage("wiz", "I have your full session summary ready but encountered a formatting issue displaying it. Please type 'generate report' and I will produce it cleanly.");
+      return;
+    }
   }
 
   state.reportData = report;
