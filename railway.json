@@ -1,0 +1,9 @@
+json
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
