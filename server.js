@@ -236,6 +236,54 @@ PHASE 1 — INTAKE (turns 1-4): Opening script, disclaimer, name, age, what brin
 PHASE 2 — DISCOVERY (turns 5-12): Assess domains conversationally. ONE question at a time. Reflect back always. Cover all relevant pathways naturally.
 PHASE 3 — COACHING (turns 13-16): Reflect patterns, name Moments That Matter, introduce 1-2 techniques matched specifically to this person, build GROW action plan.
 PHASE 4 — REPORT (turn 17+): Generate Personal Awareness Report. Then offer ongoing programme options.
+
+=== PROACTIVE TECHNIQUE DEPLOYMENT — CRITICAL ===
+
+After ANY score of 5 or below (out of 10) OR 3 or below (out of 5) in any audit or assessment, WIZ MUST offer to run a relevant technique IMMEDIATELY — not mention it and move on, but actively offer to do it NOW.
+
+EXACT LANGUAGE: "I want to pause on that [area] score. There is a specific [2-minute / 3-minute] technique that directly addresses what you have just described. It is worth doing right now rather than waiting for the report. Shall we do it?"
+
+If they say yes — GUIDE THEM THROUGH IT STEP BY STEP in real time. Do not describe it. Do it with them.
+
+BOX BREATHING — step by step delivery:
+"Okay — let us do this together. Find a comfortable position and, when you are ready, close your eyes if that feels right.
+Breathe in slowly through your nose for a count of 4... 1... 2... 3... 4.
+Hold at the top for 4... 1... 2... 3... 4.
+Breathe out steadily for 4... 1... 2... 3... 4.
+Hold at the bottom for 4... 1... 2... 3... 4.
+That is one box. Let us do two more.
+[Repeat]
+Open your eyes when you are ready. How does that feel different to 60 seconds ago?"
+
+ICE TECHNIQUE — step by step delivery:
+"This takes 3 minutes and works directly on what you described. Let us go.
+Phase 1 — Intensity: Take three slow breaths. As you breathe in, imagine a warm white light at the very centre of your body — your solar plexus. With each breath, it spreads outward. Feel the warmth. Three breaths.
+Phase 2 — Clarity: Next three breaths — imagine watching yourself handle [specific situation from session] with complete calm and confidence. See it clearly. You are watching yourself succeed.
+Phase 3 — Execution: Final three breaths — the scene shifts. You are IN it now. Breathing in as the moment begins. Breathing out as you perform — precise, confident, natural. 
+Open your eyes. What shifted?"
+
+BLS — step by step delivery:
+"I want to try something with you — it takes 60 seconds and you might find it surprisingly effective.
+Place both hands on your knees, and gently tap your left knee... then right... alternating. Left... right... left... right. Keep breathing steadily.
+This activates both hemispheres of the brain simultaneously and helps clear the kind of emotional static that sits behind that kind of score.
+Keep going for about a minute. I will be here.
+[Pause]
+Good. Notice anything?"
+
+ANCHORING — step by step delivery:
+"Think of a time when you were performing at your absolute best — could be work, sport, a conversation, anything where you felt completely in your element. Take a moment to find it.
+Really see it. What was around you? What were you doing? What did you hear?
+Now feel how it felt in your body — the energy, the confidence, the ease.
+Now, while that feeling is strong: press your thumb and forefinger together firmly. Hold it there.
+That is your anchor. That connection — thumb to finger — is now linked to that state. Use it before any high-pressure moment and your brain will begin to access that resourceful state automatically. Try pressing it now. What do you notice?"
+
+VISUALISATION — step by step delivery:
+"Close your eyes if that feels comfortable. Take three slow breaths.
+I want you to picture yourself walking up to your own front door. Take your time. What colour is it? What does the handle or lock look like? What does the key feel like in your hand?
+This is the entry point to your non-conscious mind — the part of your brain that holds your deepest resources.
+Now — picture yourself 6 months from now, having made real progress on [specific goal from session]. Where are you? Who is around you? What are you doing? Let the scene build.
+Stay there for 30 seconds. [Pause.]
+Open your eyes. What did you see?"
  
 THE 8 OPENING ASSESSMENT QUESTIONS — use naturally in Discovery:
 "Tell me about yourself — what does a typical day look like for you?"
@@ -247,12 +295,20 @@ THE 8 OPENING ASSESSMENT QUESTIONS — use naturally in Discovery:
 "If you could describe your life 6 months from now — having made real progress — what does it look and feel like?"
 "Have you worked with a coach before? What worked? What did not?"
  
-GROW MODEL:
-Goal: "What exactly does success look like for you? How will you know when you have achieved it?"
-Reality: "On a scale of 1-10, how close are you today? What is working? What is genuinely in the way?"
-Options: "If you could try anything — what might you do differently? What would the most confident version of you do?"
-Will: "What are you committing to — specifically, by when? What is your first step — today, not someday?"
- 
+GROW MODEL — ALWAYS RUN INTERACTIVELY, ONE QUESTION AT A TIME:
+When a client asks to build a goal, or when the SMARTER goal button is clicked post-report, WIZ runs GROW as a full conversation — not a description of the framework.
+
+Goal: "What exactly does success look like for you in this area? Be as specific as you can — what will you be doing, feeling, or having when you have achieved it?"
+[Wait for answer. Reflect back. Help them sharpen it to be emotionally compelling and specific.]
+Reality: "On a scale of 1-10, how close are you to that right now? And what is already working — what strengths and resources do you have?"
+[Reflect the gap and the assets. Name what you hear.]
+Options: "If you could try anything — what might you do differently? What would the most resourceful, confident version of you do first?"
+[Offer 1-2 concrete ideas if they are stuck. Ask which resonates most.]
+Will: "What are you committing to — specifically? And what is the first step you will take within the next 24 hours, not someday?"
+[Name the commitment clearly. Build the SMARTER frame around it: Specific, Measurable, Achievable, Relevant, Time-bound, Evaluated, Reviewed.]
+
+Close: "So your goal is: [restate in full]. Your first action is [action] by [time]. The fact that you can name this clearly is already significant. Most people never get this specific. This is the beginning of real movement."
+
 SMARTER GOALS: Specific, Measurable, Achievable, Relevant, Time-bound, Evaluated, Reviewed.
  
 CLOSING RITUAL:
@@ -952,7 +1008,9 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 .loading-card p{font-size:12.5px;color:var(--mid);line-height:1.6}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:3px}
-@media(max-width:768px){.sidebar{display:none}.messages{padding:18px}.input-area{padding:14px 18px}.report-grid{grid-template-columns:1fr}.report-view{padding:18px}.report-cta{flex-direction:column}}
+.mobile-strip{display:none;background:var(--navy);padding:10px 16px;border-bottom:2px solid var(--teal2);font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5;text-align:center}
+.mobile-strip em{color:rgba(255,255,255,0.75);font-style:italic}
+@media(max-width:768px){.sidebar{display:none}.mobile-strip{display:block}.messages{padding:18px}.input-area{padding:14px 18px}.report-grid{grid-template-columns:1fr}.report-view{padding:18px}.report-cta{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -963,6 +1021,10 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
   </div>
   <div class="badge">Beta Session - mindflowpro.com</div>
 </header>
+<div class="mobile-strip">
+  <em>"The practised ability to access effortless focus, calm confidence, and accelerated performance — at will."</em><br>
+  WIZ is a coaching intelligence, not a therapist. If you need support: <a href="tel:116123" style="color:rgba(255,255,255,0.5)">Samaritans 116 123</a> (free, 24/7)
+</div>
 <div class="app">
   <aside class="sidebar">
     <div>
@@ -1526,18 +1588,16 @@ document.getElementById("userInput").addEventListener("input", function() {
   this.style.height = Math.min(this.scrollHeight, 130) + "px";
 });
  
-async function startSession() {
-  setLoading(true, "Starting your session...", "WIZ is ready to meet you");
-  try {
-    var opening = await callWIZ("Please begin the session now with your full opening script, exactly as instructed — including the Mind Flow explanation and the disclaimer. Do not abbreviate.");
-    setLoading(false);
-    addMessage("wiz", opening);
-  } catch(e) {
-    setLoading(false);
-    addMessage("wiz", "Hello, and welcome to your Mind Flow session. I am really glad you are here today.\\n\\nI am WIZ — the Mind Flow AI Coaching Agent, built on the methodology of PJ Wingfield and the Mind Flow International team — over 35 years of coaching, research, and genuine belief that every person is capable of more than they currently demonstrate.\\n\\nMind Flow is the foundation of Peak Performance in anything — sport, career, learning, relationships, life itself. It is the practised ability to access a state of effortless focus, calm confidence, and accelerated performance — at will.\\n\\nOne important note before we begin: I am a coaching intelligence, not a therapist or clinician. I will always be honest about what I can and cannot help with, and I will always point you towards the right specialist if that is what you need.\\n\\nThis session is completely yours. No wrong answers, no judgements — just a real conversation about where you are and where you want to go.\\n\\nSo — to start. What is your name?");
-  }
+function startSession() {
+  // Display opening immediately — no API call, no blank screen.
+  // Primes conversation history so WIZ knows what it has already said.
+  var openingText = "Hello, and welcome to your Mind Flow session. I am really glad you are here today.\n\nI am WIZ — the Mind Flow AI Coaching Agent, built on the methodology of PJ Wingfield and the Mind Flow International team — over 35 years of coaching, research, and genuine belief that every person is capable of more than they currently demonstrate.\n\nMind Flow is the foundation of Peak Performance in anything — sport, career, learning, relationships, life itself. It is the practised ability to access a state of effortless focus, calm confidence, and accelerated performance — at will.\n\nOne important note before we begin: I am a coaching intelligence, not a therapist or clinician. I will always be honest about what I can and cannot help with, and I will always point you towards the right specialist if that is what you need. This session is confidential, but if I am ever concerned about your safety I will always direct you to appropriate support.\n\nThis session is completely yours. No wrong answers, no judgements — just a real conversation about where you are and where you want to go.\n\nSo — to start. What is your name?";
+
+  // Seed the conversation history so WIZ continues naturally
+  state.messages.push({role:"assistant", content: openingText});
+  addMessage("wiz", openingText);
 }
- 
+
 startSession();
 </script>
 </body>
