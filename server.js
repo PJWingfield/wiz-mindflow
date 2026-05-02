@@ -1500,7 +1500,7 @@ async function handleWIZResponse(userMsg) {
   } catch(err) {
     removeTyping();
     setLoading(false);
-    addMessage("wiz", "I am having a brief technical moment. Please try again in a few seconds — I am still here.");
+    addMessage("wiz", "I am having a brief technical moment. Please try again in a few seconds -- I am still here.");
     console.error(err);
   }
 }
