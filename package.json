@@ -1,7 +1,7 @@
 
 {
   "name": "wiz-mindflow-server",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "WIZ Mind Flow v5 - Full session logging + robust report generation",
   "main": "server.js",
   "scripts": {
