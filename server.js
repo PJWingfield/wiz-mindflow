@@ -1556,7 +1556,7 @@ function startSession() {
 }
 
 startSession();
-</script>
+<\/script>
 </body>
 </html>`;
 }
