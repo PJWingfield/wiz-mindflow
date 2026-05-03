@@ -1,2 +1,3 @@
-[variables]
-ANTHROPIC_API_KEY = ""
+[phases.build]
+cmds = []
+
