@@ -3,8 +3,10 @@ const path = require('path');
 const app = express();
 app.use(express.json({limit: '10mb'}));
 
-// Serve all static files from current directory
-app.use(express.static(__dirname));
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.get('/health', (req, res) => res.json({status: 'ok'}));
 
