@@ -1,18 +1,12 @@
-
+json
 {
-  "name": "wiz-mindflow-server",
-  "version": "5.0.1",
-  "description": "WIZ Mind Flow v5 - Full session logging + robust report generation",
+  "name": "wiz-mindflow",
+  "version": "2.0.0",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
+  "scripts": { "start": "node server.js" },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "node-fetch": "^2.7.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "engines": { "node": ">=18.0.0" }
 }
