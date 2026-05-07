@@ -7,7 +7,7 @@ app.use(express.json({limit: '10mb'}));
 
 // Serve WIZ app
 app.get('/', (req, res) => {
-  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const html = fs.readFileSync('./index.html', 'utf8');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(html);
 });
