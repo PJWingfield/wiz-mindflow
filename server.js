@@ -1,14 +1,17 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 app.use(express.json({limit: '10mb'}));
 
+// Serve WIZ app
 app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.sendFile(path.join(__dirname, 'index.html'));
+  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
 });
 
-app.get('/health', (req, res) => res.json({status: 'ok'}));
+app.get('/health', (req, res) => res.json({status: 'ok', version: '3.0'}));
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -36,4 +39,4 @@ app.post('/api/chat', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('WIZ running on port ' + PORT));
+app.listen(PORT, () => console.log('WIZ v3.0 running on port ' + PORT));
