@@ -399,14 +399,20 @@ function showTyping() {
   var div = document.createElement("div");
   div.className = "msg wiz";
   div.id = "typing-indicator";
-  div.innerHTML = '<div class="msg-avatar">W</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  div.innerHTML = '<div class="msg-avatar">W</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div><div id="thinking-label" style="font-size:0.72rem;color:var(--teal2);margin-top:4px;opacity:0.8;">WIZ is thinking...</div></div>';
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
+  // Show reassuring message if taking longer than 8 seconds
+  window._thinkingTimer = setTimeout(function() {
+    var label = document.getElementById('thinking-label');
+    if (label) label.innerText = 'Still with you -- this one needs a moment...';
+  }, 8000);
 }
  
 function removeTyping() {
-  var t = document.getElementById("typing-indicator");
+  var t = document.getElementById('typing-indicator');
   if (t) t.remove();
+  if (window._thinkingTimer) { clearTimeout(window._thinkingTimer); window._thinkingTimer = null; }
 }
  
 function setPhase(n) {
