@@ -182,30 +182,6 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 </head>
 <body>
 
-<div class="api-setup" id="apiSetup">
-  <div class="api-card">
-    <div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#C8960C);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'Cormorant Garamond',serif;font-size:24px;color:white;font-weight:600">W</div>
-    <h2>WIZ - Mind Flow</h2>
-    <p>Enter your Anthropic API key to begin your session. Your key is used only in this browser tab and is never stored.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
-    <div style="margin:8px 0 2px;text-align:left;">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="rememberKey" style="accent-color:#2dd4bf;width:14px;height:14px;">
-        <span style="font-size:0.75rem;color:#666;">Remember my key on this device</span>
-      </label>
-    </div>
-    <div style="margin:14px 0 8px;text-align:left;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-        <input type="checkbox" id="ageDeclaration" style="margin-top:2px;accent-color:#2dd4bf;width:15px;height:15px;flex-shrink:0;">
-        <span style="font-size:0.78rem;color:#444;line-height:1.45;">I confirm I am 18 or over (or have parental consent if under 18). If selecting a Student or Early Career rate when available, I confirm I am a student or aged 24 or under.</span>
-      </label>
-      <div id="ageError" style="display:none;color:#ff6b6b;font-size:0.75rem;margin-top:5px;padding-left:25px;">Please confirm your eligibility before continuing.</div>
-    </div>
-    <button onclick="startWithKey()">Begin Session</button>
-    <p class="api-note">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:#1D9E75">console.anthropic.com</a></p>
-  </div>
-</div>
-
 
 <header>
   <div class="logo-area">
@@ -751,14 +727,13 @@ async function callWIZ(userMessage) {
   var lastErr;
   for (var attempt = 0; attempt < 5; attempt++) {
     try {
-      var response = await fetch("https://api.anthropic.com/v1/messages", {
+      var response = await fetch("/api/chat", {
         method: "POST",
-        headers: {"Content-Type": "application/json", "x-api-key": window.WIZ_API_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true"},
-        body: JSON.stringify({model:"claude-sonnet-4-5",max_tokens:2000,system:window.WIZ_SYSTEM,messages:state.messages})
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({system:window.WIZ_SYSTEM, messages:state.messages})
       });
       if (!response.ok) {
         var err = await response.json().catch(function(){ return {}; });
-        // Silent retry on 429/529 (rate limit / overload) - no message to user
         if ((response.status === 429 || response.status === 529) && attempt < 4) {
           await new Promise(function(r){ setTimeout(r, 1500 + attempt * 1000); });
           continue;
@@ -766,7 +741,6 @@ async function callWIZ(userMessage) {
         throw new Error(err.error || "Server error " + response.status);
       }
       var data = await response.json();
-      if (!response.ok) throw new Error(data.error ? data.error.message : 'API error ' + response.status);
       var text = (data.content || []).map(function(b){return b.text||'';}).join('').trim();
       state.messages.push({role:"assistant", content:text});
       return text;
@@ -784,10 +758,10 @@ async function callReport() {
   var lastErr;
   for (var attempt = 0; attempt < 3; attempt++) {
     try {
-      var response = await fetch("https://api.anthropic.com/v1/messages", {
+      var response = await fetch("/api/chat", {
         method: "POST",
-        headers: {"Content-Type": "application/json", "x-api-key": window.WIZ_API_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true"},
-        body: JSON.stringify({model:"claude-sonnet-4-5", max_tokens:2500, system:window.WIZ_SYSTEM, messages:msgs})
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({system:window.WIZ_SYSTEM, messages:msgs})
       });
       if (!response.ok) {
         if ((response.status === 429 || response.status === 529) && attempt < 2) {
@@ -1288,46 +1262,17 @@ function startSession() {
   addMessage("wiz", t);
 }
 
-startSession();
 
-function startWithKey() {
-  var key = document.getElementById('apiKeyInput').value.trim();
-  if (!key || !key.startsWith('sk-ant-')) {
-    alert('Please enter a valid Anthropic API key (starts with sk-ant-)');
-    return;
-  }
-  var declaration = document.getElementById('ageDeclaration');
-  if (declaration && !declaration.checked) {
-    document.getElementById('ageError').style.display = 'block';
-    declaration.closest('div').scrollIntoView({behavior:'smooth'});
-    return;
-  }
-  if (document.getElementById('ageError')) document.getElementById('ageError').style.display = 'none';
-  // Remember key if checkbox ticked
-  var rememberKey = document.getElementById('rememberKey');
-  if (rememberKey && rememberKey.checked) {
-    try { localStorage.setItem('wiz_api_key', key); } catch(e) {}
-  } else {
-    try { localStorage.removeItem('wiz_api_key'); } catch(e) {}
-  }
-  window.WIZ_API_KEY = key;
-  document.getElementById('apiSetup').style.display = 'none';
-  startSession();
-}
-document.getElementById('apiKeyInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') startWithKey();
-});
+
 // Auto-fill saved API key on load
 (function() {
   try {
-    var savedKey = localStorage.getItem('wiz_api_key');
-    if (savedKey) {
-      document.getElementById('apiKeyInput').value = savedKey;
-      var rem = document.getElementById('rememberKey');
-      if (rem) rem.checked = true;
-    }
-  } catch(e) {}
+     catch(e) {}
 })();
+
+window.addEventListener('DOMContentLoaded', function() {
+  startSession();
+});
 </script>
 </body>
 </html>
