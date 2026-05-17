@@ -1,20 +1,18 @@
 const express = require('express');
+const fetch = require('node-fetch');
 const path = require('path');
-const fs = require('fs');
 const app = express();
-app.use(express.json({limit: '10mb'}));
 
-app.get('/', (req, res) => {
-  const html = fs.readFileSync('./index.html', 'utf8');
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(html);
-});
+app.use(express.json());
+app.use(express.static('public'));
 
-app.get('/health', (req, res) => res.json({status: 'ok'}));
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Main API proxy - keeps the API key server-side
 app.post('/api/chat', async (req, res) => {
   try {
-    const {messages, system} = req.body;
+    const { messages, system } = req.body;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -23,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         system: system,
         messages: messages
@@ -31,11 +29,11 @@ app.post('/api/chat', async (req, res) => {
     });
     const data = await response.json();
     res.json(data);
-  } catch(err) {
-    console.error(err);
-    res.status(500).json({error: err.message});
+  } catch (err) {
+    console.error('API error:', err);
+    res.status(500).json({ error: 'API call failed' });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('WIZ running on port ' + PORT));
+app.listen(PORT, () => console.log(`WIZ running on port ${PORT}`));
