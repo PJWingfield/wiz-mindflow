@@ -4,7 +4,9 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public'));
+javascript
+app.use(express.static(__dirname));
+app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
