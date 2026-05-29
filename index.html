@@ -868,9 +868,17 @@ async function startSession() {
   state.sessionStarted = true;
   showTyping();
   try {
-    var reply = await callWIZ(null);
+    // Seed with a silent opening prompt so the API has a message to respond to
+    var openingPrompt = "Please begin the session now with your opening welcome.";
+    var reply = await callWIZ(openingPrompt);
+    // Remove the seeded user message from history so it doesn't appear in conversation
+    state.messages = state.messages.filter(function(m){ return m.content !== openingPrompt; });
     removeTyping();
-    addMessage("wiz", reply);
+    if (reply && reply.trim()) {
+      addMessage("wiz", reply);
+    } else {
+      throw new Error("Empty reply");
+    }
   } catch(e) {
     removeTyping();
     var fallback = "Hello, and welcome to your Mind Flow session. I am really glad you are here today.\n\nI am WIZ -- the Mind Flow AI Coaching Intelligence, built on the methodology of PJ Wingfield and Mind Flow International Ltd.\n\nThis session is completely yours -- no wrong answers, no judgements. Just a real conversation about where you are and where you want to go.\n\nSo -- to start. What is your name?";
