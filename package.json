@@ -1,6 +1,6 @@
 {
   "name": "wiz-mindflow",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "WIZ Mind Flow Coaching App",
   "main": "server.js",
   "scripts": {
@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "@supabase/supabase-js": "^2.45.4"
   },
   "engines": {
     "node": ">=18.0.0"
