@@ -232,7 +232,7 @@ c.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-size:29px
         <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Thinking &amp; Decision-Making</span><span style="color:#444;font-size:14px;line-height:1.5">Critical thinking, problem-solving, creativity, judgement and making better decisions under uncertainty.</span></div>
         <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Neurodiversity</span><span style="color:#444;font-size:14px;line-height:1.5">Different ways of thinking, learning and working &mdash; and how your individual strengths can work for you.</span></div>
         <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Sports Psychology</span><span style="color:#444;font-size:14px;line-height:1.5">Performance preparation, competitive edge, mental performance and performance development.</span></div>
-        <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Brain, Sleep &amp; Biofeedback</span><span style="color:#444;font-size:14px;line-height:1.5">EEG and sleep training &mdash; understand your results and develop practical improvement strategies.</span></div>
+        <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Brain, Sleep &amp; Biofeedback</span><span style="color:#444;font-size:14px;line-height:1.5">EEG and sleep training &mdash; understand your results and develop practical improvement strategies. If you use a device such as Muse, Flowtime, Mind Monitor, Whoop, Oura, Apple Watch or any HRV or sleep tracker, WIZ can interpret your results directly &mdash; just upload a screenshot using the camera icon in the chat.</span></div>
         <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Learning &amp; Development</span><span style="color:#444;font-size:14px;line-height:1.5">Learning strategies, accelerated learning, in-app training and improving how you learn and perform.</span></div>
         <div style="display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #f0f0f0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">In-App Training</span><span style="color:#444;font-size:14px;line-height:1.5">Short, structured Mind Flow training sessions on specific topics &mdash; techniques, skills, models and tools. WIZ can offer one during a conversation, or you can ask directly: &ldquo;Train me in&hellip;&rdquo;</span></div>
         <div style="display:flex;gap:16px;padding:12px 0"><span style="font-weight:700;color:var(--teal);font-size:14px;min-width:200px;flex-shrink:0">Life Review</span><span style="color:#444;font-size:14px;line-height:1.5">Stop, take stock and ask: Where am I? Where am I going? What do I really want? A Mind Flow Performance MOT.</span></div>
@@ -1271,6 +1271,14 @@ async function handleWIZResponse(userMsg) {
     }
 
     // Check for WIZ Panel signals [PANEL_X_Y]
+    // Check for Training Menu signal
+    if (reply.indexOf('[TRAINING_MENU]') >= 0) {
+      var textBefore3 = reply.replace('[TRAINING_MENU]', '').trim();
+      if (textBefore3) addMessage('wiz', textBefore3);
+      showTrainingMenu();
+      return;
+    }
+
     var panelMatch = reply.match(/\[PANEL_([\d_A-Z]+)\]/i);
     if (panelMatch) {
       var panelId = panelMatch[1].replace(/_/g, '.');
@@ -1512,6 +1520,128 @@ function sendMessageWithUploadCheck() {
   }
 }
 
+
+// ── TRAINING MENU ─────────────────────────────────────────────
+var TRAINING_SETS = [
+  {id:1, name:'Mind Flow — the Core Model', courses:['Understanding Mind Flow','Red Blue and Purple','The Mind Flow Cycle','Accessing Mind Flow','Why Mind Flow Matters','Self-Managed Development']},
+  {id:2, name:'Peak Performance', courses:['What Peak Performance Is','Peak Performance Techniques and Models','Peak Performance Profiling','Peak Performance Under Pressure']},
+  {id:3, name:'The Big 7 and Core Techniques', courses:['The Big 7 Overview','Breathwork','Visualisation','Anchoring','Affirmations','Positive Intent Language','Eye Movement Therapy','Bilateral Stimulation','EEG Biofeedback','HRV and Heart-Brain Coherence','Meditation','Mindfulness','Rest and Recovery','NSDR','Habits and Routines','Grounding and Coping']},
+  {id:4, name:'Brain and Neuroscience', courses:['A Short Trip Around the Brain','Hemispheres and Whole-Brain Working','The Triune Brain','Brain Waves','Neuroplasticity','Brain Training','The Brain Power Plan','Preventative Brain Health','The Ageing Brain']},
+  {id:5, name:'Mind, Emotion and Mind State', courses:['Mind State and Emotion','Mind Brain Heart and Body','Emotional Intelligence','The Chemistry of Mood','Positive and Negative Thinking','Thinking Traps','Defences and Dissociation','Mind Power and Motivation']},
+  {id:6, name:'Self-Knowledge and Personal Development', courses:['Know Yourself','Self-Esteem and Confidence','Values and Beliefs','Personality Models','Learning Personalities','Learning Profiles','Johari Window and Ikigai','Imposter Syndrome and Perfectionism','Approaches to Life']},
+  {id:7, name:'Motivation, Goals and Resilience', courses:['Motivation Theory and Practice','Goal Setting and SMARTER Goals','Mindset and Grit','Resilience and Handling Setbacks','Procrastination','Change and the Kubler-Ross Curve']},
+  {id:8, name:'Success', courses:['Success — What It Is','Winning and Handling Success','Competencies and Role Models','The Personal Success Development Plan']},
+  {id:9, name:'Thinking and Critical Thinking', courses:['Thinking Skills Introduction','Critical Thinking Core Course','Reasoning','Evidence Fact and Opinion','Fallacies and Half-Truths','Problem Solving','Decision Making','Thinking Styles and Tools','Questioning and Brainstorming']},
+  {id:10, name:'Creativity', courses:['Creativity — What It Is','Creativity in Practice','Imagination and Storytelling','Mind Flow for Creativity']},
+  {id:11, name:'Accelerated Learning', courses:['Accelerated Learning Core Course','Supercharging Learning','Suggestopedia SEAL and SAVI']},
+  {id:12, name:'Memory', courses:['Memory — How It Works','Forgetting and False Memory','Brain Framing and Memory Mapping','Memory Systems and Techniques']},
+  {id:13, name:'Learning and Study Techniques', courses:['How Learning Works','Learning Styles and Multiple Intelligences','Attention Concentration and Observation','Reading Research and Note-Taking','The Learning Environment','Running Learning Sessions']},
+  {id:14, name:'Exams, Revision and Showing What You Know', courses:['Revision Skills','Exam Skills','Performance Anxiety in Exams','Dissertations and Extended Writing','Assessment and IEP']},
+  {id:15, name:'Communication', courses:['Communication Skills Core','Listening and Rapport','Body Language','Voice and Vocal Skills','Written Communication','Presentation Skills','Delivering with Impact','Public Speaking','Presence and Gravitas','Feedback and Difficult Conversations']},
+  {id:16, name:'Relationships, Influence and Conflict', courses:['Mind Flow in Relationships','Family and Attachment','Parenting','Assertiveness and Boundaries','Influence and Networking','Negotiation','Conflict Resolution','Reading Other People','Teams and Teamwork','Contribution','Bereavement and Loss']},
+  {id:17, name:'Pressure, Stress and Recovery', courses:['Understanding Pressure and Stress','Pressure Management for Success','Performing Under Pressure','Burnout and Crisis','Anxiety Trauma and Window of Tolerance','Sleep','Balance and Downtime']},
+  {id:18, name:'Health, Wellbeing and Lifestyle', courses:['Physical Health and Wellbeing','Diet Nutrition Exercise and Hydration','Mind Flow for Healthy Living','Later Life and the Second Chapter','Addiction']},
+  {id:19, name:'Mental Health, Therapy Awareness and Support', courses:['Mind Flow for Mental Well-Being','Mental Health Types and First Aid','Talking Therapies','Mood and Anxiety Conditions Awareness','Trauma and Complex Presentations','Eating Disorders and Self-Harm Awareness','Scope Referral and Vulnerable Clients','Psychology for Practitioners']},
+  {id:20, name:'Neurodiversity and Learning Differences', courses:['Neurodiversity Overview','Inclusive Practice','ADHD','Autism and the Autistic Spectrum','Dyslexia Dyspraxia Dyscalculia']},
+  {id:21, name:'Life Management and Productivity', courses:['Life Skills Overview','Whole Life Self-Management','Time Management and Prioritisation','Planning and Project Management','Analysis and Risk','Money and Finance','Legal Awareness']},
+  {id:22, name:'Career, Employability and Transitions', courses:['Starting and Building a Career','Getting Hired','Graduate and Early Career','Mid-Career Development','The Mid-Life MOT','The Second Chapter','Entering a Career or Vocation']},
+  {id:23, name:'Business, Enterprise and Leadership', courses:['Leadership Core Course','Advanced Leadership','Mind Flow for Work and Business','Business Management','Marketing','Business Law','Entrepreneurship','Setting Up as a Consultant','Building Your Own Mind Flow Practice']},
+  {id:24, name:'Sport and Physical Performance', courses:['Mind Flow for Sport','Mind Flow for Golf','Mind Flow for Team and Racket Sports','Regulating Mind Brain and Body']},
+  {id:25, name:'Coaching, Mentoring and Practitioner Skills', courses:['Coaching Tutoring and Mentoring Introduction','Coaching Skills in Practice','Mentoring Skills','Ethics Contracting and Scope','GROW Model','COACH Model','PTUTORS Model','CLEAR Model','FEGAR Model','Solution-Focused Approaches','NLP for Coaches','Somatic and Creative Tools','Group Facilitation','Supervision and Reflective Practice','Train the Trainer','12 Competencies of a Mind Flow Practitioner']},
+  {id:26, name:'Assessments and Audits', courses:['The Life MOT and Self-Audit','The Direction Audit and Wheel of Life','Skills Strengths and Values Profiling','The Learning Skills Assessment','Retirement and Post-Career Assessment']},
+  {id:27, name:'Technology, AI and the WIZ Ecosystem', courses:['Living and Working in the AI Era','The WIZ Coaching App']},
+  {id:28, name:'Models and Frameworks', courses:['Models for Understanding Yourself','Models for Getting Things Done','Models for Understanding the World','The Peak-End Rule and Designing Experience']}
+];
+
+function showTrainingMenu() {
+  var msgs = document.getElementById('messages');
+  var wrapper = document.createElement('div');
+  wrapper.className = 'msg wiz';
+
+  var avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  var avatarImg = document.querySelector('.msg-avatar img');
+  if (avatarImg) {
+    var img = document.createElement('img');
+    img.src = avatarImg.src;
+    img.alt = 'WIZ';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    avatar.appendChild(img);
+  } else {
+    avatar.textContent = 'W';
+  }
+
+  var panel = document.createElement('div');
+  panel.className = 'audit-panel';
+  panel.style.maxHeight = '480px';
+  panel.style.overflowY = 'auto';
+
+  var title = document.createElement('h4');
+  title.textContent = 'Mind Flow Training Library';
+  panel.appendChild(title);
+
+  var intro = document.createElement('p');
+  intro.className = 'audit-intro';
+  intro.textContent = 'Select a set to see its courses, then tap a course to begin your training session.';
+  panel.appendChild(intro);
+
+  var state = {selectedSet: null};
+
+  function renderSets() {
+    panel.innerHTML = '';
+    panel.appendChild(title);
+    panel.appendChild(intro);
+    TRAINING_SETS.forEach(function(set) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 14px;margin-bottom:5px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);font-family:"DM Sans",sans-serif;font-size:13px;color:var(--dark);cursor:pointer;transition:all .15s';
+      btn.textContent = 'Set ' + set.id + ' — ' + set.name;
+      btn.onmouseover = function(){ btn.style.borderColor='var(--teal)'; btn.style.color='var(--teal)'; };
+      btn.onmouseout = function(){ btn.style.borderColor='var(--border)'; btn.style.color='var(--dark)'; };
+      btn.onclick = function() { renderCourses(set); };
+      panel.appendChild(btn);
+    });
+  }
+
+  function renderCourses(set) {
+    panel.innerHTML = '';
+    var backBtn = document.createElement('button');
+    backBtn.style.cssText = 'background:none;border:none;color:var(--teal);cursor:pointer;font-size:13px;padding:0 0 10px;font-family:"DM Sans",sans-serif';
+    backBtn.textContent = '← All sets';
+    backBtn.onclick = renderSets;
+    panel.appendChild(backBtn);
+
+    var setTitle = document.createElement('h4');
+    setTitle.style.cssText = 'margin:0 0 6px;color:var(--navy);font-size:15px';
+    setTitle.textContent = 'Set ' + set.id + ' — ' + set.name;
+    panel.appendChild(setTitle);
+
+    var setIntro = document.createElement('p');
+    setIntro.className = 'audit-intro';
+    setIntro.textContent = 'Tap a course to begin your training session with WIZ.';
+    panel.appendChild(setIntro);
+
+    set.courses.forEach(function(course) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 14px;margin-bottom:5px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);font-family:"DM Sans",sans-serif;font-size:13px;color:var(--dark);cursor:pointer;transition:all .15s';
+      btn.textContent = course;
+      btn.onmouseover = function(){ btn.style.borderColor='var(--teal)'; btn.style.color='var(--teal)'; };
+      btn.onmouseout = function(){ btn.style.borderColor='var(--border)'; btn.style.color='var(--dark)'; };
+      btn.onclick = function() { startTrainingCourse(course); };
+      panel.appendChild(btn);
+    });
+  }
+
+  renderSets();
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(panel);
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function startTrainingCourse(courseName) {
+  var msg = 'I would like a training session on: ' + courseName;
+  sendUserMessage(msg);
+}
 
 function beginWIZSession() {
   // Hide opening screen, show the app
