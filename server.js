@@ -76,7 +76,7 @@ app.post('/api/chat', rateLimit, checkAccess, async (req, res) => {
     });
     const data = await response.json();
     if (!response.ok || !data.content) {
-      console.error('Anthropic returned status', response.status);
+      console.error('Anthropic returned status', response.status, JSON.stringify(data));
       return res.status(502).json({ error: 'Assistant unavailable -- please retry.' });
     }
     res.json({ content: data.content });        // FIX: return only the answer, not the raw payload
