@@ -642,11 +642,7 @@ function panelWrapper(title, introText) {
   wrapper.className = 'msg wiz';
   var avatar = document.createElement('div');
   avatar.className = 'msg-avatar';
-  var img = document.createElement('img');
-  img.src = document.querySelector('.msg-avatar img') ? document.querySelector('.msg-avatar img').src : '';
-  img.alt = 'WIZ';
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
-  avatar.appendChild(img);
+  avatar.textContent = 'W';
   var panel = document.createElement('div');
   panel.className = 'audit-panel';
   panel.innerHTML = '<h4>' + title + '</h4><p class="audit-intro">' + introText + '</p>';
@@ -667,7 +663,7 @@ function showRatingPanel(p, panelId) {
     row.className = 'audit-row';
     var lbl = document.createElement('div');
     lbl.className = 'audit-label';
-    lbl.style.cssText = 'width:180px;flex-shrink:0;font-size:12px';
+    lbl.style.cssText = 'width:150px;flex-shrink:0;font-size:12px';
     lbl.textContent = item;
     var btns = document.createElement('div');
     btns.className = 'audit-btns';
