@@ -21,6 +21,9 @@ header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;
 .wiz-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:white;box-shadow:0 0 0 4px rgba(29,158,117,0.3);position:relative}
 .status-dot{position:absolute;bottom:3px;right:3px;width:11px;height:11px;border-radius:50%;background:var(--teal2);border:2px solid var(--navy)}
 .sidebar h2{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:white;text-align:center}
+.os-explore-link{cursor:pointer;border-radius:10px;transition:background .15s}
+.os-explore-link:hover,.os-explore-link:focus{background:rgba(245,173,40,0.10);outline:none}
+.os-explore-go{display:block;margin-top:8px;font-weight:600;font-size:14px;color:#168fd0}
 .wiz-logo-card{width:148px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px 12px 8px;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
 .wiz-logo-card img{display:block;width:100%;height:auto}
 .wiz-desc{font-size:11px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6}
@@ -333,7 +336,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
       <div class="os-explore-item"><span class="os-num">7</span><div class="os-explore-body"><strong>Life Transitions &amp; Change</strong>Navigating significant change &mdash; redundancy, bereavement, burnout, retirement, major decisions, new chapters. Wherever life has shifted.</div></div>
       <div class="os-explore-item"><span class="os-num">8</span><div class="os-explore-body"><strong>Thinking &amp; Decision-Making</strong>Critical thinking, problem-solving, creativity, judgement and making better decisions under uncertainty.</div></div>
       <div class="os-explore-item"><span class="os-num">9</span><div class="os-explore-body"><strong>Neurodiversity</strong>Different ways of thinking, learning and working &mdash; and how your individual strengths can work for you.</div></div>
-      <div class="os-explore-item"><span class="os-num">10</span><div class="os-explore-body"><strong>Sports Psychology</strong>Performance preparation, competitive edge, mental performance and performance development.</div></div>
+      <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startTrack('sport','tile')" onkeydown="if(event.key==='Enter'){startTrack('sport','tile')}"><span class="os-num">10</span><div class="os-explore-body"><strong>Sports Psychology</strong>Performance preparation, competitive edge, mental performance and performance development.<span class="os-explore-go">Start a sport session &rarr;</span></div></div>
       <div class="os-explore-item"><span class="os-num">11</span><div class="os-explore-body"><strong>Brain, Sleep &amp; Biofeedback</strong>EEG and sleep training &mdash; understand your results and develop practical improvement strategies. If you use a device such as Muse, Flowtime, Mind Monitor, Whoop, Oura or Apple Watch, WIZ can interpret your results directly &mdash; just upload a screenshot.</div></div>
       <div class="os-explore-item"><span class="os-num">12</span><div class="os-explore-body"><strong>Learning &amp; Development</strong>Learning strategies, accelerated learning and improving how you learn and perform.</div></div>
       <div class="os-explore-item"><span class="os-num">13</span><div class="os-explore-body"><strong>In-App Training</strong>Short, structured Mind Flow training sessions on specific topics &mdash; techniques, skills, models and tools. WIZ can offer one during a conversation, or you can ask directly: &ldquo;Train me in&hellip;&rdquo;</div></div>
@@ -613,11 +616,17 @@ var WIZ_PANELS = {
   '5_7':{name:'Second Chapter Paths',format:'chips',intro:'The Second Chapter Paths framework offers five distinct approaches to life after career -- each representing a different balance of engagement, contribution, freedom, structure and purpose. Together they cover the full range of meaningful ways to design a fulfilling post-career life.',items:['PATH 1: Light Engagement -- freedom, hobbies, occasional activities','PATH 2: Flexible Contributor -- part-time consulting or mentoring on your terms','PATH 3: Expert Legacy -- non-executive, advisory, board or trustee roles','PATH 4: Second Career with Meaning -- charity, education or social enterprise','PATH 5: Full Retirement with Active Life Design -- rich life with no formal role']},
   '5_8':{name:'Activities, Interests & Passions',format:'chips',intro:'Activities, interests and passions in retirement describes what you actually want to fill your time with -- the pursuits, interests, creative endeavours, physical activities, social engagements and learning adventures that make daily life feel rich, stimulating and genuinely yours.',items:['Writing','Visual arts','Music','Performance','Design','Formal study','Reading widely','Languages','History, genealogy or local history research','Technology and digital skills development','Philosophy, ethics or spiritual exploration','Walking, hiking, cycling','Sport','Gardening','Travel','Swimming, yoga, pilates, dance or other physical practice','Volunteering','Mentoring or supporting others informally','Social clubs, societies or regular group gatherings','Community involvement','Family involvement','Starting or developing a small business or enterprise','Creating a legacy project','Developing a portfolio of interests into a small income stream']},
   '5_9':{name:'End of Life Planning',format:'conversational',intro:'End of Life Planning, approached through the lens of meaning, legacy and peace of mind, is a gentle, honest conversation about how you want to live fully in the time ahead -- and what you want to ensure is in place so that those you love are cared for and your wishes are honoured.',items:[]},
-  '6_2':{name:'Peak Performance Techniques',format:'menu',intro:'Peak Performance Techniques are evidence-based mental and physical strategies drawn from sport psychology, performance science, coaching research and neuroscience -- used by elite performers across sport, business, the arts and high-stakes professional contexts to maximise performance under pressure.',items:['Pre-Performance Routine','Mental Templates','Dual Focus','Deep Work Techniques','Feedback & Feedforward','Micro-Performances','Goal Setting for Performance','Progressive Muscle Relaxation','Meditation for Performance']},
   '6_1':{name:'Mind Flow Techniques',format:'menu',intro:'Mind Flow Techniques are the core practical tools developed by PJ Wingfield over 35 years of coaching, research and applied neuroscience -- each designed to shift your mental and emotional state rapidly, access peak performance and anchor new patterns of thinking.',items:['Controlled Breathing / Breathwork','Visualisation (Mental Imagery)','Anchoring','Affirmations','Positive Intent Language','Eye Movement Therapy (Bilateral Stimulation)','EEG Biofeedback']},
   '6_2':{name:'Peak Performance Techniques',format:'menu',intro:'Peak Performance Techniques are evidence-based mental and physical strategies -- drawn from sport psychology, performance science, neuroscience and PJ Wingfield\'s 35 years of coaching -- used by elite performers across sport, business, the arts and high-stakes professional contexts to produce consistently excellent performance under pressure.',items:['Pre-Performance Routine','Mental Templates','Dual Focus','Deep Work Techniques','Feedback & Feedforward','Micro-Performances','Goal Setting for Performance','Progressive Muscle Relaxation','Meditation for Performance']},
   '3_34':{name:'How to Research a Career',format:'menu',intro:'A practical method for researching a career direction properly -- pick a step to explore with WIZ.',items:['Widen the net before narrowing down','Narrow using what I already know about myself','Talk to people already doing it','Get first-hand exposure -- shadowing, tasters, volunteering','Check the practical reality -- routes, qualifications, pay, demand','Test small before committing big']},
   '3_35':{name:'Turning Prior Learning Into Career-Ready Skills',format:'chips',intro:'Select the types of experience you have -- WIZ will help translate each into a skill you can use at work.',items:['A subject I studied','A part-time or full-time job','Sport or physical activity','A creative pursuit','Volunteering or a community role','A caring or home responsibility','A leadership role, formal or informal','Overcoming a setback or difficult period','A self-taught skill or hobby']},
+  '7_1':{name:'Your Role in Sport',format:'chips',intro:'What is your involvement in sport?',items:['Competing athlete or player','Recreational player','Coach','Parent or supporter of an athlete','Official or referee','Support staff (physio, analyst, strength and conditioning)','Returning to sport','Something else']},
+  '7_2':{name:'Your Sports',format:'chips',intro:'Which sports are you involved in?',items:['Rugby','Cricket','Golf','Tennis','Football','Hockey','Netball','Athletics and running','Swimming','Cycling','Rowing','Triathlon','Combat sports','Equestrian','Motorsport','Something else']},
+  '7_3':{name:'Your Level',format:'menu',intro:'At what level, in the sport we are focusing on?',items:['Recreational','Club, competitive','County or regional','National','International or professional']},
+  '7_4':{name:'Where You Are in the Season',format:'menu',intro:'Where are you right now?',items:['Off-season','Pre-season or a training block','In-season, competing regularly','Building up to a major event','Returning from injury or illness','Stepping back, retiring or not selected']},
+  '7_5':{name:'What You Want to Work On',format:'chips',intro:'What would you most like to work on?',items:['Nerves and pressure before competing','Confidence','Focus during play','Mental stamina over a long game','Resetting after mistakes','Consistency','Motivation and drive','Pre-performance routine','Visualisation and mental rehearsal','Recovery, sleep and energy','Team dynamics and communication','Helping others with their mental game','Life and identity outside sport','Something else']},
+  '7_6':{name:'What You Already Use',format:'chips',intro:'Before we try a technique, which of these do you already use?',items:['Breathing techniques','Visualisation or mental rehearsal','A pre-performance routine','Self-talk or cue words','Anchoring','Goal setting','Meditation or mindfulness','A wearable or biofeedback device','Worked with a coach on the mental side','None of these yet']},
+  '7_7':{name:'Your Coaching Focus',format:'chips',intro:'What would you like to focus on as a coach?',items:['Preparing players before a match','Players\' nerves','Team focus and cohesion','Handling setbacks and losing runs','Individual player confidence','Communicating under pressure','My own composure as a coach','Selection and difficult conversations','Something else']},
 };
 
 
@@ -627,6 +636,7 @@ var WIZ_PANELS = {
 
 function showWIZPanel(panelId) {
   var pid = panelId.replace(/\./g, '_');
+  if (/^7_/.test(pid) && !state.track) { state.track = 'sport'; state.entrySource = state.entrySource || 'conversation'; }
   var p = WIZ_PANELS[pid];
   if (!p) { console.warn('Panel not found:', panelId); return; }
   
@@ -812,7 +822,9 @@ var SKILLS_DATA = {
   "Execution & Drive": ["Getting things done","Working under pressure","Time management","Attention to detail","Persistence","Managing projects","Adaptability"],
   "Technical & Specialist": ["Digital & tech skills","Data & numbers","Research & analysis","Writing & content","Design & creativity","Teaching & training","Languages"]
 };
-var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false};
+var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null};
+(function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport') { state.track = 'sport'; state.entrySource = 'link'; } } catch(e){} })();
+function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
  
 async function callWIZ(userMessage) {
   if (userMessage) state.messages.push({role:"user",content:userMessage});
@@ -822,7 +834,7 @@ async function callWIZ(userMessage) {
       var response = await fetch("/api/chat", {
         method: "POST",
         headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:state.messages})
+        body: JSON.stringify({messages:state.messages, track:state.track})
       });
       if (!response.ok) {
         var err = await response.json().catch(function(){ return {}; });
@@ -855,7 +867,7 @@ async function callReport() {
       var response = await fetch("/api/chat", {
         method: "POST",
         headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:msgs})
+        body: JSON.stringify({messages:msgs, track:state.track})
       });
       if (!response.ok) {
         if ((response.status === 429 || response.status === 529) && attempt < 2) {
@@ -1205,6 +1217,23 @@ function buildReport(r) {
     return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
   }).join('');
   grid.appendChild(acts);
+  if (r.performancePlan && typeof r.performancePlan === 'object') {
+    var esc = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var pp = r.performancePlan;
+    var ppSections = [['Preparation','preparation'],['Pressure','pressure'],['Performance','performance'],['Ponder','ponder'],['Recovery','recovery'],['For your players','forYourPlayers']];
+    var ppHtml = '<h3>Your Personal Success Performance Plan</h3>';
+    if (pp.focus) ppHtml += '<p style="margin-bottom:10px">' + esc(pp.focus) + '</p>';
+    ppSections.forEach(function(sec){
+      var items = Array.isArray(pp[sec[1]]) ? pp[sec[1]].filter(function(x){ return x && String(x).trim(); }) : [];
+      if (!items.length) return;
+      ppHtml += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">' + sec[0] + '</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + items.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    });
+    var ppCard = document.createElement("div");
+    ppCard.className = "report-card full";
+    ppCard.style.borderTopColor = "var(--gold)";
+    ppCard.innerHTML = ppHtml;
+    grid.appendChild(ppCard);
+  }
  
   var pw = document.createElement("div");
   pw.className = "report-card full";
