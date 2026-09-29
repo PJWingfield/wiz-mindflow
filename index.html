@@ -27,13 +27,18 @@ header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{height:auto!important;overflow:visible!important;background:#fff!important;display:block!important}
-  #wizAgeGate,#opening-screen,.os-float-cta,.sidebar,.mobile-strip,.phase-bar,.input-area,.report-cta,.report-continue,#freeze-notice{display:none!important}
+  #wizAgeGate,#opening-screen,.os-float-cta,.sidebar,.mobile-strip,.phase-bar,.input-area,.report-cta,.report-continue,.report-nav,.report-save-hint,.back-to-report,#freeze-notice{display:none!important}
   .app,.chat-area,#chatArea,.report-view{display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important}
   .report-view{padding:0!important}
   .report-grid{display:block!important}
   .report-card{break-inside:avoid;page-break-inside:avoid;margin-bottom:14px}
   header{border-bottom:none!important}
 }
+.report-nav{margin-bottom:14px}
+.report-nav-btn{font-size:13px;background:#fff!important;color:var(--navy)!important;border:1.5px solid var(--navy)!important;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.report-save-hint{font-size:12px;color:var(--mid);text-align:center;margin:10px 0 0}
+.back-to-report{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 28px;background:var(--lnavy);border-bottom:1px solid var(--border);font-size:13px;color:var(--navy)}
+.back-to-report button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
 .wiz-logo-card{width:148px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px 12px 8px;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
 .wiz-logo-card img{display:block;width:100%;height:auto}
 .wiz-desc{font-size:11px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6}
@@ -187,7 +192,9 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
   </div>
 </div>
 <script>
-function wizAgePass(){var g=document.getElementById('wizAgeGate');if(g){g.style.display='none';}}
+try{if('scrollRestoration' in history){history.scrollRestoration='manual';}}catch(e){}
+window.addEventListener('load',function(){window.scrollTo(0,0);});
+function wizAgePass(){var g=document.getElementById('wizAgeGate');if(g){g.style.display='none';}window.scrollTo(0,0);}
 function wizAgeUnder(){var c=document.getElementById('wizAgeCard');if(!c){return;}
 c.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-size:29px;color:#1B2A6B;margin-bottom:6px;">Thank you for being honest</div><div style="width:54px;height:3px;background:#1D9E75;margin:2px auto 22px;border-radius:2px;"></div><p style="color:#1A1A2E;font-size:16px;line-height:1.6;margin:0 0 14px;">WIZ is built for adults aged 18 and over. The coaching it offers tends to be most useful once you have a bit more life experience and learning behind you, which is why it is designed for over-18s &mdash; and you would be genuinely welcome to come back when you get there. For now it would not be the right fit, but you are not on your own &mdash; there are people who are really good at helping with whatever you are facing:</p><div style="text-align:left;background:#EEF0FA;border-radius:10px;padding:16px 18px;color:#1A1A2E;font-size:15px;line-height:1.75;"><strong>Childline</strong> &mdash; 0800 1111 (free, 24/7, for anyone under 19)<br><strong>The Mix</strong> &mdash; themix.org.uk (support for under-25s)<br><strong>In an emergency</strong> &mdash; call 999, or Samaritans on 116 123</div><p style="color:#555570;font-size:14px;line-height:1.55;margin:18px 0 0;">Talking to a trusted adult &mdash; a parent, teacher or your GP &mdash; is a really good next step too.</p>';}
 </script>
@@ -1146,51 +1153,51 @@ function makeContBtn(label, message) {
 }
 
 function continueFromReport(message) {
-  // Restore chat interface
-  var ca = document.getElementById("chatArea");
-  ca.innerHTML = '';
-  // Re-add phase bar
-  var pb = document.createElement("div");
-  pb.className = "phase-bar";
-  pb.id = "phaseBar";
-  pb.innerHTML = '<div class="phase-step"><div class="phase-dot done" id="ph1">1</div><span class="phase-label">Welcome</span></div><div class="phase-line done" id="pl1"></div><div class="phase-step"><div class="phase-dot done" id="ph2">2</div><span class="phase-label">Discovery</span></div><div class="phase-line done" id="pl2"></div><div class="phase-step"><div class="phase-dot done" id="ph3">3</div><span class="phase-label">Coaching</span></div><div class="phase-line done" id="pl3"></div><div class="phase-step"><div class="phase-dot active" id="ph4">4</div><span class="phase-label active">Continuing</span></div>';
-  ca.appendChild(pb);
-  // Re-add messages area
-  var msgs = document.createElement("div");
-  msgs.className = "messages";
-  msgs.id = "messages";
-  var continueMsg = document.createElement("div");
-  continueMsg.className = "msg wiz";
-  continueMsg.innerHTML = '<div class="msg-avatar"><img src="' + MF_LOGO + '" style="width:30px;height:30px;object-fit:contain;padding:1px;" alt="W"></div><div><div class="msg-bubble" style="background:white;border:1px solid var(--border);border-top-left-radius:3px;color:var(--dark);box-shadow:0 2px 6px rgba(0,0,0,0.04)">Great -- let\'s keep going. One moment...</div></div>';
-  msgs.appendChild(continueMsg);
-  ca.appendChild(msgs);
-  // Re-add input area
-  var ia = document.createElement("div");
-  ia.className = "input-area";
-  ia.id = "inputArea";
-  ia.innerHTML = '<div class="input-wrap"><textarea id="userInput" placeholder="Type your response to WIZ..." rows="1"></textarea></div><button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>';
-  ca.appendChild(ia);
-  var hint = document.createElement("p");
-  hint.className = "input-hint";
-  hint.textContent = "Press Enter to send - Shift+Enter for new line";
-  ca.appendChild(hint);
-  // Re-attach event listeners
-  document.getElementById("userInput").addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); pendingBioUpload ? sendBioUpload() : sendMessage(); }
-  });
-  document.getElementById("userInput").addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = Math.min(this.scrollHeight, 130) + "px";
-  });
-  // Send the chosen message
+  showConversation();
+  setPhase(4);
+  addMessage("wiz", "Great -- let's keep going. One moment...");
   setTimeout(function(){ handleWIZResponse(message); }, 300);
+}
+
+function showConversation() {
+  var ca = document.getElementById("chatArea");
+  var rv = document.getElementById("reportView");
+  if (rv) rv.style.display = "none";
+  Array.prototype.forEach.call(ca.querySelectorAll('[data-conv="1"]'), function(c){ c.style.display = ""; });
+  if (rv && !document.getElementById("backToReportBar")) {
+    var bar = document.createElement("div");
+    bar.id = "backToReportBar";
+    bar.className = "back-to-report";
+    bar.innerHTML = '<span>Your report is ready.</span><button onclick="showReportView()">Back to your report &rarr;</button>';
+    ca.insertBefore(bar, ca.firstChild);
+  }
+  var bar2 = document.getElementById("backToReportBar"); if (bar2) bar2.style.display = "";
+  var msgs = document.getElementById("messages"); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showReportView() {
+  var ca = document.getElementById("chatArea");
+  var rv = document.getElementById("reportView");
+  if (!rv) return;
+  Array.prototype.forEach.call(ca.querySelectorAll('[data-conv="1"]'), function(c){ c.style.display = "none"; });
+  var bar = document.getElementById("backToReportBar"); if (bar) bar.style.display = "none";
+  rv.style.display = "";
+  rv.scrollTop = 0;
 }
 
 function buildReport(r) {
   var ca = document.getElementById("chatArea");
-  ca.innerHTML = "";
+  // Keep the conversation: hide it rather than delete it, so the client can go back to it
+  var oldRv = document.getElementById("reportView"); if (oldRv) oldRv.remove();
+  var oldBar = document.getElementById("backToReportBar"); if (oldBar) oldBar.remove();
+  Array.prototype.forEach.call(ca.children, function(c){ c.setAttribute("data-conv", "1"); c.style.display = "none"; });
   var rv = document.createElement("div");
   rv.className = "report-view";
+  rv.id = "reportView";
+  var viewConv = document.createElement("div");
+  viewConv.className = "report-nav";
+  viewConv.innerHTML = '<button class="btn-secondary report-nav-btn" onclick="showConversation()">&larr; View your conversation</button>';
+  rv.appendChild(viewConv);
  
   var rh = document.createElement("div");
   rh.className = "report-header";
@@ -1199,6 +1206,7 @@ function buildReport(r) {
  
   var grid = document.createElement("div");
   grid.className = "report-grid";
+  var hasPlan = !!(r.performancePlan && typeof r.performancePlan === 'object');
  
   var obs = document.createElement("div");
   obs.className = "report-card full";
@@ -1226,19 +1234,19 @@ function buildReport(r) {
   var t1 = document.createElement("div");
   t1.className = "report-card";
   t1.innerHTML = '<h3>Recommended Technique 1</h3><p><strong>' + r.technique1.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique1.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique1.reason + '</p>';
-  grid.appendChild(t1);
+  if (!hasPlan) grid.appendChild(t1);
  
   var t2 = document.createElement("div");
   t2.className = "report-card";
   t2.innerHTML = '<h3>Recommended Technique 2</h3><p><strong>' + r.technique2.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique2.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique2.reason + '</p>';
-  grid.appendChild(t2);
+  if (!hasPlan) grid.appendChild(t2);
  
   var acts = document.createElement("div");
   acts.className = "report-card full";
   acts.innerHTML = '<h3>Your Three Priority Actions</h3>' + r.actions.map(function(a,i){
     return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
   }).join('');
-  grid.appendChild(acts);
+  if (hasPlan) { grid.insertBefore(acts, obs.nextSibling); } else { grid.appendChild(acts); }
   if (r.performancePlan && typeof r.performancePlan === 'object') {
     var esc = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
     var pp = r.performancePlan;
@@ -1297,13 +1305,18 @@ function buildReport(r) {
   btnBook.onclick = function(){ window.open('https://mindflowpro.com','_blank'); };
   var btnSave = document.createElement("button");
   btnSave.className = "btn-secondary";
-  btnSave.textContent = "Save Report";
+  btnSave.textContent = "Save as PDF / Print";
+  btnSave.title = "Opens your print window. To keep a copy, choose Save as PDF as the destination.";
   btnSave.onclick = function(){ window.print(); };
   ctaBtns.appendChild(btnBook);
   ctaBtns.appendChild(btnSave);
   cta.appendChild(ctaLeft);
   cta.appendChild(ctaBtns);
   rv.appendChild(cta);
+  var saveHint = document.createElement("p");
+  saveHint.className = "report-save-hint";
+  saveHint.textContent = "To keep a copy of your report: choose Save as PDF / Print, then select \u201cSave as PDF\u201d as the destination.";
+  rv.appendChild(saveHint);
 
   // Post-report continuation panel -- WIZ offers to keep going
   var cont = document.createElement("div");
@@ -1814,6 +1827,9 @@ function beginWIZSession() {
   if (sidebar) sidebar.style.display = '';
   var chatArea = document.getElementById('chatArea');
   if (chatArea) chatArea.style.display = '';
+  window.scrollTo(0,0);
+  var ui = document.getElementById("userInput");
+  if (ui && state.sessionStarted && state.messages.length) { try { ui.focus({preventScroll:true}); } catch(e){} }
   // Start the WIZ session
   startSession();
 }
@@ -1831,8 +1847,10 @@ async function startSession() {
     removeTyping();
     if (reply && reply.trim()) {
       addMessage("wiz", reply);
-    document.getElementById("userInput").focus();
-    document.getElementById("userInput").scrollIntoView({behavior:"smooth",block:"nearest"});
+    var caVis = document.getElementById("chatArea");
+    if (caVis && caVis.style.display !== "none") {
+      document.getElementById("userInput").focus({preventScroll:true});
+    }
     } else {
       throw new Error("Empty reply");
     }
