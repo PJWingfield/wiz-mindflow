@@ -24,8 +24,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(__dirname));
-app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+// Always check for a fresh copy of the page, so browsers pick up each new deploy straight away
+app.use(express.static(__dirname, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
+}));
+app.get('/', (req, res) => { res.setHeader('Cache-Control', 'no-cache, must-revalidate'); res.sendFile(__dirname + '/index.html'); });
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // FIX: simple per-IP rate limit, 20 requests/minute (in-memory; resets on restart)
