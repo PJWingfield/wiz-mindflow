@@ -511,7 +511,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only -- not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 d</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 e</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
@@ -685,6 +685,7 @@ var WIZ_PANELS = {
 function showWIZPanel(panelId) {
   var pid = panelId.replace(/\./g, '_');
   if (/^7_/.test(pid) && !state.track) { state.track = 'sport'; state.entrySource = state.entrySource || 'conversation'; }
+  if (pid === '8_3' && !state.lens) { state.lens = 'mental_wellbeing'; state.entrySource = state.entrySource || 'conversation'; }
   var p = WIZ_PANELS[pid];
   if (!p) { console.warn('Panel not found:', panelId); return; }
   
@@ -953,6 +954,8 @@ function wizFormat(text) {
   s = s.replace(/^#{1,6}\s*(.+)$/gm, '<strong>$1</strong>');
   // horizontal rules (a line of 3+ dashes) -> blank separator
   s = s.replace(/^\s*-{3,}\s*$/gm, '');
+  // markdown links [text](https://...) -> safe link; only http(s) addresses
+  s = s.replace(/\[([^\]\n]{1,120})\]\((https?:\/\/[^\s)"]{1,300})\)/g, function(m, t, u){ return '<a href="' + u + '" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">' + t + '</a>'; });
   // bold then italic
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
