@@ -39,6 +39,35 @@ header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;
 .report-save-hint{font-size:12px;color:var(--mid);text-align:center;margin:10px 0 0}
 .back-to-report{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 28px;background:var(--lnavy);border-bottom:1px solid var(--border);font-size:13px;color:var(--navy)}
 .back-to-report button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+/* Sidebar readability */
+.wiz-desc{font-size:12.5px!important;color:rgba(255,255,255,0.78)!important}
+.sidebar-section h3{font-size:11.5px!important}
+.domain-label{font-size:13px!important;color:rgba(255,255,255,0.85)!important}
+.domain-dot{background:rgba(255,255,255,0.35)!important}
+.domain-dot.active{background:var(--teal2)!important}
+.domain-dot.done{background:var(--gold)!important}
+.mfi-tagline{font-size:14px!important;color:rgba(255,255,255,0.7)!important}
+.sidebar-disclaimer p{font-size:11.5px!important;color:rgba(255,255,255,0.72)!important;line-height:1.6!important}
+.sidebar-disclaimer a{color:#fff!important;font-weight:600}
+.sidebar-coach{display:block;margin:6px 0 4px;padding:12px 14px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;color:#fff;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.4}
+.sidebar-coach span{display:block;font-weight:400;font-size:12px;color:#f5ad28;margin-top:3px}
+.sidebar-coach:hover{background:rgba(255,255,255,0.18)}
+/* Red, Blue = Purple card */
+.rbp-card{max-width:680px!important}
+.rbp-card h4{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--navy);margin-bottom:6px}
+.rbp-card h5{font-size:14px;color:var(--navy);margin:16px 0 6px;font-weight:600}
+.rbp-card p,.rbp-card li{font-size:13.5px;line-height:1.6;color:var(--dark);margin-bottom:7px}
+.rbp-card ol{margin:4px 0 8px 20px}
+.rbp-lead{color:var(--mid)!important}
+.rbp-table{border-collapse:collapse;width:100%;margin:8px 0 10px;font-size:13px}
+.rbp-table th{background:var(--navy);color:#fff;text-align:left;padding:6px 10px;font-weight:500}
+.rbp-table td{border-bottom:1px solid var(--border);padding:6px 10px}
+.rbp-table tr td:last-child{color:#5b2a86;font-weight:600}
+.rbp-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.rbp-skip{margin:6px 0 4px}
+.rbp-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+.rbp-btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy);border-radius:8px;padding:9px 15px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+.rbp-btn:disabled,.rbp-btn-ghost:disabled{opacity:.5;cursor:default}
 .wiz-logo-card{width:148px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px 12px 8px;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
 .wiz-logo-card img{display:block;width:100%;height:auto}
 .wiz-desc{font-size:11px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6}
@@ -346,7 +375,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
     <div class="os-explore-grid">
       <div class="os-explore-item"><span class="os-num">1</span><div class="os-explore-body"><strong>Mind &amp; Performance</strong>Mind Flow State, peak performance and performance psychology: how to think, feel and perform at your best.</div></div>
       <div class="os-explore-item"><span class="os-num">2</span><div class="os-explore-body"><strong>Mental Resilience</strong>Managing pressure, stress and setbacks. Building the capacity to stay regulated, recover well and perform under load.</div></div>
-      <div class="os-explore-item"><span class="os-num">3</span><div class="os-explore-body"><strong>Mental Well-Being</strong>Looking after your mental health: worry, anxiety, low mood, overwhelm and feeling more like yourself again. Practical support, and knowing when to reach for more.</div></div>
+      <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('mental_wellbeing')" onkeydown="if(event.key==='Enter'){startLens('mental_wellbeing')}"><span class="os-num">3</span><div class="os-explore-body"><strong>Mental Well-Being</strong>Looking after your mental health: worry, anxiety, low mood, overwhelm and feeling more like yourself again. Practical support, and knowing when to reach for more.<span class="os-explore-go">Start a well-being session &rarr;</span></div></div>
       <div class="os-explore-item"><span class="os-num">4</span><div class="os-explore-body"><strong>Career, Exploration &amp; Direction</strong>Career choices, career development, transitions, decision-making and life planning.</div></div>
       <div class="os-explore-item"><span class="os-num">5</span><div class="os-explore-body"><strong>Yourself</strong>Confidence, motivation, self-understanding, personal development and your potential.</div></div>
       <div class="os-explore-item"><span class="os-num">6</span><div class="os-explore-body"><strong>Relationships &amp; Communication</strong>The quality of your key relationships &mdash; professional and personal &mdash; and the communication skills that build and sustain them.</div></div>
@@ -477,11 +506,12 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
       <div class="domain-item"><div class="domain-dot" id="dot-F"></div><span class="domain-label">Goals & Next Steps</span></div>
       <div class="domain-item"><div class="domain-dot" id="dot-G"></div><span class="domain-label">Your Personal Report</span></div>
     </div>
+    <a class="sidebar-coach" href="https://mindflowpro.com" target="_blank" rel="noopener">Work with a human Mind Flow coach<span>mindflowpro.com &rarr;</span></a>
     <p class="mfi-tagline">Mind Flow: A Better Way to Be.<br>Not more doing. Just more being.</p>
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only -- not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 c</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 d</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
@@ -644,6 +674,7 @@ var WIZ_PANELS = {
   '7_5':{name:'What You Want to Work On',format:'chips',intro:'What would you most like to work on?',items:['Nerves and pressure before competing','Confidence','Focus during play','Mental stamina over a long game','Resetting after mistakes','Consistency','Motivation and drive','Pre-performance routine','Visualisation and mental rehearsal','Recovery, sleep and energy','Team dynamics and communication','Helping others with their mental game','Life and identity outside sport','Something else']},
   '7_6':{name:'What You Already Use',format:'chips',intro:'Before we try a technique, which of these do you already use?',items:['Breathing techniques','Visualisation or mental rehearsal','A pre-performance routine','Self-talk or cue words','Anchoring','Goal setting','Meditation or mindfulness','A wearable or biofeedback device','Worked with a coach on the mental side','None of these yet']},
   '7_7':{name:'Your Coaching Focus',format:'chips',intro:'What would you like to focus on as a coach?',items:['Preparing players before a match','Players\' nerves','Team focus and cohesion','Handling setbacks and losing runs','Individual player confidence','Communicating under pressure','My own composure as a coach','Selection and difficult conversations','Something else']},
+  '8_3':{name:'Mental Well-Being',format:'chips',intro:'What would help you most at the moment? If things feel unmanageable right now, Samaritans are free on 116 123, 24/7.',items:['Worry and anxiety','Low mood','Feeling overwhelmed','Sleep and switching off','Understanding my nervous system','Looking after myself','Something else']},
 };
 
 
@@ -849,9 +880,10 @@ var SKILLS_DATA = {
   "Execution & Drive": ["Getting things done","Working under pressure","Time management","Attention to detail","Persistence","Managing projects","Adaptability"],
   "Technical & Specialist": ["Digital & tech skills","Data & numbers","Research & analysis","Writing & content","Design & creativity","Teaching & training","Languages"]
 };
-var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null};
+var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false};
 (function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport') { state.track = 'sport'; state.entrySource = 'link'; } } catch(e){} })();
 function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
+function startLens(lens) { state.lens = lens; state.entrySource = 'tile'; beginWIZSession(); }
  
 async function callWIZ(userMessage) {
   if (userMessage) state.messages.push({role:"user",content:userMessage});
@@ -861,7 +893,7 @@ async function callWIZ(userMessage) {
       var response = await fetch("/api/chat", {
         method: "POST",
         headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:state.messages, track:state.track})
+        body: JSON.stringify({messages:state.messages, track:state.track, lens:state.lens})
       });
       if (!response.ok) {
         var err = await response.json().catch(function(){ return {}; });
@@ -894,7 +926,7 @@ async function callReport() {
       var response = await fetch("/api/chat", {
         method: "POST",
         headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:msgs, track:state.track})
+        body: JSON.stringify({messages:msgs, track:state.track, lens:state.lens})
       });
       if (!response.ok) {
         if ((response.status === 429 || response.status === 529) && attempt < 2) {
@@ -1159,6 +1191,26 @@ function continueFromReport(message) {
   setTimeout(function(){ handleWIZResponse(message); }, 300);
 }
 
+var RBP_CARD_HTML = "<h4>Red, Blue = Purple: how your brain works under pressure</h4>\n<p class=\"rbp-lead\">This is the central model in Mind Flow. It explains why we sometimes perform brilliantly and sometimes freeze, and how to move between the two at will.</p>\n<div class=\"rbp-skip\"><button class=\"rbp-btn-ghost\" data-rbp=\"skip\">I know this &mdash; carry on</button></div>\n\n<h5>1. Your three brains</h5>\n<p><strong>The reptilian brain (first brain)</strong> runs the automatic, survival functions: breathing, heartbeat, sleep and the body clock.</p>\n<p><strong>The mammalian brain (second brain)</strong>, the limbic system, runs emotions and moods, holds memory in the hippocampus, and contains the amygdala &mdash; the brain&rsquo;s alarm bell.</p>\n<p><strong>The neocortex (third brain)</strong> is the higher, thinking brain: rational, logical and creative. It sees relationships, weighs up evidence and forms conclusions.</p>\n\n<h5>2. The Red system</h5>\n<p>The first and second brains together form the <strong>Red system</strong>: emotional arousal, energy and drive. It reacts instantly to any threat or pressure, however small, before conscious thought has caught up.</p>\n<p><strong>Too much Red:</strong> adrenaline and cortisol surge, and access to the thinking brain is temporarily shut down. This is called <em>cortical inhibition</em>. The result is fight, flight or freeze: rushing, tension, overthinking, the mind going blank, &ldquo;the yips&rdquo;.</p>\n\n<h5>3. The Blue system</h5>\n<p>The neocortex is the <strong>Blue system</strong>: calm, clarity, logic and good decisions &mdash; <em>Flow, Focus, Face up and Find resilience</em>. It responds more slowly, once the threat seems manageable, compares the situation with past experience, and calms the body down.</p>\n<p><strong>Too much Blue:</strong> flat, under-aroused, going through the motions. The drive and emotion disappear &mdash; and the Red system then reads that as a threat and takes over.</p>\n\n<h5>4. Purple: the Purple Patch</h5>\n<p><strong>Red + Blue = Purple.</strong> Neither system is better than the other. Peak performance comes from both working together: energised focus with calm confidence. This is Mind Flow &mdash; the <em>Purple Patch</em>. Performance is best at a moderate, balanced level of arousal, not too high and not too low (the Yerkes-Dodson Law).</p>\n<table class=\"rbp-table\">\n<tr><th>Out of balance (Red or Blue)</th><th>In the Purple</th></tr>\n<tr><td>Threat</td><td>Challenge</td></tr>\n<tr><td>Overthinking</td><td>Connecting</td></tr>\n<tr><td>Split attention</td><td>Dual focus</td></tr>\n<tr><td>Worry and regret, past or future</td><td>Here and now</td></tr>\n<tr><td>Caught in two minds</td><td>Single-minded</td></tr>\n<tr><td>Hesitant or impulsive</td><td>Decisive and incisive</td></tr>\n</table>\n<p><strong>The Mental Slide Scale.</strong> Under pressure the mind slides one of two ways. Down into defensive thinking: threat, freeze, overload and overwhelm, fear. Or up into clear thinking: focus, flow, challenge, overview and overcome.</p>\n\n<h5>5. Training it</h5>\n<p>The brain can be trained to respond differently to pressure. Practice, rehearsal and simulated scenarios build <em>mental templates</em> that the brain can reach for instantly under pressure &mdash; this is <em>cortical facilitation</em>. Breathing, visualisation, positive intent language, anchors and affirmations settle the Red system; practising scenarios, asking yourself questions and focusing on intention, the moment and the task wake up the Blue system. Heart rate variability and EEG biofeedback let you see the change as it happens.</p>\n\n<h5>6. The Reset</h5>\n<p><strong>Fast Red, Blue = Purple</strong> (about 30 seconds):</p>\n<ol>\n<li><strong>Deliberate.</strong> Step back. Where am I on the scale &mdash; in the Red, or in the Blue?</li>\n<li><strong>Decide.</strong> If you are in the Red, picture a red frame around the action you are about to take. To shift towards Blue, picture a blue frame around it and let it grow. Run a short mental movie of the action going well.</li>\n<li><strong>Deliver.</strong> Tell yourself &ldquo;Action&rdquo;, focus only on the task in hand, and do it.</li>\n</ol>\n<p><strong>Faster:</strong> 3 Breaths (about 10 seconds) &mdash; hands on your waist, breathe in fully, hold for one second, breathe out completely, three times. <strong>Fuller:</strong> ICE (about 2 minutes) &mdash; Intensity (Red), Clarity (Blue), Execution (Purple).</p>\n\n<div class=\"rbp-actions\">\n<button class=\"rbp-btn\" data-rbp=\"reset\">Show me how to reset now</button>\n<button class=\"rbp-btn-ghost\" data-rbp=\"skip\">I know this &mdash; carry on</button>\n</div>\n";
+
+function showRBPCard() {
+  if (state.rbpShown) return;
+  state.rbpShown = true;
+  var panel = panelWrapper('Mind Flow', '');
+  panel.classList.add('rbp-card');
+  panel.innerHTML = RBP_CARD_HTML;
+  Array.prototype.forEach.call(panel.querySelectorAll('[data-rbp]'), function(btn){
+    btn.onclick = function(){
+      if (panel.getAttribute('data-answered')) return;
+      panel.setAttribute('data-answered', '1');
+      Array.prototype.forEach.call(panel.querySelectorAll('[data-rbp]'), function(b){ b.disabled = true; });
+      var choice = btn.getAttribute('data-rbp');
+      sendUserMessage(choice === 'reset' ? 'Please guide me through the Reset now.' : 'I know Red, Blue = Purple -- let\'s carry on.');
+    };
+  });
+  var msgs = document.getElementById('messages'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
 function showConversation() {
   var ca = document.getElementById("chatArea");
   var rv = document.getElementById("reportView");
@@ -1206,7 +1258,7 @@ function buildReport(r) {
  
   var grid = document.createElement("div");
   grid.className = "report-grid";
-  var hasPlan = !!(r.performancePlan && typeof r.performancePlan === 'object');
+  var hasPlan = !!((r.performancePlan && typeof r.performancePlan === 'object') || (r.wellbeingPlan && typeof r.wellbeingPlan === 'object'));
  
   var obs = document.createElement("div");
   obs.className = "report-card full";
@@ -1225,11 +1277,12 @@ function buildReport(r) {
  
   var scores = document.createElement("div");
   scores.className = "report-card full";
+  if (!r.scores || typeof r.scores !== 'object') r.scores = {};
   scores.innerHTML = '<h3>Domain Scores</h3>' + Object.keys(r.scores).map(function(k){
     var v = r.scores[k];
     return '<div class="score-row"><span class="score-label">' + k.charAt(0).toUpperCase() + k.slice(1) + '</span><div class="score-bar"><div class="score-fill" style="width:' + (v*10) + '%"></div></div><span class="score-num">' + v + '/10</span></div>';
   }).join('');
-  grid.appendChild(scores);
+  if (Object.keys(r.scores).length) grid.appendChild(scores);
  
   var t1 = document.createElement("div");
   t1.className = "report-card";
@@ -1247,6 +1300,23 @@ function buildReport(r) {
     return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
   }).join('');
   if (hasPlan) { grid.insertBefore(acts, obs.nextSibling); } else { grid.appendChild(acts); }
+  if (r.wellbeingPlan && typeof r.wellbeingPlan === 'object') {
+    var escW = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var wp = r.wellbeingPlan;
+    var wpHtml = '<h3>Your Personal Well-Being Plan</h3>';
+    if (wp.weighingOnYou) wpHtml += '<p style="margin-bottom:10px"><strong style="color:var(--navy)">What has been weighing on you.</strong> ' + escW(wp.weighingOnYou) + '</p>';
+    [['Daily steadying practices','dailyPractices'],['When it builds up','whenItBuildsUp'],['Small steps this week','smallSteps'],['Your support','yourSupport'],['When to reach for more','whenToReachForMore']].forEach(function(sec){
+      var items = Array.isArray(wp[sec[1]]) ? wp[sec[1]].filter(function(x){ return x && String(x).trim(); }) : [];
+      if (sec[1] === 'whenToReachForMore' && !items.some(function(x){ return /116\s?123/.test(x); })) items.push('Samaritans: 116 123 (free, 24/7)');
+      if (!items.length) return;
+      wpHtml += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">' + sec[0] + '</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + items.map(function(x){ return '<li>' + escW(x) + '</li>'; }).join('') + '</ul>';
+    });
+    var wpCard = document.createElement("div");
+    wpCard.className = "report-card full";
+    wpCard.style.borderTopColor = "var(--gold)";
+    wpCard.innerHTML = wpHtml;
+    grid.appendChild(wpCard);
+  }
   if (r.performancePlan && typeof r.performancePlan === 'object') {
     var esc = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
     var pp = r.performancePlan;
@@ -1272,6 +1342,23 @@ function buildReport(r) {
   var pwName = String(r.pathway || '').replace(/^\s*pathway\s+[a-z0-9]+\s*[-\u2013\u2014:]+\s*/i, '').replace(/\s*\([^)]*\b(track|lens|panel)\b[^)]*\)/ig, '').trim();
   pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + pwName + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
   grid.appendChild(pw);
+
+  // Your Mind Flow resources: guides, in-app training, human coach
+  (function(){
+    var escR = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var res = (r.resources && typeof r.resources === 'object') ? r.resources : {};
+    var guides = Array.isArray(res.guides) ? res.guides.filter(function(x){ return x && String(x).trim(); }).slice(0,3) : [];
+    var training = Array.isArray(res.training) ? res.training.filter(function(x){ return x && String(x).trim(); }).slice(0,2) : [];
+    var html = '<h3>Your Mind Flow Resources</h3>';
+    if (guides.length) html += '<p style="margin-top:6px;font-weight:600;color:var(--navy)">Brain Booster Guides</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + guides.map(function(g){ return '<li>' + escR(g) + '</li>'; }).join('') + '</ul><p style="font-size:12px;color:var(--mid);margin-top:4px">The guides are being added to mindflowpro.com. In the meantime you can ask for any guide by messaging Mind Flow through the website.</p>';
+    if (training.length) html += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">Short training in WIZ</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + training.map(function(t){ return '<li>' + escR(t) + '</li>'; }).join('') + '</ul><p style="font-size:12px;color:var(--mid);margin-top:4px">Ask WIZ &ldquo;Train me in&hellip;&rdquo; at any time.</p>';
+    html += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">A human Mind Flow coach</p><p style="font-size:13px">' + escR(res.humanCoach || 'A one-to-one session with a human Mind Flow coach can take everything you started today further.') + ' <a href="https://mindflowpro.com" target="_blank" style="color:var(--teal);font-weight:600">mindflowpro.com</a></p>';
+    var rc = document.createElement("div");
+    rc.className = "report-card full";
+    rc.style.borderTopColor = "var(--teal2)";
+    rc.innerHTML = html;
+    grid.appendChild(rc);
+  })();
 
   // Assessment Results card -- only shown if a shortened assessment was completed
   if (r.assessmentResults && r.assessmentResults.name) {
@@ -1443,6 +1530,14 @@ async function handleWIZResponse(userMsg) {
       var textBeforeC = reply.replace(/\[CONDITION_[A-Z_]+\]/gi, '').trim();
       if (textBeforeC) addMessage('wiz', textBeforeC);
       if (cq) { showRatingPanel(cq, 'condition_' + condKey); }
+      return;
+    }
+
+    // Red, Blue = Purple explainer card
+    if (reply.indexOf('[EXPLAIN_RBP]') >= 0) {
+      var textBeforeR = reply.replace(/\[EXPLAIN_RBP\]/g, '').trim();
+      if (textBeforeR) addMessage('wiz', textBeforeR);
+      showRBPCard();
       return;
     }
 
