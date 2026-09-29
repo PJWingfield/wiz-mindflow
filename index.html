@@ -376,7 +376,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('mind_performance')" onkeydown="if(event.key==='Enter'){startLens('mind_performance')}"><span class="os-num">1</span><div class="os-explore-body"><strong>Mind &amp; Performance</strong>Mind Flow State, peak performance and performance psychology: how to think, feel and perform at your best.<span class="os-explore-go">Start here &rarr;</span></div></div>
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('mental_resilience')" onkeydown="if(event.key==='Enter'){startLens('mental_resilience')}"><span class="os-num">2</span><div class="os-explore-body"><strong>Mental Resilience</strong>Managing pressure, stress and setbacks. Building the capacity to stay regulated, recover well and perform under load.<span class="os-explore-go">Start here &rarr;</span></div></div>
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('mental_wellbeing')" onkeydown="if(event.key==='Enter'){startLens('mental_wellbeing')}"><span class="os-num">3</span><div class="os-explore-body"><strong>Mental Well-Being</strong>Looking after your mental health: worry, anxiety, low mood, overwhelm and feeling more like yourself again. Practical support, and knowing when to reach for more.<span class="os-explore-go">Start a well-being session &rarr;</span></div></div>
-      <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('career')" onkeydown="if(event.key==='Enter'){startLens('career')}"><span class="os-num">4</span><div class="os-explore-body"><strong>Career, Exploration &amp; Direction</strong>Career choices, career development, transitions, decision-making and life planning.<span class="os-explore-go">Start here &rarr;</span></div></div>
+      <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startTrack('career','tile')" onkeydown="if(event.key==='Enter'){startTrack('career','tile')}"><span class="os-num">4</span><div class="os-explore-body"><strong>Career, Exploration &amp; Direction</strong>Career choices, career development, transitions, decision-making and life planning.<span class="os-explore-go">Start a career session &rarr;</span></div></div>
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('yourself')" onkeydown="if(event.key==='Enter'){startLens('yourself')}"><span class="os-num">5</span><div class="os-explore-body"><strong>Yourself</strong>Confidence, motivation, self-understanding, personal development and your potential.<span class="os-explore-go">Start here &rarr;</span></div></div>
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('relationships')" onkeydown="if(event.key==='Enter'){startLens('relationships')}"><span class="os-num">6</span><div class="os-explore-body"><strong>Relationships &amp; Communication</strong>The quality of your key relationships &mdash; professional and personal &mdash; and the communication skills that build and sustain them.<span class="os-explore-go">Start here &rarr;</span></div></div>
       <div class="os-explore-item os-explore-link" role="button" tabindex="0" onclick="startLens('life_transitions')" onkeydown="if(event.key==='Enter'){startLens('life_transitions')}"><span class="os-num">7</span><div class="os-explore-body"><strong>Life Transitions &amp; Change</strong>Navigating significant change &mdash; redundancy, bereavement, burnout, retirement, major decisions, new chapters. Wherever life has shifted.<span class="os-explore-go">Start here &rarr;</span></div></div>
@@ -511,7 +511,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only -- not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 f</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 29 Sep 2026 g</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
@@ -686,6 +686,11 @@ var WIZ_PANELS = {
   '8_11':{name:'Brain, Sleep & Biofeedback',format:'chips',intro:'What would you like help with? You will leave with an interpretation of your results and a practical improvement plan.',items:['Understanding a device report','Sleep','Brain training','Stress and recovery','Something else']},
   '8_12':{name:'Learning & Development',format:'chips',intro:'What are you learning or working towards? You will leave with a personal learning strategy.',items:['Accelerated Learning','Studying or exams','Memory and revision','How I learn best','Helping others learn','Something else']},
   '8_14':{name:'Life and Career Review',format:'chips',intro:'What has prompted a review now? You will leave with a full review across every area of your life.',items:['A milestone','End of the year','Something has shifted','It is simply time','Something else']},
+  '9_1':{name:'Where You Are in Your Career',format:'menu',answerLabel:'Where I am in my career',intro:'Where are you with your career right now?',items:['Exploring for the first time','Starting out after education','Early in my career','Established and wanting to move up','Wanting to change direction','Returning to work after a break','Later in my career and thinking about what comes next','Retired or retiring, and wanting to keep working']},
+  '9_2':{name:'Your Situation Now',format:'chips',intro:'What is your situation at the moment?',items:['In education or training','In an apprenticeship','Employed full-time','Employed part-time','Self-employed','Between jobs','Caring for someone','Retired','Volunteering','Something else']},
+  '9_3':{name:'What You Want to Work On',format:'chips',intro:'What would you most like to work on?',items:['Finding a direction','Understanding my strengths and values','Researching careers and routes','Turning my experience into skills','Applications, CVs and interviews','Stepping up or getting promoted','Changing career','Confidence and self-belief','Work-life balance','Starting my own business','Working after retirement, paid or voluntary','Something else']},
+  '9_4':{name:'Routes You\'re Considering',format:'chips',intro:'Which routes are you considering? No route is the default.',items:['University','Apprenticeship','Going straight into work','Self-employment','Armed or uniformed services','Further training or a course','Part-time or flexible work','Freelance or consultancy','Volunteering or unpaid roles','Still exploring']},
+  '9_5':{name:'What Drives You',format:'chips',intro:'What drives you most?',items:['Achievement','Recognition','Security','Purpose','Connection','Independence','Mastery','Something else']},
 };
 
 
@@ -696,6 +701,7 @@ var WIZ_PANELS = {
 function showWIZPanel(panelId) {
   var pid = panelId.replace(/\./g, '_');
   if (/^7_/.test(pid) && !state.track) { state.track = 'sport'; state.entrySource = state.entrySource || 'conversation'; }
+  if (/^9_/.test(pid) && !state.track) { state.track = 'career'; state.entrySource = state.entrySource || 'conversation'; }
   if (pid === '8_3' && !state.lens) { state.lens = 'mental_wellbeing'; state.entrySource = state.entrySource || 'conversation'; }
   var p = WIZ_PANELS[pid];
   if (!p) { console.warn('Panel not found:', panelId); return; }
@@ -893,7 +899,7 @@ var SKILLS_DATA = {
   "Technical & Specialist": ["Digital & tech skills","Data & numbers","Research & analysis","Writing & content","Design & creativity","Teaching & training","Languages"]
 };
 var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false};
-(function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport') { state.track = 'sport'; state.entrySource = 'link'; } } catch(e){} })();
+(function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport' || t === 'career') { state.track = t; state.entrySource = 'link'; } } catch(e){} })();
 function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
 function startLens(lens) { state.lens = lens; state.entrySource = 'tile'; beginWIZSession(); }
  
@@ -1272,7 +1278,7 @@ function buildReport(r) {
  
   var grid = document.createElement("div");
   grid.className = "report-grid";
-  var hasPlan = !!((r.performancePlan && typeof r.performancePlan === 'object') || (r.wellbeingPlan && typeof r.wellbeingPlan === 'object'));
+  var hasPlan = !!((r.performancePlan && typeof r.performancePlan === 'object') || (r.wellbeingPlan && typeof r.wellbeingPlan === 'object') || (r.careerPlan && typeof r.careerPlan === 'object'));
  
   var obs = document.createElement("div");
   obs.className = "report-card full";
@@ -1314,6 +1320,23 @@ function buildReport(r) {
     return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
   }).join('');
   if (hasPlan) { grid.insertBefore(acts, obs.nextSibling); } else { grid.appendChild(acts); }
+  if (r.careerPlan && typeof r.careerPlan === 'object') {
+    var escC = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var cp = r.careerPlan;
+    var cpHtml = '<h3>Your Career Plan of Action</h3>';
+    if (cp.startingFrom) cpHtml += '<p style="margin-bottom:10px"><strong style="color:var(--navy)">Where you\'re starting from.</strong> ' + escC(cp.startingFrom) + '</p>';
+    [['What matters to you','whatMatters'],['What you already bring','whatYouBring'],['Directions you\'re exploring','directions'],['Your next research steps','researchSteps'],['Your goals','goals'],['Your support','support']].forEach(function(sec){
+      var items = Array.isArray(cp[sec[1]]) ? cp[sec[1]].filter(function(x){ return x && String(x).trim(); }) : [];
+      if (!items.length) return;
+      cpHtml += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">' + sec[0] + '</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + items.map(function(x){ return '<li>' + escC(x) + '</li>'; }).join('') + '</ul>';
+    });
+    if (cp.review) cpHtml += '<p style="margin-top:10px"><strong style="color:var(--navy)">When to review this.</strong> ' + escC(cp.review) + '</p>';
+    var cpCard = document.createElement("div");
+    cpCard.className = "report-card full";
+    cpCard.style.borderTopColor = "var(--gold)";
+    cpCard.innerHTML = cpHtml;
+    grid.appendChild(cpCard);
+  }
   if (r.wellbeingPlan && typeof r.wellbeingPlan === 'object') {
     var escW = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
     var wp = r.wellbeingPlan;
