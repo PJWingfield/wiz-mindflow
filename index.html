@@ -24,6 +24,16 @@ header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;
 .os-explore-link{cursor:pointer;border-radius:10px;transition:background .15s}
 .os-explore-link:hover,.os-explore-link:focus{background:rgba(245,173,40,0.10);outline:none}
 .os-explore-go{display:block;margin-top:8px;font-weight:600;font-size:14px;color:#168fd0}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;display:block!important}
+  #wizAgeGate,#opening-screen,.os-float-cta,.sidebar,.mobile-strip,.phase-bar,.input-area,.report-cta,.report-continue,#freeze-notice{display:none!important}
+  .app,.chat-area,#chatArea,.report-view{display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important}
+  .report-view{padding:0!important}
+  .report-grid{display:block!important}
+  .report-card{break-inside:avoid;page-break-inside:avoid;margin-bottom:14px}
+  header{border-bottom:none!important}
+}
 .wiz-logo-card{width:148px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px 12px 8px;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
 .wiz-logo-card img{display:block;width:100%;height:auto}
 .wiz-desc{font-size:11px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6}
@@ -622,8 +632,8 @@ var WIZ_PANELS = {
   '3_35':{name:'Turning Prior Learning Into Career-Ready Skills',format:'chips',intro:'Select the types of experience you have -- WIZ will help translate each into a skill you can use at work.',items:['A subject I studied','A part-time or full-time job','Sport or physical activity','A creative pursuit','Volunteering or a community role','A caring or home responsibility','A leadership role, formal or informal','Overcoming a setback or difficult period','A self-taught skill or hobby']},
   '7_1':{name:'Your Role in Sport',format:'chips',intro:'What is your involvement in sport?',items:['Competing athlete or player','Recreational player','Coach','Parent or supporter of an athlete','Official or referee','Support staff (physio, analyst, strength and conditioning)','Returning to sport','Something else']},
   '7_2':{name:'Your Sports',format:'chips',intro:'Which sports are you involved in?',items:['Rugby','Cricket','Golf','Tennis','Football','Hockey','Netball','Athletics and running','Swimming','Cycling','Rowing','Triathlon','Combat sports','Equestrian','Motorsport','Something else']},
-  '7_3':{name:'Your Level',format:'menu',intro:'At what level, in the sport we are focusing on?',items:['Recreational','Club, competitive','County or regional','National','International or professional']},
-  '7_4':{name:'Where You Are in the Season',format:'menu',intro:'Where are you right now?',items:['Off-season','Pre-season or a training block','In-season, competing regularly','Building up to a major event','Returning from injury or illness','Stepping back, retiring or not selected']},
+  '7_3':{name:'Your Level',format:'menu',answerLabel:'My level',intro:'At what level, in the sport we are focusing on?',items:['Recreational','Club, competitive','County or regional','National','International or professional']},
+  '7_4':{name:'Where You Are in the Season',format:'menu',answerLabel:'Where I am in the season',intro:'Where are you right now?',items:['Off-season','Pre-season or a training block','In-season, competing regularly','Building up to a major event','Returning from injury or illness','Stepping back, retiring or not selected']},
   '7_5':{name:'What You Want to Work On',format:'chips',intro:'What would you most like to work on?',items:['Nerves and pressure before competing','Confidence','Focus during play','Mental stamina over a long game','Resetting after mistakes','Consistency','Motivation and drive','Pre-performance routine','Visualisation and mental rehearsal','Recovery, sleep and energy','Team dynamics and communication','Helping others with their mental game','Life and identity outside sport','Something else']},
   '7_6':{name:'What You Already Use',format:'chips',intro:'Before we try a technique, which of these do you already use?',items:['Breathing techniques','Visualisation or mental rehearsal','A pre-performance routine','Self-talk or cue words','Anchoring','Goal setting','Meditation or mindfulness','A wearable or biofeedback device','Worked with a coach on the mental side','None of these yet']},
   '7_7':{name:'Your Coaching Focus',format:'chips',intro:'What would you like to focus on as a coach?',items:['Preparing players before a match','Players\' nerves','Team focus and cohesion','Handling setbacks and losing runs','Individual player confidence','Communicating under pressure','My own composure as a coach','Selection and difficult conversations','Something else']},
@@ -710,7 +720,8 @@ function showRatingPanel(p, panelId) {
   submitBtn.disabled = true;
   submitBtn.onclick = function() {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+    submitBtn.textContent = 'Sent ✓';
+    submitBtn.parentNode.style.pointerEvents = 'none';
     var lines = p.items.map(function(item, i) {
       return item + ': ' + (selections[i] ? selections[i].score + '/10' : 'n/a');
     });
@@ -765,7 +776,8 @@ function showChipsPanel(p, panelId) {
   submitBtn.disabled = true;
   submitBtn.onclick = function() {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+    submitBtn.textContent = 'Sent ✓';
+    submitBtn.parentNode.style.pointerEvents = 'none';
     var items = Object.keys(selected);
     var msg = 'Here are my ' + p.name + ' selections: ' + items.join(', ') + '.';
     sendUserMessage(msg);
@@ -787,7 +799,15 @@ function showMenuPanel(p, panelId) {
     btn.onmouseover = function(){ btn.style.borderColor='var(--teal)'; btn.style.color='var(--teal)'; };
     btn.onmouseout = function(){ btn.style.borderColor='var(--border)'; btn.style.color='var(--dark)'; };
     btn.onclick = function() {
-      var msg = 'I\'d like to explore: ' + item;
+      if (p.answerLabel) {
+        // single-answer panels (e.g. level, season): lock after one choice
+        if (panel.getAttribute('data-answered')) return;
+        panel.setAttribute('data-answered', '1');
+        btn.onmouseover = btn.onmouseout = null;
+        Array.prototype.forEach.call(panel.querySelectorAll('button'), function(b){ b.disabled = true; b.onmouseover = b.onmouseout = null; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--dark)'; b.style.cursor = 'default'; if (b !== btn) b.style.opacity = '0.45'; });
+        btn.style.background = 'var(--teal)'; btn.style.borderColor = 'var(--teal)'; btn.style.color = '#fff';
+      }
+      var msg = p.answerLabel ? (p.answerLabel + ': ' + item) : ('I\'d like to explore: ' + item);
       sendUserMessage(msg);
     };
     panel.appendChild(btn);
@@ -970,7 +990,8 @@ function showSkillsQuiz() {
     var selected = Array.from(quiz.querySelectorAll(".skill-chip.selected")).map(function(c){ return c.textContent; });
     if (selected.length === 0) { alert("Please select at least one skill."); return; }
     btn.disabled = true;
-    btn.textContent = "Sending...";
+    btn.textContent = "Sent ✓";
+    quiz.style.pointerEvents = "none";
     var msg = "Here are the skills I selected as genuinely natural to me: " + selected.join(", ") + ".";
     addMessage("user", msg);
     handleWIZResponse(msg);
@@ -1056,7 +1077,8 @@ function showDirectionAudit() {
   submitBtn.disabled = true;
   submitBtn.onclick = function() {
     submitBtn.disabled = true;
-    submitBtn.textContent = "Sending...";
+    submitBtn.textContent = "Sent ✓";
+    submitBtn.parentNode.style.pointerEvents = "none";
     var lines = areas.map(function(a){ return a.label + ": " + selections[a.key] + "/10"; });
     var msg = "Here are my Direction Audit scores -- " + lines.join(", ") + ".";
     addMessage("user", msg);
@@ -1239,7 +1261,8 @@ function buildReport(r) {
   pw.className = "report-card full";
   pw.style.borderTopColor = "var(--gold)";
   pw.style.background = "var(--lnavy)";
-  pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + r.pathway + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
+  var pwName = String(r.pathway || '').replace(/^\s*pathway\s+[a-z0-9]+\s*[-\u2013\u2014:]+\s*/i, '').replace(/\s*\([^)]*\b(track|lens|panel)\b[^)]*\)/ig, '').trim();
+  pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + pwName + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
   grid.appendChild(pw);
 
   // Assessment Results card -- only shown if a shortened assessment was completed
@@ -1284,6 +1307,7 @@ function buildReport(r) {
 
   // Post-report continuation panel -- WIZ offers to keep going
   var cont = document.createElement("div");
+  cont.className = "report-continue";
   cont.style.cssText = "background:white;border:1px solid var(--border);border-radius:13px;padding:26px 30px;margin-top:20px;border-top:3px solid var(--teal2)";
   cont.innerHTML = '<h3 style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:var(--navy);margin-bottom:10px">Continue Your Session with WIZ</h3>' +
     '<p style="font-size:13px;color:var(--mid);margin-bottom:16px">Your report is a starting point, not an ending. WIZ can continue working with you right now -- choose what would be most useful:</p>' +
