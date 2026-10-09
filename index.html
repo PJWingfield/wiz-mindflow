@@ -221,9 +221,11 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,42,107,0.12
 .wiz-modal-card .m-primary:hover{background:#f5ad28;color:#1B2A6B}
 .wiz-modal-card .m-secondary{background:transparent;color:#1B2A6B;border:1.5px solid #C5C9D6}
 .wiz-modal-card .m-quiet{background:none;border:none;color:#555570;font-size:13.5px;margin-bottom:0}
-.choice-panel{max-width:640px}
+.choice-panel{width:600px;max-width:100%;flex:0 1 600px;padding:18px 20px}
+.choice-item{min-width:210px}
+@media(max-width:640px){.choice-panel{width:auto;flex:1 1 0;min-width:0;padding:14px}.choice-item{min-width:0}.choice-table th{width:58px;font-size:10px;padding:4px 2px 8px}.choice-table td{padding:9px 3px}}
 .choice-table{width:100%;border-collapse:collapse;margin:10px 0 14px}
-.choice-table th{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--navy);text-align:center;padding:4px 6px 8px;width:84px}
+.choice-table th{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--navy);text-align:center;padding:4px 6px 8px;width:92px}
 .choice-table td{padding:9px 6px;border-top:1px solid var(--border);vertical-align:middle}
 .choice-item strong{display:block;font-size:14px;color:var(--dark)}
 .choice-item span{display:block;font-size:12.5px;color:var(--mid);line-height:1.45;margin-top:2px}
@@ -556,7 +558,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only -- not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 9 Oct 2026 b</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 9 Oct 2026 c</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
