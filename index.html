@@ -8,15 +8,15 @@
 <style>
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#1B2A6B;--teal:#0F6E56;--teal2:#1D9E75;--gold:#C8960C;--cream:#FAF8F2;--dark:#1A1A2E;--mid:#555570;--lteal:#E8F5F0;--lnavy:#EEF0FA;--border:rgba(15,110,86,0.2)}
+:root{--navy:#1B2A6B;--teal:#0F6E56;--teal2:#1D9E75;--goldline:#f5ad28;--gold:#C8960C;--cream:#FAF8F2;--dark:#1A1A2E;--mid:#555570;--lteal:#E8F5F0;--lnavy:#EEF0FA;--border:rgba(15,110,86,0.2)}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--teal2)}
+header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--goldline)}
 .logo-area{display:flex;align-items:center;gap:14px}
 .logo-mark{width:40px;height:40px;background:linear-gradient(135deg,var(--teal2),var(--gold));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:white}
 .logo-text h1{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:white}
 .logo-text p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px}
 .badge{font-size:11px;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.2);padding:4px 10px;border-radius:20px}
-.app{display:flex;flex:1;height:calc(100vh - 67px)}
+.app{display:flex;flex:0 0 auto;min-height:0;height:calc(100vh - 83px)}
 .sidebar{width:260px;min-width:260px;background:var(--navy);padding:24px 18px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
 .wiz-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:white;box-shadow:0 0 0 4px rgba(29,158,117,0.3);position:relative}
 .status-dot{position:absolute;bottom:3px;right:3px;width:11px;height:11px;border-radius:50%;background:var(--teal2);border:2px solid var(--navy)}
@@ -91,7 +91,7 @@ header{background:var(--navy);padding:16px 28px;display:flex;align-items:center;
 .phase-label{font-size:11px;color:var(--mid);margin-left:5px;white-space:nowrap}
 .phase-label.active{color:var(--teal);font-weight:500}
 .phase-line{flex:1;height:2px;background:#E8EAF0;margin:0 6px}
-.phase-line.done{background:var(--teal2)}
+.phase-line.done{background:var(--goldline)}
 .messages{flex:1;overflow-y:auto;padding:28px 36px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth}
 .msg{display:flex;align-items:flex-start;gap:12px;max-width:80%}
 .msg.wiz{align-self:flex-start}
@@ -144,7 +144,7 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 .report-header h2{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:white;margin-bottom:6px}
 .report-header .sub{font-size:13px;color:rgba(255,255,255,0.5)}
 .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
-.report-card{background:white;border:1px solid var(--border);border-radius:11px;padding:22px;border-top:3px solid var(--teal2)}
+.report-card{background:white;border:1px solid var(--border);border-radius:11px;padding:22px;border-top:3px solid var(--goldline)}
 .report-card h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;font-weight:500}
 .report-card p{font-size:13.5px;color:var(--dark);line-height:1.7}
 .report-card.full{grid-column:1/-1}
@@ -172,7 +172,7 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 .loading-card p{font-size:12.5px;color:var(--mid);line-height:1.6}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:3px}
-.mobile-strip{display:none;background:var(--navy);padding:10px 16px;border-bottom:2px solid var(--teal2);font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5;text-align:center}
+.mobile-strip{display:none;background:var(--navy);padding:10px 16px;border-bottom:2px solid var(--goldline);font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5;text-align:center}
 .mobile-strip em{color:rgba(255,255,255,0.75);font-style:italic}
 @media(max-width:768px){.sidebar{display:none}.mobile-strip{display:block}.messages{padding:18px}.input-area{padding:14px 18px}.report-grid{grid-template-columns:1fr}.report-view{padding:18px}.report-cta{flex-direction:column}}
 
@@ -212,7 +212,7 @@ textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,0.1)
 <div id="wizAgeGate" style="position:fixed;inset:0;z-index:99999;background:rgba(15,20,40,0.78);display:flex;align-items:center;justify-content:center;padding:20px;font-family:'DM Sans',sans-serif;">
   <div id="wizAgeCard" style="max-width:520px;width:100%;background:#FAF8F2;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.45);padding:42px 38px;text-align:center;">
     <div style="font-family:'Cormorant Garamond',serif;font-size:31px;color:#1B2A6B;margin-bottom:6px;">Before we begin</div>
-    <div style="width:54px;height:3px;background:#1D9E75;margin:2px auto 22px;border-radius:2px;"></div>
+    <div style="width:54px;height:3px;background:#f5ad28;margin:2px auto 22px;border-radius:2px;"></div>
     <p style="color:#1A1A2E;font-size:16px;line-height:1.55;margin:0 0 8px;">WIZ is a personal coaching companion for <strong>adults aged 18 and over</strong>.</p>
     <p style="color:#555570;font-size:14.5px;line-height:1.55;margin:0 0 26px;">It is not a medical, psychological or crisis service. Please confirm your age to continue.</p>
     <button onclick="wizAgePass()" style="display:block;width:100%;background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px;font-family:'DM Sans',sans-serif;">I am 18 or over &mdash; continue</button>
@@ -225,7 +225,7 @@ try{if('scrollRestoration' in history){history.scrollRestoration='manual';}}catc
 window.addEventListener('load',function(){window.scrollTo(0,0);});
 function wizAgePass(){var g=document.getElementById('wizAgeGate');if(g){g.style.display='none';}window.scrollTo(0,0);}
 function wizAgeUnder(){var c=document.getElementById('wizAgeCard');if(!c){return;}
-c.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-size:29px;color:#1B2A6B;margin-bottom:6px;">Thank you for being honest</div><div style="width:54px;height:3px;background:#1D9E75;margin:2px auto 22px;border-radius:2px;"></div><p style="color:#1A1A2E;font-size:16px;line-height:1.6;margin:0 0 14px;">WIZ is built for adults aged 18 and over. The coaching it offers tends to be most useful once you have a bit more life experience and learning behind you, which is why it is designed for over-18s &mdash; and you would be genuinely welcome to come back when you get there. For now it would not be the right fit, but you are not on your own &mdash; there are people who are really good at helping with whatever you are facing:</p><div style="text-align:left;background:#EEF0FA;border-radius:10px;padding:16px 18px;color:#1A1A2E;font-size:15px;line-height:1.75;"><strong>Childline</strong> &mdash; 0800 1111 (free, 24/7, for anyone under 19)<br><strong>The Mix</strong> &mdash; themix.org.uk (support for under-25s)<br><strong>In an emergency</strong> &mdash; call 999, or Samaritans on 116 123</div><p style="color:#555570;font-size:14px;line-height:1.55;margin:18px 0 0;">Talking to a trusted adult &mdash; a parent, teacher or your GP &mdash; is a really good next step too.</p>';}
+c.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-size:29px;color:#1B2A6B;margin-bottom:6px;">Thank you for being honest</div><div style="width:54px;height:3px;background:#f5ad28;margin:2px auto 22px;border-radius:2px;"></div><p style="color:#1A1A2E;font-size:16px;line-height:1.6;margin:0 0 14px;">WIZ is built for adults aged 18 and over. The coaching it offers tends to be most useful once you have a bit more life experience and learning behind you, which is why it is designed for over-18s &mdash; and you would be genuinely welcome to come back when you get there. For now it would not be the right fit, but you are not on your own &mdash; there are people who are really good at helping with whatever you are facing:</p><div style="text-align:left;background:#EEF0FA;border-radius:10px;padding:16px 18px;color:#1A1A2E;font-size:15px;line-height:1.75;"><strong>Childline</strong> &mdash; 0800 1111 (free, 24/7, for anyone under 19)<br><strong>The Mix</strong> &mdash; themix.org.uk (support for under-25s)<br><strong>In an emergency</strong> &mdash; call 999, or Samaritans on 116 123</div><p style="color:#555570;font-size:14px;line-height:1.55;margin:18px 0 0;">Talking to a trusted adult &mdash; a parent, teacher or your GP &mdash; is a really good next step too.</p>';}
 </script>
 <!-- END WIZ AGE GATE -->
 
@@ -976,7 +976,8 @@ function wizFormat(text) {
   // bold then italic
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-  // newlines -> <br>
+  // collapse stray blank lines left by removed signals, then newlines -> <br>
+  s = s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
   s = s.split(String.fromCharCode(10)).join('<br>');
   return s;
 }
@@ -1392,7 +1393,7 @@ function buildReport(r) {
     html += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">A human Mind Flow coach</p><p style="font-size:13px">' + escR(res.humanCoach || 'A one-to-one session with a human Mind Flow coach can take everything you started today further.') + ' <a href="https://mindflowpro.com" target="_blank" style="color:var(--teal);font-weight:600">mindflowpro.com</a></p>';
     var rc = document.createElement("div");
     rc.className = "report-card full";
-    rc.style.borderTopColor = "var(--teal2)";
+    rc.style.borderTopColor = "var(--goldline)";
     rc.innerHTML = html;
     grid.appendChild(rc);
   })();
@@ -1445,7 +1446,7 @@ function buildReport(r) {
   // Post-report continuation panel -- WIZ offers to keep going
   var cont = document.createElement("div");
   cont.className = "report-continue";
-  cont.style.cssText = "background:white;border:1px solid var(--border);border-radius:13px;padding:26px 30px;margin-top:20px;border-top:3px solid var(--teal2)";
+  cont.style.cssText = "background:white;border:1px solid var(--border);border-radius:13px;padding:26px 30px;margin-top:20px;border-top:3px solid var(--goldline)";
   cont.innerHTML = '<h3 style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:var(--navy);margin-bottom:10px">Continue Your Session with WIZ</h3>' +
     '<p style="font-size:13px;color:var(--mid);margin-bottom:16px">Your report is a starting point, not an ending. WIZ can continue working with you right now -- choose what would be most useful:</p>' +
     '<div style="display:flex;flex-wrap:wrap;gap:9px">' +
