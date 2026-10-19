@@ -586,7 +586,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
   <div class="wiz-modal-card">
     <h3 id="endSessionTitle">End this session?</h3>
     <div class="rule"></div>
-    <p id="endSessionText">Your current conversation will be cleared. You can start a fresh session straight away, or go back to the opening screen.</p>
+    <p id="endSessionText">Your conversation is saved in your account. You can start a fresh session straight away, or go back to the opening screen.</p>
     <button class="m-secondary" id="endSessionReportBtn" style="display:none" onclick="endSessionReport()">Create my report first</button>
     <button class="m-primary" onclick="restartSession('fresh')">Start a new session</button>
     <button class="m-secondary" onclick="restartSession('opening')">Back to the opening screen</button>
@@ -960,67 +960,6 @@ var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],
 (function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport' || t === 'career') { state.track = t; state.entrySource = 'link'; } } catch(e){} })();
 function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
 function startLens(lens) { state.lens = lens; state.entrySource = 'tile'; beginWIZSession(); }
- 
-async function callWIZ(userMessage) {
-  if (userMessage) state.messages.push({role:"user",content:userMessage});
-  var lastErr;
-  for (var attempt = 0; attempt < 5; attempt++) {
-    try {
-      var response = await fetch("/api/chat", {
-        method: "POST",
-        headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:state.messages, track:state.track, lens:state.lens})
-      });
-      if (!response.ok) {
-        var err = await response.json().catch(function(){ return {}; });
-        // Silent retry on 429/529 (rate limit / overload) - no message to user
-        if ((response.status === 429 || response.status === 529) && attempt < 4) {
-          await new Promise(function(r){ setTimeout(r, 1500 + attempt * 1000); });
-          continue;
-        }
-        throw new Error(err.error || "Server error " + response.status);
-      }
-      var data = await response.json();
-      if (!response.ok) throw new Error(data.error ? data.error.message : 'API error ' + response.status);
-      var text = (data.content || []).map(function(b){return b.text||'';}).join('').trim();
-      state.messages.push({role:"assistant", content:text});
-      return text;
-    } catch(e) {
-      lastErr = e;
-      if (attempt < 4) await new Promise(function(r){ setTimeout(r, 1500); });
-    }
-  }
-  throw lastErr || new Error("Failed after retries");
-}
-
-async function callReport() {
-  var reportPrompt = "The coaching session is now complete. Generate the Personal Awareness Report now. Output [REPORT_READY] on its own line, then immediately output ONLY the JSON object as specified in your instructions -- no other text before or after the JSON. Every field must reference something specific the client said in this session.";
-  var msgs = state.messages.concat([{role:"user", content: reportPrompt}]);
-  var lastErr;
-  for (var attempt = 0; attempt < 3; attempt++) {
-    try {
-      var response = await fetch("/api/chat", {
-        method: "POST",
-        headers: window.WIZ_HEADERS(),
-        body: JSON.stringify({messages:msgs, track:state.track, lens:state.lens})
-      });
-      if (!response.ok) {
-        if ((response.status === 429 || response.status === 529) && attempt < 2) {
-          await new Promise(function(r){ setTimeout(r, 3000 + attempt * 2000); });
-          continue;
-        }
-        throw new Error("Report API error " + response.status);
-      }
-      var data = await response.json();
-      var text = (data.content || []).map(function(b){return b.text||'';}).join('').trim();
-      return text;
-    } catch(e) {
-      lastErr = e;
-      if (attempt < 2) await new Promise(function(r){ setTimeout(r, 2000); });
-    }
-  }
-  throw lastErr || new Error("Report failed after retries");
-}
  
 function wizFormat(text) {
   // escape HTML first so model output cannot inject tags
@@ -1532,6 +1471,7 @@ async function generateReport() {
     raw = await callReport();
   } catch(e) {
     setLoading(false);
+    if (state.sessionId !== requestSession) return;
     addMessage("wiz", "I am having difficulty generating the full report right now. Please try typing 'generate my report' and I will try again.");
     return;
   }
@@ -1566,7 +1506,7 @@ async function generateReport() {
     } catch(e2) {}
     setLoading(false);
     if (!report) {
-      addMessage("wiz", "I have your full session summary ready but encountered a formatting issue displaying it. Please type 'generate report' and I will produce it cleanly.");
+      addMessage("wiz", "The report could not be generated or displayed. Please retry generate report.");
       return;
     }
   }
@@ -1576,6 +1516,7 @@ async function generateReport() {
 }
 
 async function handleWIZResponse(userMsg) {
+  var requestSession = state.sessionId;
   showTyping();
   setLoading(true);
 
@@ -1587,7 +1528,7 @@ async function handleWIZResponse(userMsg) {
       var notice = document.createElement("div");
       notice.className = "msg wiz";
       notice.id = "freeze-notice";
-      notice.innerHTML = '<div class="msg-avatar"></div><div><div class="msg-bubble" style="background:white;border:1px solid var(--border);border-top-left-radius:3px;color:var(--mid);box-shadow:0 2px 6px rgba(0,0,0,0.04);font-style:italic;font-size:13px">WIZ is thinking -- please bear with me. If I seem frozen, please add your reply again.</div></div>';
+      notice.innerHTML = '<div class="msg-avatar"></div><div><div class="msg-bubble" style="background:white;border:1px solid var(--border);border-top-left-radius:3px;color:var(--mid);box-shadow:0 2px 6px rgba(0,0,0,0.04);font-style:italic;font-size:13px">WIZ is thinking -- please bear with me. Please wait for the reply or error before retrying.</div></div>';
       msgs.appendChild(notice);
       msgs.scrollTop = msgs.scrollHeight;
     }
@@ -1595,6 +1536,7 @@ async function handleWIZResponse(userMsg) {
 
   try {
     var reply = await callWIZ(userMsg);
+    if (state.sessionId !== requestSession) { clearTimeout(freezeTimer); return; }
     clearTimeout(freezeTimer);
     var fn = document.getElementById("freeze-notice");
     if (fn) fn.remove();
@@ -1692,7 +1634,11 @@ async function handleWIZResponse(userMsg) {
     if (fn2) fn2.remove();
     removeTyping();
     setLoading(false);
-    addMessage("wiz", "I am having a brief technical moment. Please try again in a few seconds -- I am still here.");
+    if (state.sessionId !== requestSession) return;
+    addMessage("wiz", "Message failed: " + err.message);
+    var retry = document.createElement('button'); retry.textContent = 'Retry message';
+    retry.onclick = async function(){ retry.disabled = true; await WIZ_ACCOUNT.retry(); retry.remove(); };
+    document.getElementById('messages').appendChild(retry);
     console.error(err);
   }
 }
@@ -2108,66 +2054,6 @@ function openEndSession(){
 }
 function closeEndSession(){ var m = document.getElementById('endSessionModal'); if (m) m.className = 'wiz-modal'; }
 function endSessionReport(){ closeEndSession(); generateReport(); }
-function restartSession(mode){
-  try { sessionStorage.setItem('wiz_restart', mode); } catch(e) {}
-  location.reload();
-}
-(function(){
-  var mode = null;
-  try { mode = sessionStorage.getItem('wiz_restart'); sessionStorage.removeItem('wiz_restart'); } catch(e) {}
-  if (mode !== 'fresh' && mode !== 'opening') return;
-  function go(){
-    var g = document.getElementById('wizAgeGate'); if (g) g.style.display = 'none';
-    if (mode === 'fresh') beginWIZSession();
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
-})();
-
-function beginWIZSession() {
-  // Hide opening screen, show the app
-  var opening = document.getElementById('opening-screen');
-  if (opening) opening.style.display = 'none';
-  var sidebar = document.getElementById('wizSidebar');
-  if (sidebar) sidebar.style.display = '';
-  var chatArea = document.getElementById('chatArea');
-  if (chatArea) chatArea.style.display = '';
-  var esb = document.getElementById('endSessionBtn'); if (esb) esb.style.display = '';
-  document.body.classList.add('in-session');
-  window.scrollTo(0,0);
-  var ui = document.getElementById("userInput");
-  if (ui && state.sessionStarted && state.messages.length) { try { ui.focus({preventScroll:true}); } catch(e){} }
-  // Start the WIZ session
-  startSession();
-}
-
-async function startSession() {
-  if (state.sessionStarted) return;
-  state.sessionStarted = true;
-  showTyping();
-  try {
-    // Seed with a silent opening prompt so the API has a message to respond to
-    var openingPrompt = "Please begin the session now with your opening welcome.";
-    var reply = await callWIZ(openingPrompt);
-    // Remove the seeded user message from history so it doesn't appear in conversation
-    state.messages = state.messages.filter(function(m){ return m.content !== openingPrompt; });
-    removeTyping();
-    if (reply && reply.trim()) {
-      addMessage("wiz", reply);
-    var caVis = document.getElementById("chatArea");
-    if (caVis && caVis.style.display !== "none") {
-      document.getElementById("userInput").focus({preventScroll:true});
-    }
-    } else {
-      throw new Error("Empty reply");
-    }
-  } catch(e) {
-    removeTyping();
-    var fallback = "Hello, and welcome to your Mind Flow session. I am really glad you are here today.\n\nI am WIZ -- the Mind Flow AI Coaching Intelligence, built on the methodology of PJ Wingfield and Mind Flow International Ltd.\n\nThis session is completely yours -- no wrong answers, no judgements. Just a real conversation about where you are and where you want to go.\n\nSo -- to start. What is your name?";
-    state.messages.push({role:"assistant", content:fallback});
-    addMessage("wiz", fallback);
-  }
-}
-
 function startWithKey() {
   // Server-side API key - auto start
   if (false) {
@@ -2192,19 +2078,337 @@ function startWithKey() {
   document.getElementById('apiSetup').style.display = 'none';
   startSession();
 }
-// API key handled server-side
-// Server handles API key - auto start session
-(function() {
-  try {
-    document.getElementById('apiSetup').style.display = 'none';
-  } catch(e) {}
-  // Single session start on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startSession);
-  } else {
-    startSession();
-  }
-})();
+// Account recovery restores or starts the selected retained session.
 </script>
-</body>
+<script>
+// Source mirrored into index.html by build-connection.py. No separate production asset.
+const WIZ_ACCOUNT = (() => {
+  const $ = id => document.getElementById(id);
+  let token = localStorage.getItem('wiz_access_token');
+  let refresh = localStorage.getItem('wiz_refresh_token');
+  let sid = localStorage.getItem('wiz_active_session');
+  let pending = null, opening = null, busy = false, epoch = 0, refreshJob = null;
+  const initialState = {...state};
+  const key = () => crypto.randomUUID();
+  function remember(data) {
+    token = data.session.access_token; refresh = data.session.refresh_token;
+    localStorage.setItem('wiz_access_token', token); localStorage.setItem('wiz_refresh_token', refresh);
+  }
+  async function response(r) {
+    const data = r.status === 204 ? {} : await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(data.error?.message || 'Request failed (' + r.status + ')'); e.status = r.status; e.code = data.error?.code; e.receipt = data.error?.erasure?.receipt_id || data.error?.receipt_id || data.receipt_id; throw e; }
+    return data;
+  }
+  async function api(path, method = 'GET', body, requestKey, raw = false) {
+    if (!path.startsWith('/api/v1/')) throw new Error('Invalid account request.');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let r;
+      try {
+        r = await fetch(path, {method, headers: {...(token ? {Authorization:'Bearer ' + token} : {}), ...(raw ? {'Content-Type':body.type || 'application/octet-stream'} : {'Content-Type':'application/json'}), ...(requestKey ? {'Idempotency-Key':requestKey} : {})}, body: body === undefined ? undefined : raw ? body : JSON.stringify(body), signal: AbortSignal.timeout(45000)});
+      } catch (e) { if (requestKey && attempt === 0) continue; throw new Error('Connection failed. Retry the same action.'); }
+      if (r.status === 401 && refresh && attempt === 0 && !path.includes('/auth/')) {
+        if (!refreshJob) refreshJob = fetch('/api/v1/auth/refresh', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({refresh_token:refresh})}).then(response).then(remember).finally(() => { refreshJob = null; });
+        try { await refreshJob; } catch(e) { clearAccount(); $('wizAuthError').textContent = e.message; throw e; }
+        continue;
+      }
+      return raw && r.ok ? r : response(r);
+    }
+    throw new Error('Session expired. Please sign in again.');
+  }
+  const v1 = (p, ...args) => api('/api/v1' + p, ...args);
+  async function pages(path) {
+    let cursor = null, rows = [], seen = new Set();
+    do {
+      const d = await v1(path + (path.includes('?') ? '&' : '?') + 'limit=100' + (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''));
+      rows.push(...d.items); cursor = d.next_cursor;
+      if (cursor && seen.has(cursor)) throw new Error('Repeated page cursor. Please reload.');
+      seen.add(cursor);
+    } while (cursor);
+    return rows;
+  }
+  function status(message, error = false) { $('wizAccountStatus').textContent = message; $('wizAccountStatus').style.color = error ? '#a12525' : 'var(--navy)'; }
+  function returnTrackOffer() {
+    let box = $('wizReturnTrackOffer');
+    if (!box) {
+      box = document.createElement('section'); box.id = 'wizReturnTrackOffer';
+      box.setAttribute('aria-live', 'polite'); box.style.cssText = 'display:none;max-width:940px;margin:18px auto;padding:16px 20px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc';
+      const cta = $('floatCta'); if (cta?.parentNode) cta.parentNode.insertBefore(box, cta.nextSibling); else $('opening-screen').prepend(box);
+    }
+    return box;
+  }
+  const trackLabels = {sport:'Sport',career:'Career',learning:'Learning'};
+  function updateReturnTrack(rows) {
+    const box = returnTrackOffer(); box.replaceChildren(); box.style.display = 'none';
+    // Session-list pages sort by last activity; use created_at to find the latest track start.
+    const latest = rows.filter(s => Object.hasOwn(trackLabels, s.track) && Number.isFinite(Date.parse(s.created_at)))
+      .sort((a,b) => Date.parse(b.created_at) - Date.parse(a.created_at) || String(b.id).localeCompare(String(a.id)))[0];
+    if (!latest) return;
+    const text = document.createElement('p'); text.textContent = 'Your most recent track was ' + trackLabels[latest.track] + '.'; text.style.margin = '0 0 10px';
+    const resume = document.createElement('button'); resume.type = 'button'; resume.textContent = 'Continue ' + trackLabels[latest.track];
+    resume.onclick = async () => { resume.disabled = true; try { await loadSession(latest.id); } catch(e) { resume.disabled = false; status(e.message, true); } };
+    box.append(text, resume); box.style.display = '';
+  }
+  function action(fn) { return async function() { this.disabled = true; status('Saving…'); try { await fn(); status('Saved.'); } catch(e) { status(e.message + (e.receipt ? ' Receipt: ' + e.receipt : ''), true); } finally { this.disabled = false; } }; }
+  function button(label, fn, parent) { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = action(fn); parent.appendChild(b); return b; }
+  const field = (id, label, type = 'text') => '<label>' + label + '<input id="' + id + '" type="' + type + '"></label>';
+  const area = (id, label) => '<label>' + label + '<textarea id="' + id + '"></textarea></label>';
+  const overlay = document.createElement('div'); overlay.id = 'wizAuthOverlay'; overlay.className = 'account-overlay';
+  overlay.innerHTML = '<div class="account-card"><h2>Your WIZ account</h2><p id="wizAuthError" role="status"></p>' + field('wizEmail','Email','email') + field('wizPassword','Password','password') + field('wizName','Name (optional for sign-up)') + '<label><input id="wizSignupAdult" type="checkbox"> I confirm that I am 18 or over.</label><button id="wizLoginBtn">Sign in</button><button id="wizSignupBtn">Sign up</button><button id="wizForgotBtn">Forgot password?</button></div>';
+  document.body.appendChild(overlay);
+  // Recovery link target (Supabase implicit flow): the tokens arrive in the URL fragment. Read once, scrub the URL at once, keep in memory only.
+  let recovery = null;
+  { const f = new URLSearchParams(location.hash.slice(1));
+    if (f.get('type') === 'recovery' && f.get('access_token')) recovery = {access:f.get('access_token')};
+    else if (f.get('error_code') || (f.get('error') && f.get('error_description'))) recovery = {failed:true};
+    if (recovery) history.replaceState(null, '', location.pathname + location.search); }
+  const recoveryOverlay = document.createElement('div'); recoveryOverlay.id = 'wizRecoveryOverlay'; recoveryOverlay.className = 'account-overlay'; recoveryOverlay.style.display = 'none';
+  recoveryOverlay.innerHTML = '<div class="account-card"><h2>Choose a new password</h2><p id="wizRecoveryStatus" role="status"></p><div id="wizRecoveryForm">' + field('wizRecoveryPassword','New password (10-72 characters)','password') + '<button id="wizRecoverySaveBtn">Set new password</button></div><button id="wizRecoveryBackBtn">Back to sign in</button></div>';
+  document.body.appendChild(recoveryOverlay);
+  const modal = document.createElement('div'); modal.id = 'wizAccountModal'; modal.className = 'account-overlay'; modal.style.display = 'none';
+  modal.innerHTML = `<div class="account-card" role="dialog" aria-modal="true" aria-label="Your account"><button id="wizCloseAccountBtn">Close account</button><h2>Your account</h2><p id="wizAccountStatus" role="status" aria-live="polite"></p>
+    <section><h3>Profile & onboarding</h3>${field('wizProfileName','Name')}${field('wizLanguage','Language code')}${field('wizFocus','What would you like coaching to help with?')}<label><input id="wizAdult" type="checkbox">I am 18 or over</label><button id="wizSaveProfileBtn">Save profile</button><button id="wizSaveOnboardingBtn">Save onboarding</button></section>
+    <section><h3>Privacy choices</h3><div id="wizConsents"></div></section>
+    <section><h3>Saved sessions</h3><ul id="wizSessionList"></ul><button id="wizNewSessionBtn">Choose a new focus</button>${field('wizCustomFocus','Or enter your own focus')}<button id="wizCustomStartBtn">Start with this focus</button></section>
+    <section><h3>Goals</h3><div id="wizGoals"></div></section><section><h3>Journal</h3><div id="wizJournal"></div></section>
+    <section><h3>Training progress</h3>${field('wizTrainingKey','Course') }<label>Status<select id="wizTrainingStatus"><option>not_started</option><option>in_progress</option><option>completed</option></select></label>${field('wizTrainingPercent','Percent','number')}<button id="wizSaveTrainingBtn">Save training</button><ul id="wizTrainingList"></ul><div id="wizResearch"></div></section>
+    <section><h3>Career direction & route comparison</h3>${field('wizDirection','Direction')}${area('wizValues','Values (one per line)')}<div id="wizRoutes"></div><button id="wizAddRouteBtn">Add route</button><button id="wizSaveCareerBtn">Save career plan</button><button id="wizDeleteCareerBtn">Delete career plan</button><label><input id="wizCareerAI" type="checkbox">Use this plan in coaching</label></section>
+    <section><h3>Learning profile</h3>${area('wizLearningStyles','Learning styles (one per line)')}${area('wizLearningFocus','Focus notes')}${area('wizAdjustments','Useful adjustments')}${area('wizRecognition','Private self-recognition')}<button id="wizSaveLearningBtn">Save learning profile</button><button id="wizDeleteLearningBtn">Delete learning profile</button><label><input id="wizLearningAI" type="checkbox">Use this learning profile in coaching</label></section>
+    <section><h3>Portfolio & attachments</h3><div id="wizPortfolio"></div></section><section><h3>Networking</h3><div id="wizNetworking"></div></section><section><h3>Support map</h3><div id="wizSupport"></div></section><section><h3>Wellbeing pulses</h3><p>Stress: higher means more stress. Energy: higher means more energy.</p><div id="wizPulses"></div><p id="wizPulseTrend"></p></section><section><h3>Prior learning</h3><div id="wizPrior"></div></section>
+    <section><h3>Password</h3>${field('wizNewPassword','New password (10-72 characters)','password')}<button id="wizChangePasswordBtn">Change password</button></section>
+    <section><h3>Your data</h3><button id="wizExportBtn">Download account export</button><button id="wizErasureStatusBtn">Check erasure status</button><button id="wizEraseBtn">Erase my account</button><button id="wizLogoutBtn">Sign out</button></section></div>`;
+  document.body.appendChild(modal);
+  const style = document.createElement('style'); style.textContent = '.account-overlay{position:fixed;inset:0;z-index:100001;background:rgba(15,20,40,.78);overflow:auto;padding:20px;display:flex;align-items:flex-start;justify-content:center}.account-card{background:var(--cream,#faf8f2);padding:24px;border-radius:12px;width:100%;max-width:650px;font-family:inherit;overflow-wrap:anywhere}.account-card section{border-top:1px solid var(--border);padding-top:18px;margin-top:18px}.account-card label{display:block;margin:9px 0;font-size:14px}.account-card input:not([type=checkbox]),.account-card textarea,.account-card select{display:block;width:100%;max-width:100%;padding:8px;font:inherit;border:1px solid var(--border);border-radius:5px}.account-card button{padding:8px 12px;margin:5px 5px 5px 0;background:white;color:var(--navy);border:1px solid var(--border);border-radius:6px;cursor:pointer}.account-card ul{padding-left:20px}.account-card li{margin:12px 0}.account-card textarea{min-height:70px}#wizAccountStatus{position:sticky;top:0;background:var(--cream,#faf8f2);padding:8px 0;z-index:2}.record-row{border-top:1px solid var(--border);padding:10px 0}.account-entry{border:1px solid var(--border);padding:12px;margin:12px 0}.account-button{margin-left:auto;padding:7px 12px;background:white;border:1px solid var(--border);border-radius:6px;color:var(--navy)}@media(max-width:600px){.account-overlay{padding:8px}.account-card{padding:16px}.account-button{font-size:12px;padding:6px}header{flex-wrap:wrap}}'; document.head.appendChild(style);
+  const accountButton = document.createElement('button'); accountButton.id = 'openAccBtn'; accountButton.className = 'account-button'; accountButton.textContent = 'Account'; document.querySelector('header').appendChild(accountButton);
+  let onboarding = {}, complete = false, plan = null, learning = null;
+  function resetConversation() {
+    epoch++; pending = null; opening = null;
+    Object.assign(state, initialState, {messages:[],assessedDomains:[],track:null,lens:null});
+    $('messages').replaceChildren(); $('userInput').value = ''; setLoading(false); setTrainingMode(false); setPhase(1);
+    document.querySelectorAll('.report-view,.report-nav,.back-to-report').forEach(el => el.remove());
+    document.querySelectorAll('.domain-dot').forEach(el => el.classList.remove('active','done'));
+  }
+  function showOpening() { resetConversation(); sid = null; localStorage.removeItem('wiz_active_session'); $('opening-screen').style.display = ''; $('wizSidebar').style.display = 'none'; $('chatArea').style.display = 'none'; $('endSessionBtn').style.display = 'none'; document.body.classList.remove('in-session'); }
+  function showChat() { $('opening-screen').style.display = 'none'; $('wizSidebar').style.display = ''; $('chatArea').style.display = ''; $('inputArea').style.display = ''; $('messages').style.display = ''; $('endSessionBtn').style.display = ''; document.body.classList.add('in-session'); }
+  function clearAccount() {
+    token = refresh = null; localStorage.removeItem('wiz_access_token'); localStorage.removeItem('wiz_refresh_token'); showOpening();
+    const returnOffer = $('wizReturnTrackOffer'); if (returnOffer) { returnOffer.replaceChildren(); returnOffer.style.display = 'none'; }
+    modal.style.display = 'none'; overlay.style.display = 'flex'; modal.querySelectorAll('input,textarea').forEach(el => { el.value = ''; el.checked = false; });
+    modal.querySelectorAll('ul,.record-list,#wizResearch,#wizRoutes,#wizConsents').forEach(el => el.replaceChildren()); onboarding = {}; plan = learning = null;
+  }
+  function renderAssistant(text) {
+    text = processTrainingMarkers(text);
+    const choices = parseChoices(text);
+    if (choices) { if (choices.before) addMessage('wiz',choices.before); showChoicesTable(choices); if (choices.after) addMessage('wiz',choices.after); return; }
+    if (text.includes('[REPORT_READY]')) { try { const report = JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1)); state.reportData = report; buildReport(report); return; } catch(e) { /* display received text with markers removed */ } }
+    const panel = text.match(/\[PANEL_([\d_A-Z]+)\]/i);
+    if (panel) { const before = text.replace(/\[PANEL_[\d_A-Z]+\]/gi,'').trim(); if (before) addMessage('wiz',before); showWIZPanel(panel[1].replaceAll('_','.')); return; }
+    const signal = [['DIRECTION_AUDIT',showDirectionAudit],['SKILLS_QUIZ',showSkillsQuiz],['EXPLAIN_RBP',showRBPCard],['TRAINING_MENU',showTrainingMenu]].find(([name]) => text.includes('['+name+']'));
+    if (signal) { const before = text.replace('['+signal[0]+']','').trim(); if (before) addMessage('wiz',before); signal[1](); return; }
+    const condition = text.match(/\[CONDITION_([A-Z_]+)\]/i);
+    if (condition) { const before = text.replace(/\[CONDITION_[A-Z_]+\]/gi,'').trim(); if (before) addMessage('wiz',before); const conditionKey = condition[1].toLowerCase(); const questionnaire = CONDITION_QUESTIONNAIRES[conditionKey]; if (questionnaire) showRatingPanel(questionnaire,'condition_'+conditionKey); return; }
+    if (text.includes('[RBP_CARD]')) { showRBPCard(); text = text.replace('[RBP_CARD]',''); }
+    text = text.replace(/\[(?:REPORT_READY|PHASE:\d+|DOMAIN:[^\]]+)\]/g,'').trim(); if (text) addMessage('wiz',text);
+  }
+  async function loadSession(id, close = true) {
+    const loadEpoch = epoch;
+    const session = (await v1('/sessions/' + id)).item;
+    let rows = [], after = null, seen = new Set();
+    do { const d = await v1('/sessions/' + id + '/messages?limit=200' + (after === null ? '' : '&after='+after)); rows.push(...d.items); after = d.next_after; if (after !== null && seen.has(after)) throw new Error('Repeated transcript page.'); seen.add(after); } while (after !== null && after !== undefined);
+    if (loadEpoch !== epoch) return;
+    resetConversation(); sid = id; localStorage.setItem('wiz_active_session',id);
+    state.sessionId = id; state.track = session.track; state.lens = session.lens; state.sessionStarted = true; state.messages = rows.map(m => ({role:m.sender === 'user' ? 'user' : 'assistant',content:m.content})); state.turnCount = rows.filter(m => m.sender === 'user').length;
+    showChat(); rows.forEach(m => m.sender === 'user' ? addMessage('user',m.content) : renderAssistant(m.content));
+    // A historical report remains available; later turns open as conversation.
+    if (state.reportData && !String(rows.at(-1)?.content || '').includes('[REPORT_READY]')) showConversation();
+    if (close) modal.style.display = 'none';
+  }
+  async function sessions() {
+    const requestEpoch = epoch;
+    const rows = await pages('/sessions');
+    if (requestEpoch !== epoch || !token) return;
+    $('wizSessionList').replaceChildren();
+    rows.forEach(s => { const li = document.createElement('li'); const title = document.createElement('span'); title.textContent = s.title || s.topic?.area || 'Session'; li.appendChild(title);
+      button('Load',() => loadSession(s.id),li);
+      button('Delete',async () => { if (!confirm('Permanently delete this session and transcript? Independent records stay.')) return; await v1('/sessions/'+s.id,'DELETE',{confirm:'delete_session'}); if (sid === s.id) showOpening(); await sessions(); },li); $('wizSessionList').appendChild(li); });
+    updateReturnTrack(rows);
+  }
+  async function consent() {
+    const d = await v1('/consents'); $('wizConsents').replaceChildren();
+    d.purposes.forEach(p => { const row = document.createElement('div'); row.className = 'record-row'; const notice = document.createElement('p'); notice.textContent = p.purpose.replaceAll('_',' ') + ' — version ' + p.version + ': ' + p.summary + (p.legal_approved ? ' (Available)' : ' (Awaiting notice approval; grants unavailable)'); row.appendChild(notice);
+      const label = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.id = 'consent-' + p.purpose; input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; label.appendChild(input); label.append(' Allow ' + p.purpose.replaceAll('_',' ')); row.appendChild(label);
+      input.onchange = async () => { const desired = input.checked; input.disabled = true; try { await v1('/consents','POST',{purpose:p.purpose,version:p.version,action:desired ? 'grant' : 'revoke'}); await consent(); status('Privacy choice saved.'); } catch(e) { input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; status(e.message,true); } }; $('wizConsents').appendChild(row); });
+  }
+  const split = value => value.split('\n').map(s => s.trim()).filter(Boolean);
+  // These fields map directly to record APIs; displayed rows always come from the server.
+  const collections = [
+    ['wizGoals','/goals',[['title','Title'],['why','Why'],['measure','Measure'],['target_date','Target date','date']], 'title'],
+    ['wizJournal','/journal',[['body','Entry','textarea'],['entry_date','Date','date']], 'body'],
+    ['wizPortfolio','/portfolio',[['title','Title'],['entry_type','Type','select',['reference','work_experience','qualification','project','feedback','prior_learning','other']],['body','Evidence','textarea'],['entry_date','Date','date'],['competencies','Competencies (one per line)','array'],['habits','Habits (one per line)','array']], 'title'],
+    ['wizNetworking','/networking',[['contact_label','Contact'],['interaction_date','Interaction date','date'],['note','Note','textarea'],['follow_up_date','Follow-up date','date']], 'contact_label'],
+    ['wizSupport','/support-map',[['label','Person'],['support_role','Support role'],['direction','Effect','select',['supports','makes_harder']],['note','Note','textarea'],['last_contact_date','Last contact','date'],['next_contact_date','Next contact','date']], 'label'],
+    ['wizPulses','/pulses',[['stress','Stress (1–10)','number'],['energy','Energy (1–10)','number'],['note','Note','textarea']], 'note'],
+    ['wizPrior','/prior-learning',[['experience','Experience'],['skill','Skill'],['application','Application','textarea'],['recorded_on','Recorded on','date']], 'experience']
+  ];
+  async function collection(spec) {
+    const [host,path,fields,title] = spec, rows = await pages(path); $(host).replaceChildren();
+    function editor(item) {
+      const form = document.createElement('form'); form.className = 'account-entry'; const inputs = {};
+      fields.forEach(([name,label,type,options]) => { const l = document.createElement('label'); l.textContent = label;
+        const el = document.createElement(type === 'select' ? 'select' : ['textarea','array'].includes(type) ? 'textarea' : 'input');
+        if (el.tagName === 'INPUT') el.type = type || 'text'; if (type === 'select') options.forEach(o => { const option = document.createElement('option'); option.value = option.textContent = o; el.appendChild(option); });
+        el.name = name; el.value = type === 'array' ? (item?.[name] || []).join('\n') : item?.[name] || (type === 'select' ? options[0] : type === 'date' ? new Date().toISOString().slice(0,10) : type === 'number' ? 5 : ''); inputs[name] = el; l.appendChild(el); form.appendChild(l); });
+      const save = document.createElement('button'); save.textContent = item ? 'Save changes' : 'Add record'; save.type = 'submit'; form.appendChild(save);
+      let requestKey = key(); form.onsubmit = async e => { e.preventDefault(); save.disabled = true; status('Saving…'); try { const b = {}; fields.forEach(([name,,type]) => { const val = inputs[name].value; if (type === 'date' && !val) return; b[name] = type === 'array' ? split(val) : type === 'number' ? +val : val; }); if (item) b.expected_version = item.version; await v1(path + (item ? '/'+item.id : ''),item ? 'PATCH' : 'POST',b,item ? undefined : requestKey); await collection(spec); status('Record saved.'); } catch(e) { status(e.message,true); } finally { save.disabled = false; } };
+      return form;
+    }
+    $(host).appendChild(editor(null)); const list = document.createElement('div'); list.className = 'record-list'; $(host).appendChild(list);
+    rows.forEach(item => { const row = document.createElement('div'); row.className = 'record-row'; row.dataset.recordId = item.id; const text = document.createElement('p'); text.textContent = item[title] || [item.stress,item.energy].join(' / '); row.appendChild(text);
+      button('Edit',() => { if (!row.querySelector('form')) row.appendChild(editor(item)); },row);
+      button('Delete',async () => { if (!confirm('Permanently delete this record?')) return; await v1(path+'/'+item.id,'DELETE'); await collection(spec); },row);
+      if (['/portfolio','/pulses'].includes(path)) { const label = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.checked = item.ai_use_enabled; label.appendChild(input); label.append('Use in coaching'); row.appendChild(label); input.onchange = async () => { status('Saving…'); try { await v1(path+'/'+item.id+'/ai-use','PUT',{enabled:input.checked}); status('Coaching choice saved.'); } catch(e) { input.checked = item.ai_use_enabled; status(e.message,true); } }; }
+      if (path === '/prior-learning') button(item.promoted_entry_id ? 'View promoted portfolio' : 'Promote to portfolio',async () => { await v1(path+'/'+item.id+'/promote','POST',{},key()); await collection(spec); await collection(collections[2]); },row);
+      if (path === '/portfolio') attachments(item,row);
+      list.appendChild(row); });
+  }
+  async function attachments(item,row) {
+    const list = document.createElement('div'); row.appendChild(list);
+    const file = document.createElement('input'); file.type = 'file'; file.accept = '.txt,.pdf,.png,.jpg,.jpeg,.webp'; file.setAttribute('aria-label','Portfolio attachment'); row.appendChild(file);
+    let upload = null;
+    button('Upload attachment',async () => {
+      if (!file.files[0]) throw new Error('Choose a file first.'); const f = file.files[0];
+      if (!upload || upload.file !== f) upload = {file:f,key:key(),id:null};
+      if (!upload.id) upload.id = (await v1('/portfolio/'+item.id+'/attachments','POST',{filename:f.name,mime_type:f.type || 'text/plain',size:f.size},upload.key)).item.id;
+      await v1('/attachments/'+upload.id+'/content','PUT',f,undefined,true); await v1('/attachments/'+upload.id+'/finalize','POST'); upload = null; await refreshList();
+    },row);
+    async function refreshList() { const d = await v1('/portfolio/'+item.id+'/attachments'); list.replaceChildren(); d.items.forEach(a => { const p = document.createElement('p'); p.textContent = a.filename+' ('+a.state+')';
+      button('Download',async () => { const r = await fetch('/api/v1/attachments/'+a.id+'/content',{headers:{Authorization:'Bearer '+token}}); if (!r.ok) await response(r); download(await r.blob(),a.filename); },p);
+      button('Delete attachment',async () => { if (!confirm('Delete attachment?')) return; await v1('/attachments/'+a.id,'DELETE'); await refreshList(); },p); list.appendChild(p); }); }
+    try { await refreshList(); } catch(e) { status(e.message,true); }
+  }
+  function download(blob,name) { const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000); }
+  let routeRows = [];
+  function routeEditor(route = {}) {
+    if (routeRows.length >= 8) throw new Error('At most eight routes.');
+    const div = document.createElement('div'); div.className = 'account-entry'; const inputs = {};
+    ['label','appeal','concerns','funding','next_step'].forEach(n => { const label = document.createElement('label'); label.textContent = n.replaceAll('_',' '); const input = document.createElement('input'); input.name = n; input.value = route[n] || ''; label.appendChild(input); div.appendChild(label); inputs[n] = input; });
+    const record = {id:route.id || 'route-'+key().slice(0,8),inputs}; routeRows.push(record);
+    button('Remove route',() => { routeRows = routeRows.filter(r => r !== record); div.remove(); },div); $('wizRoutes').appendChild(div);
+  }
+  async function reload() {
+    status('Loading…');
+    const me = await v1('/me'), on = await v1('/me/onboarding');
+    onboarding = on.answers || {}; complete = !!on.completed_at; $('wizProfileName').value = me.user.full_name || ''; $('wizLanguage').value = me.profile.preferences.language || ''; $('wizFocus').value = onboarding.focus || ''; $('wizAdult').checked = onboarding.over_18 === true;
+    await consent(); await sessions(); for (const spec of collections) await collection(spec);
+    await training(); plan = (await v1('/career-plan')).item; $('wizDirection').value = plan?.plan?.direction || ''; $('wizValues').value = (plan?.plan?.values || []).join('\n'); $('wizCareerAI').checked = !!plan?.ai_use_enabled; routeRows = []; $('wizRoutes').replaceChildren(); (plan?.plan?.routes || []).forEach(routeEditor);
+    learning = (await v1('/learning-profile')).item; const lp = learning?.profile || {}; $('wizLearningStyles').value = (lp.learning_styles || []).join('\n'); $('wizLearningFocus').value = lp.focus_notes || ''; $('wizAdjustments').value = lp.useful_adjustments || ''; $('wizRecognition').value = lp.self_recognition || ''; $('wizLearningAI').checked = !!learning?.ai_use_enabled;
+    const trend = (await v1('/pulses/trend')).trend; $('wizPulseTrend').textContent = 'Stress: '+trend.stress.direction+'; energy: '+trend.energy.direction; status('Account loaded.');
+  }
+  async function training() {
+    const d = await v1('/training'); $('wizTrainingList').replaceChildren(); d.items.forEach(t => { const li = document.createElement('li'); li.textContent = t.module_key+': '+t.status+' ('+t.percent+'%)'; button('Edit',() => { $('wizTrainingKey').value = t.module_key; $('wizTrainingStatus').value = t.status; $('wizTrainingPercent').value = t.percent; },li); $('wizTrainingList').appendChild(li); });
+    const research = await v1('/career/research'); $('wizResearch').replaceChildren();
+    (research.steps || []).forEach(s => { const li = document.createElement('div'); li.textContent = (s.title || s.label || s.module_key)+': '+s.status; if (s.prompt) li.append(' — '+s.prompt); button('Mark complete',async () => { await v1('/training/'+s.module_key,'PUT',{status:'completed',percent:100}); await training(); },li); $('wizResearch').appendChild(li); });
+    for (const [heading,items] of [['Where to look',research.where_to_look],['Questions to ask',research.interview_questions]]) { const h = document.createElement('h4'); h.textContent = heading; $('wizResearch').appendChild(h); const list = document.createElement('ul'); (items || []).forEach(text => { const li = document.createElement('li'); li.textContent = text; list.appendChild(li); }); $('wizResearch').appendChild(list); }
+  }
+  async function authenticated(ageAttested = false) {
+    let on = await v1('/me/onboarding'); onboarding = on.answers || {}; complete = !!on.completed_at;
+    if (ageAttested && onboarding.over_18 === undefined) {
+      on = await v1('/me/onboarding','PUT',{answers:{...onboarding,over_18:true},complete:!!on.completed_at});
+      onboarding = on.answers || {...onboarding,over_18:true}; complete = !!on.completed_at;
+    }
+    overlay.style.display = 'none'; $('wizAgeGate').style.display = onboarding.over_18 === true ? 'none' : 'flex';
+    if (sid) await loadSession(sid); else showOpening();
+    await sessions();
+  }
+  async function auth(signup) {
+    $('wizAuthError').textContent = '';
+    if (signup && !$('wizSignupAdult').checked) { $('wizAuthError').textContent = 'Please confirm that you are 18 or over to create an account.'; return; }
+    const b = {email:$('wizEmail').value,password:$('wizPassword').value}; if (signup) b.over_18 = true; if (signup && $('wizName').value.trim()) b.full_name = $('wizName').value.trim();
+    const d = await v1('/auth/'+(signup ? 'signup' : 'login'),'POST',b);
+    if (d.confirmation_required) { $('wizAuthError').textContent = 'Check your email to confirm your account, then sign in.'; return; }
+    remember(d); await authenticated(!!(d.user && d.user.over_18 === true));
+  }
+  $('wizLoginBtn').onclick = async () => { try { await auth(false); } catch(e) { $('wizAuthError').textContent = e.message; } };
+  $('wizSignupBtn').onclick = async () => { try { await auth(true); } catch(e) { $('wizAuthError').textContent = e.message; } };
+  $('wizForgotBtn').onclick = async () => { const email = $('wizEmail').value.trim(); if (!email) { $('wizAuthError').textContent = 'Enter your email address first.'; return; } try { const d = await v1('/auth/password-reset','POST',{email}); $('wizAuthError').textContent = d.message; } catch(e) { $('wizAuthError').textContent = e.message; } };
+  function recoveryStatus(message, error = false) { $('wizRecoveryStatus').textContent = message; $('wizRecoveryStatus').style.color = error ? '#a12525' : 'var(--navy)'; }
+  function recoveryEnd() { recovery = null; $('wizRecoveryPassword').value = ''; recoveryOverlay.style.display = 'none'; overlay.style.display = 'flex'; }
+  async function recoveryStart() {
+    recoveryOverlay.style.display = 'flex';
+    if (!recovery || recovery.failed) { $('wizRecoveryForm').style.display = 'none'; recoveryStatus('This recovery link is invalid or has expired. Go back to sign in and choose Forgot password? to get a new one.', true); return; }
+    recoveryStatus('Checking your recovery link…');
+    try {
+      const r = await fetch('/api/v1/me', {headers:{Authorization:'Bearer ' + recovery.access}, signal:AbortSignal.timeout(20000)});
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.user?.email) throw new Error('bad');
+      recoveryStatus('Choose a new password for ' + d.user.email + '.');
+    } catch(e) { recovery = null; $('wizRecoveryForm').style.display = 'none'; recoveryStatus('This recovery link is invalid or has expired, or WIZ could not check it. Go back to sign in and choose Forgot password? to get a new one.', true); }
+  }
+  $('wizRecoverySaveBtn').onclick = async () => {
+    if (!recovery?.access) return; const input = $('wizRecoveryPassword'), btn = $('wizRecoverySaveBtn'); btn.disabled = true; recoveryStatus('Saving…');
+    try {
+      const r = await fetch('/api/v1/auth/password', {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + recovery.access}, body:JSON.stringify({password:input.value}), signal:AbortSignal.timeout(20000)});
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { recoveryStatus(r.status === 401 ? 'This recovery link has expired. Go back to sign in and request a new one.' : (d.error?.message || 'Password could not be changed. Please try again.'), true); return; }
+      input.value = ''; fetch('/api/v1/auth/logout', {method:'POST', headers:{Authorization:'Bearer ' + recovery.access}}).catch(() => {}); // end the one-time recovery session
+      recovery = null; recoveryOverlay.style.display = 'none'; overlay.style.display = 'flex'; $('wizPassword').value = ''; $('wizAuthError').textContent = 'Password updated. Sign in with your new password.';
+    } catch(e) { recoveryStatus('Connection failed. Try again.', true); } finally { btn.disabled = false; }
+  };
+  $('wizRecoveryBackBtn').onclick = recoveryEnd;
+  $('wizChangePasswordBtn').onclick = async function() {
+    const input = $('wizNewPassword'); this.disabled = true; status('Saving…');
+    try { await v1('/me'); await v1('/auth/password','POST',{password:input.value}); input.value = ''; status('Password changed.'); } catch(e) { status(e.message, true); } finally { this.disabled = false; }
+  };
+  accountButton.onclick = async () => { if (!token) { overlay.style.display = 'flex'; return; } modal.style.display = 'flex'; try { await reload(); } catch(e) { status(e.message,true); } };
+  $('wizCloseAccountBtn').onclick = () => { modal.style.display = 'none'; };
+  $('wizSaveProfileBtn').onclick = action(async () => { await v1('/me','PATCH',{full_name:$('wizProfileName').value,preferences:{language:$('wizLanguage').value || null}}); });
+  $('wizSaveOnboardingBtn').onclick = action(async () => { await v1('/me/onboarding','PUT',{answers:{...onboarding,focus:$('wizFocus').value,over_18:$('wizAdult').checked},complete:true}); onboarding = (await v1('/me/onboarding')).answers; $('wizAgeGate').style.display = onboarding.over_18 ? 'none' : 'flex'; });
+  window.wizAgePass = async () => { try { if (!token) { overlay.style.display = 'flex'; return; } const current = await v1('/me/onboarding'); await v1('/me/onboarding','PUT',{answers:{...current.answers,over_18:true},complete:!!current.completed_at}); onboarding = {...current.answers,over_18:true}; $('wizAgeGate').style.display = 'none'; } catch(e) { alert('Age confirmation failed: '+e.message); } };
+  $('wizNewSessionBtn').onclick = () => { showOpening(); modal.style.display = 'none'; };
+  $('wizCustomStartBtn').onclick = action(async () => { const text = $('wizCustomFocus').value.trim(); if (!text) throw new Error('Enter a focus.'); modal.style.display = 'none'; await begin({kind:'custom',text}); });
+  $('wizSaveTrainingBtn').onclick = action(async () => { await v1('/training/'+encodeURIComponent($('wizTrainingKey').value),'PUT',{status:$('wizTrainingStatus').value,percent:+$('wizTrainingPercent').value}); await training(); });
+  $('wizAddRouteBtn').onclick = action(() => routeEditor());
+  $('wizSaveCareerBtn').onclick = action(async () => { const routes = routeRows.map(r => ({id:r.id,...Object.fromEntries(Object.entries(r.inputs).map(([n,el]) => [n,el.value]))})); await v1('/career-plan','PUT',{plan:{...plan?.plan,direction:$('wizDirection').value,values:split($('wizValues').value),routes},expected_version:plan?.version || 0}); plan = (await v1('/career-plan')).item; });
+  $('wizDeleteCareerBtn').onclick = action(async () => { if (!confirm('Delete career plan?')) return; await v1('/career-plan','DELETE'); await reload(); });
+  $('wizSaveLearningBtn').onclick = action(async () => { await v1('/learning-profile','PUT',{profile:{learning_styles:split($('wizLearningStyles').value),focus_notes:$('wizLearningFocus').value,useful_adjustments:$('wizAdjustments').value,self_recognition:$('wizRecognition').value},expected_version:learning?.version || 0}); learning = (await v1('/learning-profile')).item; });
+  $('wizDeleteLearningBtn').onclick = action(async () => { if (!confirm('Delete learning profile?')) return; await v1('/learning-profile','DELETE'); await reload(); });
+  [['wizCareerAI','/career-plan'],['wizLearningAI','/learning-profile']].forEach(([id,path]) => { $(id).onchange = async () => { const desired = $(id).checked; status('Saving…'); try { await v1(path+'/ai-use','PUT',{enabled:desired}); status('Coaching choice saved.'); } catch(e) { $(id).checked = !desired; status(e.message,true); } }; });
+  $('wizExportBtn').onclick = action(async () => { const data = await v1('/account/export'); download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'wiz-account.json'); });
+  $('wizErasureStatusBtn').onclick = action(async () => { const d = await v1('/account/erasure'); alert('Erasure status: '+JSON.stringify(d)); });
+  $('wizEraseBtn').onclick = action(async () => { if (prompt('This permanently erases your account and data. Type ERASE to confirm.') !== 'ERASE') return; await v1('/account/erasure','POST',{confirm:'erase_my_account'}); clearAccount(); $('wizAuthError').textContent = 'Your account was erased.'; });
+  $('wizLogoutBtn').onclick = async () => { try { await v1('/auth/logout','POST'); clearAccount(); } catch(e) { status('Sign out failed: '+e.message,true); } };
+  async function begin(topic) {
+    if (busy) return; if (!token) { overlay.style.display = 'flex'; return; }
+    if (!onboarding.over_18) { $('wizAgeGate').style.display = 'flex'; return; }
+    busy = true;
+    try {
+      if (!opening || JSON.stringify(opening.topic) !== JSON.stringify(topic)) { resetConversation(); opening = {topic,createKey:key(),startKey:key(),id:null}; }
+      if (!opening.id) opening.id = (await v1('/sessions','POST',{topic},opening.createKey)).item.id;
+      await v1('/sessions/'+opening.id+'/start','POST',{},opening.startKey); const id = opening.id; await loadSession(id); await sessions();
+    } catch(e) { alert('Session could not start: '+e.message+'. Select the same focus to retry.'); } finally { busy = false; }
+  }
+  async function chat(text) {
+    if (!sid) throw new Error('Choose a focus to start a session first.');
+    // Jon's upload control passes null after placing this turn's media blocks in state.
+    // Send only those current blocks; retained history still comes exclusively from the server.
+    if (text === null) { const current = state.messages.at(-1); if (current?.role !== 'user') throw new Error('No upload to send.'); text = current.content; }
+    if (pending && pending.text !== text) throw new Error('Retry the previous message before sending a different one.');
+    if (!pending) pending = {text,key:key(),sid,epoch}; const request = pending;
+    const d = await v1('/sessions/'+request.sid+'/chat','POST',{messages:[{role:'user',content:text}]},request.key);
+    if (request.epoch !== epoch) throw new Error('Session changed while waiting for the reply.');
+    const reply = typeof d.content === 'string' ? d.content.trim() : ''; if (!reply) throw new Error('WIZ returned an empty reply.'); pending = null;
+    if (state.messages.at(-1)?.content !== text) state.messages.push({role:'user',content:text});
+    state.messages.push({role:'assistant',content:reply}); return reply;
+  }
+  window.beginWIZSession = () => begin(state.track || state.lens ? {kind:'catalogue',area:state.track || state.lens} : {kind:'custom',text:'General coaching'});
+  window.startSession = window.beginWIZSession;
+  window.startTrack = (track,source) => { state.track = track; state.lens = null; state.entrySource = source; return window.beginWIZSession(); };
+  window.startLens = lens => { state.track = null; state.lens = lens; state.entrySource = 'tile'; return window.beginWIZSession(); };
+  window.callWIZ = chat;
+  window.callReport = () => chat('The coaching session is now complete. Generate the Personal Awareness Report now. Output [REPORT_READY] on its own line, then immediately output ONLY the JSON object as specified in your instructions -- no other text before or after the JSON. Every field must reference something specific the client said in this session.');
+  window.restartSession = mode => { const topic = state.track || state.lens ? {kind:'catalogue',area:state.track || state.lens} : {kind:'custom',text:'General coaching'}; closeEndSession(); showOpening(); if (mode === 'fresh') begin(topic); };
+  window.addEventListener('DOMContentLoaded',async () => { if (recovery) { overlay.style.display = 'none'; $('wizAgeGate').style.display = 'none'; await recoveryStart(); return; } if (!token) { $('wizAgeGate').style.display = 'none'; return; } try { await authenticated(); } catch(e) { $('wizAuthError').textContent = e.message; overlay.style.display = 'flex'; } });
+  return {retry:async () => { if (!pending) return; await handleWIZResponse(pending.text); },api:v1};
+})();
+
+</script></body>
 </html>

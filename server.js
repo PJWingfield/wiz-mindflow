@@ -1,58 +1,9 @@
-const express = require('express');
 const fetch = require('node-fetch');
-const app = express();
-
-// FIX: cap request body size (stops oversized expensive inputs)
-app.use(express.json({ limit: '50kb' }));
-
-// FIX: lock CORS to your own sites (browser-level protection only)
-const ALLOWED = ['https://app.mindflowpro.com','https://mindflowpro.com','https://www.mindflowpro.com'];
-app.use((req, res, next) => {
-  const o = req.headers.origin;
-  if (ALLOWED.includes(o)) res.setHeader('Access-Control-Allow-Origin', o);
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-wiz-key');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-});
-
-// FIX: stop the root folder from serving source/config files
-const BLOCKED = ['/server.js','/package.json','/package-lock.json','/nixpacks.toml','/.env','/.git'];
-app.use((req, res, next) => {
-  const p = req.path.toLowerCase();
-  if (BLOCKED.some(b => p === b || p.startsWith(b + '/'))) return res.status(404).send('Not found');
-  next();
-});
-
-// Always check for a fresh copy of the page, so browsers pick up each new deploy straight away
-app.use(express.static(__dirname, {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  }
-}));
-app.get('/', (req, res) => { res.setHeader('Cache-Control', 'no-cache, must-revalidate'); res.sendFile(__dirname + '/index.html'); });
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-// FIX: simple per-IP rate limit, 20 requests/minute (in-memory; resets on restart)
-const hits = new Map();
-function rateLimit(req, res, next) {
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress;
-  const now = Date.now();
-  const rec = hits.get(ip) || { count: 0, start: now };
-  if (now - rec.start > 60000) { rec.count = 0; rec.start = now; }
-  rec.count++; hits.set(ip, rec);
-  if (rec.count > 20) return res.status(429).json({ error: 'Too many requests -- please wait a minute.' });
-  next();
-}
-
-// INTERIM access gate -- a beta speed-bump, NOT real per-user security.
-// Set WIZ_ACCESS_KEY in Render to turn it on; leave it unset to keep beta open.
-function checkAccess(req, res, next) {
-  const key = process.env.WIZ_ACCESS_KEY;
-  if (!key) return next();
-  if (req.headers['x-wiz-key'] === key) return next();
-  return res.status(401).json({ error: 'Unauthorised.' });
-}
+const { loadConfig } = require('./lib/config');
+const { createApp } = require('./lib/app');
+const { createSupabaseAuth } = require('./lib/auth');
+const { createPostgrestRpc } = require('./lib/rpc');
+const { createStore } = require('./lib/store');
 
 // FIX: the WIZ system prompt now lives on the SERVER and is always applied.
 // The browser no longer supplies it, so the WIZ persona and all safety
@@ -88,38 +39,61 @@ function buildSystem(track, lens) {
   return blocks;
 }
 
-app.post('/api/chat', rateLimit, checkAccess, async (req, res) => {
-  try {
-    const { messages, track, lens } = req.body; // client 'system' is deliberately ignored
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'No messages provided.' });
-    }
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 3000,
-        // FIX: prompt caching on the large fixed prompt -- big input-token saving
-        system: buildSystem(track, lens),
-        messages: messages
-      })
-    });
-    const data = await response.json();
-    if (!response.ok || !data.content) {
-      console.error('Anthropic returned status', response.status, JSON.stringify(data));
-      return res.status(502).json({ error: 'Assistant unavailable -- please retry.' });
-    }
-    res.json({ content: data.content });        // FIX: return only the answer, not the raw payload
-  } catch (err) {
-    console.error('API error:', err.message);    // log message only -- never the user's text
-    res.status(500).json({ error: 'API call failed' });
-  }
-});
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('WIZ running on port ' + PORT));
+class ProviderError extends Error {
+  constructor(status) { super('provider error'); this.name = 'ProviderError'; this.status = status; }
+}
+
+// Model provider boundary (injectable in tests). The provider response body is never logged or forwarded on errors.
+function createAnthropicProvider({ apiKey, fetchImpl = fetch }) {
+  return {
+    model: 'claude-sonnet-4-6', // recorded with each stored reply
+    async complete({ system, messages, signal }) {
+      let response;
+      try {
+        response = await fetchImpl('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 3000,
+            // FIX: prompt caching on the large fixed prompt -- big input-token saving
+            system: system,
+            messages: messages
+          }),
+          signal
+        });
+      } catch (_) {
+        throw new ProviderError(0);
+      }
+      if (!response.ok) throw new ProviderError(response.status);
+      const data = await response.json().catch(() => null);
+      if (!data || !Array.isArray(data.content)) throw new ProviderError(502);
+      return data.content; // FIX: return only the answer, not the raw payload
+    }
+  };
+}
+
+// Composition root: real collaborators exist only when their configuration is present; otherwise the routes
+// that need them fail closed (503). There is no anonymous or key-less fallback.
+function createDefaultApp(env = process.env) {
+  const config = loadConfig(env);
+  const auth = config.supabase.anonKey ? createSupabaseAuth({ url: config.supabase.url, anonKey: config.supabase.anonKey }) : null;
+  const store = config.supabase.serviceKey
+    ? createStore(createPostgrestRpc({ url: config.supabase.url, serviceKey: config.supabase.serviceKey }))
+    : null;
+  const provider = config.anthropicKey ? createAnthropicProvider({ apiKey: config.anthropicKey }) : null;
+  return createApp({ config, auth, store, provider, buildSystem, tracks: Object.keys(TRACK_NOTES), lenses: Object.keys(LENS_NOTES) });
+}
+
+const app = createDefaultApp();
+module.exports = app;
+
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log('WIZ running on port ' + PORT));
+}
