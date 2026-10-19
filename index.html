@@ -2386,7 +2386,8 @@ const WIZ_ACCOUNT = (() => {
       if (!token) { overlay.style.display = 'flex'; return; }
       const firstMessage = $('userInput').value;
       if (!firstMessage.trim() && !pendingBioUpload) return;
-      await begin({kind:'custom',text:'General coaching'});
+      const firstTopic = {kind:'custom',text:(firstMessage.trim() || 'General coaching').slice(0,300)};
+      await begin(firstTopic, {skipStart:true});
       if (!sid) { $('userInput').value = firstMessage; return; }
       $('userInput').value = firstMessage;
       if (pendingBioUpload) return sendBioUpload();
@@ -2586,14 +2587,14 @@ const WIZ_ACCOUNT = (() => {
   $('wizErasureStatusBtn').onclick = action(async () => { const d = await v1('/account/erasure'); alert('Erasure status: '+JSON.stringify(d)); });
   $('wizEraseBtn').onclick = action(async () => { if (prompt('This permanently erases your account and data. Type ERASE to confirm.') !== 'ERASE') return; await v1('/account/erasure','POST',{confirm:'erase_my_account'}); clearAccount(); $('wizAuthError').textContent = 'Your account was erased.'; });
   $('wizLogoutBtn').onclick = async () => { try { await v1('/auth/logout','POST'); clearAccount(); } catch(e) { status('Sign out failed: '+e.message,true); } };
-  async function begin(topic) {
+  async function begin(topic, options = {}) {
     if (busy) return; if (!token) { overlay.style.display = 'flex'; return; }
     if (!onboarding.over_18) { $('wizAgeGate').style.display = 'flex'; return; }
     busy = true;
     try {
       if (!opening || JSON.stringify(opening.topic) !== JSON.stringify(topic)) { resetConversation(!!pendingBioUpload); opening = {topic,createKey:key(),startKey:key(),id:null}; }
       if (!opening.id) opening.id = (await v1('/sessions','POST',{topic},opening.createKey)).item.id;
-      await v1('/sessions/'+opening.id+'/start','POST',{},opening.startKey); const id = opening.id; await loadSession(id,true,!!pendingBioUpload); await sessions();
+      if (!options.skipStart) await v1('/sessions/'+opening.id+'/start','POST',{},opening.startKey); const id = opening.id; await loadSession(id,true,!!pendingBioUpload); await sessions();
     } catch(e) { alert('Session could not start: '+e.message+'. Select the same focus to retry.'); } finally { busy = false; }
   }
   async function chat(text) {
@@ -2608,7 +2609,7 @@ const WIZ_ACCOUNT = (() => {
     const reply = typeof d.content === 'string' ? d.content.trim() : ''; if (!reply) throw new Error('WIZ returned an empty reply.'); pending = null;
     if (state.messages.at(-1)?.content !== text) state.messages.push({role:'user',content:text});
     state.messages.push({role:'assistant',content:reply});
-    if (!knownTitles[request.sid]) sessions().catch(() => {}); // pick up the automatic title once the server has set it
+    if (!knownTitles[request.sid] || knownTitles[request.sid] === 'New Conversation') sessions().catch(() => {}); // refresh the automatic title after the first user turn
     return reply;
   }
   window.beginWIZSession = () => begin(state.track || state.lens ? {kind:'catalogue',area:state.track || state.lens} : {kind:'custom',text:'General coaching'});
