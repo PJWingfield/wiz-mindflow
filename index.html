@@ -2192,17 +2192,21 @@ const WIZ_ACCOUNT = (() => {
   }
   function status(message, error = false) { $('wizAccountStatus').textContent = message; $('wizAccountStatus').style.color = error ? '#a12525' : 'var(--navy)'; }
   function returnTrackOffer() {
+    const empty = $('wizWorkspaceEmpty');
+    if (!empty) return null;
     let box = $('wizReturnTrackOffer');
     if (!box) {
       box = document.createElement('section'); box.id = 'wizReturnTrackOffer';
-      box.setAttribute('aria-live', 'polite'); box.style.cssText = 'display:none;max-width:940px;margin:18px auto;padding:16px 20px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc';
-      const cta = $('floatCta'); if (cta?.parentNode) cta.parentNode.insertBefore(box, cta.nextSibling); else $('opening-screen').prepend(box);
+      box.setAttribute('aria-live', 'polite'); box.style.cssText = 'display:none;width:100%;max-width:680px;box-sizing:border-box;margin:18px auto;padding:14px 16px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc';
     }
+    const options = $('wizWorkspaceOptions');
+    if (options?.parentNode === empty) empty.insertBefore(box, options); else if (box.parentNode !== empty) empty.appendChild(box);
     return box;
   }
   const trackLabels = {sport:'Sport',career:'Career',learning:'Learning'};
   function updateReturnTrack(rows) {
-    const box = returnTrackOffer(); box.replaceChildren(); box.style.display = 'none';
+    const box = returnTrackOffer(); if (!box) return;
+    box.replaceChildren(); box.style.display = 'none';
     // Session-list pages sort by last activity; use created_at to find the latest track start.
     const latest = rows.filter(s => Object.hasOwn(trackLabels, s.track) && Number.isFinite(Date.parse(s.created_at)))
       .sort((a,b) => Date.parse(b.created_at) - Date.parse(a.created_at) || String(b.id).localeCompare(String(a.id)))[0];
@@ -2373,7 +2377,7 @@ const WIZ_ACCOUNT = (() => {
     $('wizPublicHome').style.display = 'none'; $('opening-screen').style.display = 'none'; document.querySelector('.app').style.display = 'flex';
     $('wizSidebar').style.display = ''; $('chatArea').style.display = 'flex'; $('inputArea').style.display = ''; $('messages').style.display = '';
     $('messages').innerHTML = '<div id="wizWorkspaceEmpty"><h2>What would you like to explore?</h2><p>Choose a focus from your saved interests or start with what is on your mind.</p><div id="wizWorkspaceOptions"><select id="wizWorkspacePathway" aria-label="Choose a coaching focus"><option value="">Choose a focus</option></select><button type="button" id="wizWorkspaceStart">Start</button></div><p class="empty-hint">Your conversation will be saved to your account.</p></div>';
-    renderWorkspaceOptions(); $('userInput').placeholder = 'What would you like to explore?'; $('endSessionBtn').style.display = 'none'; document.body.classList.add('in-session');
+    renderWorkspaceOptions(); updateReturnTrack(sessionRows); $('userInput').placeholder = 'What would you like to explore?'; $('endSessionBtn').style.display = 'none'; document.body.classList.add('in-session');
   }
   function showChat() {
     $('wizPublicHome').style.display = 'none'; $('opening-screen').style.display = 'none'; document.querySelector('.app').style.display = 'flex';
@@ -2438,7 +2442,7 @@ const WIZ_ACCOUNT = (() => {
     sessionRows = rows; rows.forEach(s => { knownTitles[s.id] = s.title; }); renderChats();
     rows.forEach(s => { const li = document.createElement('li'); const title = document.createElement('span'); title.textContent = s.title || s.topic?.area || 'Session'; li.appendChild(title);
       button('Load',() => loadSession(s.id),li);
-      button('Delete',async () => { if (!confirm('Permanently delete this session and transcript? Independent records stay.')) return; await v1('/sessions/'+s.id,'DELETE',{confirm:'delete_session'}); if (sid === s.id) showOpening(); await sessions(); },li); $('wizSessionList').appendChild(li); });
+      button('Delete',async () => { if (!confirm('Permanently delete this session and transcript? Independent records stay.')) return; await v1('/sessions/'+s.id,'DELETE',{confirm:'delete_session'}); if (sid === s.id) { sessionRows = sessionRows.filter(row => row.id !== s.id); showOpening(); } await sessions(); },li); $('wizSessionList').appendChild(li); });
     updateReturnTrack(rows);
   }
   async function consent() {
