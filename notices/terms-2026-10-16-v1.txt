@@ -1,0 +1,106 @@
+WIZ Terms of Service
+Mind Flow International Ltd
+Public policy 4 of 11. The agreement between Mind Flow and an individual WIZ subscriber (a consumer). Linked from WIZ sign-up and settings. Replaces WIZ Terms draft v0.2. Yellow items are for you to fill in or confirm.
+Document control	
+Owner	PJ Wingfield, Director
+Version and status	Draft v1.0 for legal review, 11 October 2026
+Effective date	October 16th 2026
+Approved by and date	PJW 16/10/2026
+Next review	At least every 12 months, and whenever a service, supplier or law changes
+Applies to	Individuals using WIZ at app.mindflowpro.com for their own personal use. Coaches, consultants and organisations use the WIZ Professional and Organisation Licence Terms (6)
+Related	Privacy Notice (1); Cookies (2); How WIZ Uses AI (5); Safety and Wellbeing (10); Complaints (11)
+
+The key points. WIZ is an AI coach, not a person, and not therapy, medical advice or a crisis service. Adults only (18+). Price: [£X per month] or [£Y per year], with no VAT added. Your subscription renews automatically until you cancel, and you can cancel at any time in the app [confirm]. You also have a 14-day right to cancel when you first subscribe. Your content stays yours. We do not use what you tell WIZ to train AI and we do not sell it. Your legal rights as a consumer are not affected.
+1. About these terms
+1.1 Who we are. WIZ is provided by Mind Flow International Ltd, a company registered in England and Wales under number 13453759, whose registered office is Fernlea, House Newby, Penrith, Cumbria CA10 3EX (“Mind Flow”, “we”, “us”). Contact: info@mindflowpro.com.
+1.2 What these terms cover. Your use of WIZ at app.mindflowpro.com. Please read them with our Privacy Notice and “How WIZ Uses AI”. The Privacy Notice is not part of the contract, but we will follow it.
+1.3 Making the agreement. It is made when you create an account, tick the box to confirm you have read and accept these terms, and complete your subscription. We keep a record of the version you accepted and when. You can read these terms before you sign up: they are linked from the sign-up and payment screens, the app settings and the footer of mindflowpro.com and app.mindflowpro.com, and you can download them at any time [add link]. We also email you a copy when you subscribe.
+1.4 The agreement is in English. We write in plain language on purpose. If anything is unclear, ask us before you subscribe.
+2. Who can use WIZ
+You must be 18 or over, and you confirm this when you sign up. WIZ is not designed for under-18s.
+WIZ is for your own personal use. A professional may use it with their own clients, and an organisation may provide it to its people, only under the WIZ Professional and Organisation Licence Terms. See the next two points if that is how you receive WIZ.
+If an employer or other organisation provides your seat. You still make this agreement with us and accept these terms yourself. You do not pay us for the seat, so section 6 (price, renewal and the 14-day right to cancel) applies only if you later take out your own subscription [legal to confirm the position for a seat paid for by someone else]. Your employer cannot see what you say or save, your goals, answers or consent choices, whether you have seen a safety message, or any figure about you alone, and it will not be told if WIZ has shown you a safety response. It may only receive anonymous figures about a group of at least 6 people. Nobody can make you share your content. If the seat ends you can download or delete your saved content, or carry on with your own subscription. Where you can, sign up with a personal email address so you do not lose access if you change jobs [decide the default].
+If a coach or other professional uses WIZ with you. They are independent of Mind Flow. They can see your saved records only if you choose to share them with them, and then only to view. You can see who has looked and can stop sharing at any time.
+WIZ is offered in English, to users in the UK and elsewhere [confirm territory: UK only, or also EU and others, and the local consumer law and VAT that follows].
+3. What WIZ is, and what it is not
+3.1 WIZ is an AI coaching app. It helps you reflect, understand your thinking, explore options and plan next steps in areas such as performance, resilience, career, relationships, learning and well-being. You are talking to artificial intelligence, not a person.
+3.2 WIZ is not psychological therapy, counselling, or medical, legal or financial advice, or a diagnosis. WIZ does not present itself as a psychologist or any regulated professional.
+3.3 WIZ is not an emergency or crisis service. If you are in danger, call 999. Samaritans: 116 123, free, any time. For a health concern, see your GP or another qualified professional.
+3.4 AI can be wrong, incomplete or unhelpful. WIZ’s replies are suggestions to think about, not instructions. You remain responsible for your decisions, and should check anything important with a qualified person.
+3.5 Where a topic needs human help, WIZ will say so. Mind Flow works with independent consultants, who are a separate service with their own agreements. We share nothing from WIZ with a consultant unless you choose to share it with a named individual, and then they can only view it (see our Privacy Notice).
+3.6 The full Mind Flow assessments are delivered separately and are not provided through WIZ. WIZ may offer short taster questions only.
+4. Your account
+Give us accurate information and keep it up to date.
+Keep your sign-in details private. Tell us straight away if you think someone else has used your account. You are responsible for activity under your account unless it was not your fault.
+One account is for one person. Do not share it.
+5. Using WIZ
+5.1 We give you a personal, non-exclusive, non-transferable right to use WIZ while your subscription lasts, in line with these terms. 5.2 You must not:
+use WIZ for anything unlawful, or to harass, abuse, threaten or deceive anyone;
+try to make WIZ produce harmful, illegal or deceptive material, or bypass its safeguards;
+copy, scrape, harvest or republish WIZ’s content or the Mind Flow methodology, or use WIZ to build a competing product or train another AI system;
+use bots or automated tools to access WIZ, or reverse engineer, interfere with or attack its security; or
+present WIZ’s output as advice from a licensed professional.
+5.3 Please do not enter other people’s sensitive personal information into WIZ. 5.4 If you breach 5.2 we may warn you, suspend your access or end the agreement (section 12).
+6. Price, payment, renewal and cancelling
+6.1 Price. [£X per month] or [£Y per year]. Mind Flow is not registered for VAT, so no VAT is added [confirm if this changes]. [Early-bird or trial terms.] Payments are taken by Stripe or PayPal. We do not see or keep your full card details.
+6.2 Before you pay we show you a clear summary: what you are buying, the total price, how often you are charged, when it renews and how to cancel. The payment button says “[Subscribe and pay]”.
+6.3 Renewal. Your subscription renews automatically at the end of each [month / year] at the then-current price, until you cancel. We tell you at least [30] days before any price increase and you can cancel before it takes effect. For annual plans we send a reminder at least [14–30] days before renewal.
+6.4 14-day right to cancel. You may cancel within 14 days of the day the agreement is made, without giving a reason. Tell us clearly (by email, using the form at the end of these terms, or the button in the app [confirm]). We refund you within 14 days, by the same method.
+6.5 Starting straight away. If you ask us to let you start using WIZ straight away, we need your express request and your acknowledgement at sign-up. [Option A, if WIZ is treated as a service: if you then cancel within 14 days you pay a proportionate amount for what you have used and we refund the rest. Option B, if treated as digital content: once you have asked us to start and acknowledged this, the right ends when WIZ begins. Legal to decide.]
+6.6 Cancelling at any time. After 14 days you may cancel at any time [in the app under Account, or by email]. Cancelling stops future payments. You keep access until the end of the period you have paid for. [No refund for part-used periods, except where the law requires or we have not delivered what we promised.]
+6.7 [For annual plans that renew: a further cancellation window after renewal, if and when the Digital Markets, Competition and Consumers Act 2024 subscription rules require it. Legal to confirm.]
+6.8 Nothing in this section affects your statutory rights, including if WIZ is faulty or not as described (section 11).
+7. Your information and content
+7.1 You own what you write, upload and save in WIZ (“your content”).
+7.2 You give us permission to use your content only to provide WIZ to you, including sending it to our service providers such as our AI providers, and to keep it secure. We do not use it to train AI models, we do not sell it and we do not use it for advertising. Your conversations are not stored by us and stay in your browser during a session. Our AI providers may hold what is sent to them for a short time (up to 30 days, as set out in the Privacy Notice and How WIZ Uses AI) and may not use it to train their models [confirm for each provider].
+7.3 How we handle personal information, including health information you choose to share, is in our Privacy Notice. Where we need your explicit consent we ask separately and you can withdraw it at any time.
+7.4 WIZ is built on content, methods, text, designs, logos and software that belong to Mind Flow or its licensors, including the Mind Flow methodology, the Brain Booster Guides and the WIZ brand. You may use what WIZ gives you for your own personal purposes, including your reports. You may not copy, sell, distribute or commercially use our content or branding without our written permission (see Website Terms and Copyright).
+7.5 If you give us feedback or suggestions we may use them to improve WIZ without payment.
+8. Changes to WIZ
+8.1 WIZ is a developing product. We may update, improve or change it, including adding features such as voice. We will not make changes that significantly worsen what you have paid for without telling you and, where it materially affects you, letting you cancel and receive a proportionate refund for any unused period.
+8.2 WIZ depends on services from others, such as our AI and hosting providers. We will do our best to keep it available, but cannot promise it will always be uninterrupted or error free. We may suspend it briefly for maintenance or security and will tell you in advance where we can.
+9. Safety
+9.1 WIZ is designed to point you to human support if something you share suggests you may be at risk. It cannot contact anyone for you, and neither WIZ nor Mind Flow monitors your sessions as they happen.
+9.2 If you are in distress or at risk of harm, contact the emergency services or a helpline straight away rather than relying on WIZ. See our Safety, Wellbeing and Safeguarding Policy.
+10. Complaints
+10.1 If you are unhappy, contact us at info@mindflowpro.com or use the complaint form or the “report a problem” button in the app. We acknowledge within 5 working days and aim to reply within 28 days. Complaints about personal information are handled as set out in our Privacy Notice, and you can also complain to the Information Commissioner’s Office. 10.2 We are not members of an alternative dispute resolution scheme and do not use one; you may still bring a claim in court. See our Complaints Procedure.
+11. Our responsibility to you
+11.1 We will provide WIZ with reasonable skill and care, and as described to you when you subscribed. Your legal rights as a consumer, including that digital content and digital services must be of satisfactory quality, fit for purpose and as described, are not affected. If WIZ is faulty you may be entitled to have it put right, a price reduction or a refund.
+11.2 We are responsible for loss or damage you suffer that is a foreseeable result of our breaking this agreement or failing to use reasonable care and skill.
+11.3 We cannot promise any particular result from WIZ, and WIZ is not a substitute for professional advice. We are not responsible for loss that was not a foreseeable result of our breaking this agreement, or for business losses, because WIZ is for personal use. This does not limit 11.1, 11.2 or 11.4.
+11.4 Nothing in these terms limits or excludes our liability for death or personal injury caused by our negligence, for fraud or fraudulent misrepresentation, or for anything that cannot lawfully be limited or excluded, including your statutory consumer rights.
+12. Ending the agreement
+12.1 By you. At any time, as in section 6.
+12.2 By us. We may suspend or end your access if you seriously or repeatedly break these terms and do not put it right within a reasonable time after we ask, or at once if you put others at risk or use WIZ unlawfully. We may also end WIZ altogether; if so we give at least [30] days’ notice and refund any amount paid for the period after it ends.
+12.3 Your information. When you close your account we delete your saved content within 30 days (and from backups within 90 days), as in our Privacy Notice. You can download your reports, goals and journal entries first [confirm when built].
+13. Changes to these terms
+We may change these terms for legal, security or business reasons or to reflect changes to WIZ. We give at least [30] days’ notice by email or in the app. If a change is to your disadvantage you may cancel before it takes effect and receive a proportionate refund. A change that needs your explicit consent, such as how we use health information, takes effect only with it. We keep a record of the version you accepted.
+14. General
+Organisations and professionals. If you receive WIZ through an organisation or a professional, nothing in their agreement with us reduces the protections in these terms or in the Privacy Notice.
+Entire agreement. These terms are the whole agreement about WIZ. This does not exclude liability for misrepresentation.
+Transfer. We may transfer our rights and duties to another organisation if it does not reduce your rights, and we will tell you. You may not transfer yours without our consent.
+Third parties. Nobody else has rights to enforce these terms.
+Events beyond our control. We are not responsible for delay or failure caused by events outside our reasonable control, including failures of internet, power or third-party providers.
+Severance. If part is unenforceable, the rest continues.
+Notices. We contact you by email at the address on your account. You can write to us at the address in section 1.
+Law. The law of England and Wales applies. If you live in Scotland or Northern Ireland you may bring proceedings in your local courts. Elsewhere in the UK the courts of England and Wales have jurisdiction. If you live in the EU you keep any mandatory consumer rights of your country.
+Your right to cancel: information and model form
+You have the right to cancel this contract within 14 days without giving any reason. The cancellation period expires 14 days after the day the contract is made. To exercise the right, you must tell us by a clear statement (for example a letter or email) to: Mind Flow International Ltd, Fernlea, House Newby, Penrith, Cumbria CA10 3EX, info@mindflowpro.com. You may use the form below, but do not have to. If you cancel we reimburse all payments without undue delay and in any event within 14 days of being told, using the same means of payment, at no cost to you. [If you asked us to begin during the cancellation period you must pay a proportionate amount for what has been provided until you told us: Legal to confirm Option A or B in 6.5.]
+Model cancellation form (complete and return only if you wish to cancel): To Mind Flow International Ltd, Fernlea, House Newby, Penrith, Cumbria CA10 3EX, info@mindflowpro.com. I/We give notice that I/We cancel my/our contract for the supply of the WIZ subscription. Ordered on: ________ Name: ________ Email on account: ________ Signature (only if on paper): ________ Date: ________
+Open points
+Items for you are highlighted in yellow in the text above. These are the ones to decide first.
+For you
+Price and plans. Monthly and annual prices, any early-bird or trial, and the renewal reminders.
+Territory. UK only, or also the EU and elsewhere? (This decides local consumer law and VAT.)
+Cancel in the app. Eddie to build cancel, download and delete before launch. The terms say they exist.
+Payment button wording and the pre-payment summary.
+Seats provided by others. Section 2 now says what an employer or coach can and cannot see. Do you agree, and is a free seat to be treated as free for as long as the organisation pays?
+Where the terms appear. Eddie to put links to these terms on the sign-up and payment screens (before the tick box), in settings and the footers, and to email a copy on subscribing.
+Professional users. Coaches and organisations also use document 6.
+For the legal team
+Decide whether WIZ is a service or digital content for the 14-day right, and settle the early-start wording and checkout flow (6.5).
+Check the liability, content licence and AI wording against the Consumer Rights Act 2015 fairness test.
+Plan for the DMCC Act subscription rules expected in spring 2027.
+Confirm the terms are consistent with the AI providers’ usage policies (Anthropic, OpenAI) and our supplier terms.
+Confirm governing law wording for EU consumers.
+Check the new section 2 provisions for seats provided by organisations or professionals, including whether a free seat is a consumer contract and how the 14-day right and cancellation apply.

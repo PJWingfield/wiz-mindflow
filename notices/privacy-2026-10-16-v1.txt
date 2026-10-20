@@ -1,0 +1,162 @@
+Privacy Notice
+Mind Flow International Ltd
+Public policy 1 of 11. Covers the company, websites, courses, publications, assessments, WIZ and XLBrain. Replaces the old privacy policy and the separate WIZ privacy notice. Yellow items are for you to fill in or confirm.
+Document control	
+Owner	PJ Wingfield, Director
+Version and status	Draft v1.0 for legal review, 11 October 2026
+Effective date	16/10/2026
+Approved by and date	PJW 16/10/2026
+Next review	At least every 12 months, and whenever a service, supplier or law changes
+Applies to	Mind Flow International Ltd (company number 13453759), its websites (mindflowpro.com and others), the WIZ app (app.mindflowpro.com), XLBrain, and our courses, coaching, assessments and publications
+Linked from	Every website footer, every sign-up form, the WIZ sign-up screen and settings, and emails
+Related	Cookies Notice (2); WIZ Terms (4); How WIZ Uses AI (5); Complaints (11)
+
+The essentials. We are Mind Flow International Ltd. We use your information to run our courses, coaching, assessments, books, websites, emails and the WIZ app. We do not sell your information, and we do not build advertising profiles about you. WIZ does not store your conversations. We send marketing only if you asked for it, and every email has a link to stop it. You can ask to see, correct, download or delete what we hold, and you can complain to us or to the Information Commissioner’s Office (ICO).
+1. Who we are
+Mind Flow International Ltd (“Mind Flow”, “we”, “us”) is registered in England and Wales, number 13453759. Our registered office is Fernlea, House Newby, Penrith, Cumbria CA10 3EX. We are the “controller” of your personal information: we decide why and how it is used. Our trading names include Mind Flow, WIZ and XLBrain.
+Contact	
+Privacy and data protection	info@mindflowpro.com. Our data protection lead is PJ Wingfield. We have not appointed a Data Protection Officer because the law does not require one
+Post	Mind Flow International Ltd, Fernlea, House Newby, Penrith, Cumbria CA10 3EX
+ICO registration	[ICO registration number: application in progress; add the number once issued]
+Websites covered	mindflowpro.com [and any other Mind Flow websites: list]
+
+2. The information we collect
+If you are…	What we collect	Where it comes from
+A website visitor	IP address, browser and device type, pages visited, and your cookie choices (see the Cookies Notice)	Your browser; our websites
+A subscriber	Name, email address, when and how you signed up, [email open and click activity only if you have agreed to tracking]	You; our email system
+Someone who contacts us	Name, contact details, your message and our reply. If you tell us about neurodiversity or health in an enquiry we use it only to reply	You
+A course delegate or diploma candidate	Name, contact details, application, payment details (held by our payment provider), attendance, coursework, results and certificates, any access needs you tell us about, and recordings of live online sessions where we record them	You; your employer if they book for you
+A coaching or consultancy client	Name, contact details, goals, private session notes, agreements and emails. Sometimes health or wellbeing information you choose to share	You
+Someone taking an assessment	Your answers and results	You
+A buyer of books, guides or downloads from us	Name, address, email, order and payment records, download access	You; our payment provider
+A client organisation or its people	Business contacts, delegates’ names and contact details, invoices	The organisation; you
+A WIZ user	See section 3	You
+An XLBrain user	See section 3	You
+A supplier, associate or contractor	Business contact details, agreements, invoices	You
+
+Our services are for adults. We do not knowingly collect information from anyone under 18. If you think someone under 18 has used WIZ or one of our services, tell us and we will delete their information.
+3. WIZ and XLBrain
+What WIZ collects
+What	Examples	Where it lives
+Account details	Name, email, sign-in details, plan, confirmation that you are 18 or over, and the date and wording of the consents you give or withdraw	Our database (Supabase)
+Subscription	Whether your subscription is active. Card details go to our payment providers (Stripe, PayPal); we never see or keep them	Stripe; PayPal
+Your conversation	The messages you type or speak in a session and WIZ’s replies. Files you add (for example a screenshot of a biofeedback or sleep report)	Your browser during the session; sent through our server to our AI providers. Not stored by us
+Saved content	A Personal Awareness Report, goals, journal entries and training progress. Saved only if you choose to save them	Your account
+Device pairing	The type of biofeedback or wearable device you use, and whether it is paired. We do not keep raw readings	Your account
+Messages to us	Emails, support requests, feedback, complaints, “report a problem” messages	Our email and support systems
+Technical data	IP address, browser, dates and times, security and error logs (no message content)	Our hosting provider
+
+We do not collect your location, contacts, advertising identifiers or browsing history through WIZ. WIZ uses only essential browser storage and no advertising or tracking cookies. [Eddie to confirm exactly what WIZ stores in the browser.] A voice option is planned but is not yet available. If it launches we will update this notice first.
+How WIZ uses AI providers
+To reply to you, WIZ sends the messages in your current session, our coaching instructions and any file you add to AI providers: Anthropic (the Claude models) and [OpenAI: confirm which WIZ features use OpenAI models, what is sent, and the supplier’s retention and training terms]. We do not send your name, email address or payment details [Eddie to confirm].
+Under the commercial terms we use, these providers do not train their models on what you send. Anthropic states that it deletes API inputs and outputs from its systems within 30 days, unless the law or its safety rules require longer [verify against the current terms of each provider before publication].
+WIZ does not make decisions about you that have a legal or similarly significant effect. Our people do not read your sessions as they happen.
+WIZ may search Mind Flow’s own knowledge base to inform its replies. The knowledge base holds Mind Flow content, not personal information. A numerical representation of your message may be created by [provider: confirm, for example Voyage AI] to search it.
+See “How WIZ Uses AI” for a plain-English explanation.
+Health information and consent
+You may tell WIZ about your health, wellbeing or neurodiversity. This is “special category” information. Before your first session we ask for your explicit consent to WIZ handling it. You can use WIZ without sharing it, and you can withdraw your consent at any time in your account settings [confirm when built] or by emailing info@mindflowpro.com. Withdrawing does not affect what happened before.
+We ask for separate consent when you upload a report, when you save a report, goals or journal entries, and when you share anything with a consultant.
+Sharing with a consultant
+No consultant, coach or member of the Mind Flow team can see anything in your account unless you choose to share specific records with a named individual consultant. You can stop sharing at any time and access ends at once.
+A consultant can view only. They may not copy, download or keep what you share, and they must keep it confidential. We record when a consultant views your records [planned: access log, to be built before launch].
+Consultants are independent professionals, not employees. What they write in their own coaching notes is held by them as a separate controller under their own privacy information. [Legal to confirm roles.]
+XLBrain
+XLBrain is our technique for interpreting brainwave (EEG) feedback. You choose to share a screenshot or photo from your own headband’s app. [Choose one: Option A: the screenshot is read on your own device and is not sent to us or anyone else. Option B: the screenshot is sent through our server to our AI providers to read it, is used only to give you the result, and is not stored.] No account is needed and we do not save sessions [confirm]. Please crop out your name and account details first. XLBrain is a learning tool. It does not diagnose, treat or monitor any condition. We do not use your screenshots to train AI or to improve our rules.
+4. Why we use your information, and our lawful basis
+What we use it for	Lawful basis	Notes
+Replying to enquiries and messages	Legitimate interests; steps before a contract	Our interest is helping people who contact us
+Taking bookings and orders, running courses and coaching, assessing work, awarding certificates, delivering products, taking payment	Contract	Includes feedback, attendance and results
+Running your WIZ account and subscription; running a WIZ session	Contract	Plus explicit consent for any health information (below)
+Health or other special category information you choose to share (courses, coaching, WIZ, access needs)	Your explicit consent	Withdraw at any time
+Saving WIZ reports, goals, journal; interpreting uploaded reports; sharing with a consultant	Your consent, asked separately each time	Withdraw at any time
+Newsletters and marketing emails you asked for	Consent	Unsubscribe at any time
+Telling existing customers about similar offers	Soft opt-in under electronic marketing rules [no existing-customer list yet: legal confirmed approach]	You can say no when you buy and in every email
+Website analytics, marketing pixels and embedded content	Consent	See the Cookies Notice
+Keeping websites and WIZ secure; preventing abuse; fixing faults	Legitimate interests	We do not use the content of your sessions for this
+Reasonable adjustments for access needs	Legal obligation (Equality Act 2010); your explicit consent for health details	You choose what to tell us
+Accounts, tax and legal duties; handling your rights requests and complaints	Legal obligation	
+Protecting our rights, claims, insurance, professional advice	Legitimate interests; legal obligation	
+Working with client organisations	Contract; legitimate interests	We decide how delegates’ details are used, as controller, within the contract
+Business-to-business contact with company email addresses	Legitimate interests	Every message has a simple opt-out
+Anonymous usage statistics to improve WIZ and our courses	Legitimate interests (if the data is not truly anonymous)	Never message content
+
+5. Marketing emails
+We use MailerLite to send our newsletter and the emails you ask for [confirm single or double opt-in]. We expect to email about [weekly: confirm].
+Every email carries an unsubscribe link and a “stop all emails” link. Either one stops our marketing at once.
+We create our own lists. Each person ticks a clear box and we keep a record of when and how. We do not buy lists.
+We remove subscribers who have not opened any email for 24 months.
+Email open and click tracking is used only if you have agreed to it [or: is switched off].
+We market other products to WIZ users only through our website and email, and only with your consent. We never use what you tell WIZ for marketing.
+We do not send marketing by text, WhatsApp or phone.
+Do-not-contact list. If you unsubscribe or ask us to stop emailing you, we keep your email address on a “do not contact” list so that we do not email you again by mistake. This is the only information we keep for this purpose, and we use it only to respect your choice. We keep it for as long as we send email marketing, because removing it would put you at risk of being contacted again. We do this because it is in your interest and ours to respect your choice (legitimate interests), and because the law on electronic marketing expects it. If you want your address removed from this list too, contact info@mindflowpro.com. We will explain what that means: we can no longer guarantee that you will not be contacted if your address reaches us again.
+6. Who we share your information with
+We do not sell your information. Suppliers who handle information for us act on our instructions under written contracts. Others are independent and have their own privacy notices.
+Organisation	What they do	What they receive
+Anthropic	AI that powers WIZ (US)	Session messages, uploaded files, our coaching instructions
+[OpenAI: confirm role]	[AI model used by WIZ or XLBrain (US)]	[Confirm]
+Render	Hosts the WIZ server	Requests pass through; logs (no message text)
+Supabase	WIZ database	Account, consent records and saved content
+Stripe; PayPal	Take payments. Independent controllers for their own purposes	Payment details go directly to them
+MailerLite	Newsletter and emails	Name, email, sign-up and (with consent) email activity
+Xero and our bookkeeper [name]	Accounts and tax	Customer names, invoices, payments
+WordPress host [name]	Runs our websites and forms	Form entries, technical data
+Email and file provider [name]	Holds email and files	Correspondence and records
+Video platform [name]	Delivers online courses and coaching, and records sessions	Name, email, audio and video
+Analytics, Meta and Google [names]	Website analytics and advertising measurement, only with your consent	Pseudonymous identifiers, pages visited
+[Knowledge-base search provider]	Searchable knowledge base (planned or live: confirm)	A numerical representation of your message
+Amazon KDP and other platforms	Sell and print our books. Independent controllers	Buyer details stay with them; we receive sales totals
+Your employer or sponsor	If they booked a course for you	Attendance and, with your agreement, results
+Advisers, insurers, regulators	Advice, insurance, legal duties	Only what is needed
+
+Voice services (ElevenLabs) are planned but not in use. If we start to use them we will update this notice first. If we sell or reorganise our business, we may pass your information to the new owner, who must keep protecting it.
+7. Where your information goes
+Some suppliers, including Anthropic, [OpenAI], Render, MailerLite and Stripe, process information outside the UK, mainly in the United States. We use only transfers protected by an approved mechanism: a UK adequacy decision (which includes the EEA), the UK-US data bridge for certified US organisations, or the UK International Data Transfer Agreement or UK Addendum, with a risk assessment where needed. [Confirm the mechanism for each supplier in the supplier register.] Ask us for details at info@mindflowpro.com.
+8. How long we keep it
+Information	How long
+WIZ conversations and uploaded files	Not stored by WIZ. Our AI providers may hold them briefly (section 3)
+WIZ account details	Removed from live systems within 30 days of closing your account, and from backups within 90 days
+WIZ saved content (reports, goals, journal, progress)	Until you delete it or close your account, then as above
+WIZ consent records; record of sharing with a consultant	6 years from the date given or withdrawn
+WIZ support emails	24 months from last contact
+Server and security logs	90 days
+Safety wording shown by WIZ	No record is kept
+Newsletter sign-ups	Until you unsubscribe, or 24 months without opening an email. Then only the do-not-contact entry, if you unsubscribed
+Enquiries and messages	24 months after last contact, if no booking or purchase follows
+Unsuccessful applications	12 months after the decision
+Bookings, attendance, certificates	6 years from the end of the course
+Coursework and assessment results	3 years after the course ends
+Recordings of live online sessions	[period, for example 12 months: confirm]
+Coaching and client records (private session notes)	6 years from the end of our work together
+Orders, payments and accounts	6 years from the end of the financial year
+Website analytics; cookie choices	14 months; 12 months
+Safeguarding concern records (if one ever arises)	6 years from closure
+Rights requests and complaints	6 years from closure
+
+After these periods we delete the information or make it anonymous. If we must keep something longer, for example for a legal claim, we will tell you why.
+9. How we protect your information
+We use measures suited to the sensitivity of what we hold: two-step sign-in and strong passwords on key accounts, encrypted devices, limited access, encryption of data in transit and at rest [confirm], approved suppliers under contract, secure handling by our developer, and a breach procedure. If a breach puts you at risk we will tell the ICO within 72 hours where required, and tell you without undue delay if the risk to you is high. No system is perfectly secure.
+10. Your rights
+You have the right to be informed; to see the information we hold and get a copy; to have wrong information corrected; to have information deleted, in many cases; to restrict our use of it; to receive information you gave us in a portable format; to object, including always to marketing; to withdraw consent at any time; and to ask for human review of any significant automated decision (we make none).
+To use a right, email info@mindflowpro.com. WIZ users will be able to download or delete their data in the app [planned: Eddie to build before launch]. We reply within one month, free of charge. We may ask you to prove who you are. The month can be paused while we wait for that, or extended by up to two months if the request is complex, and we will tell you why. We search for your information in a reasonable and proportionate way.
+If you live in the EU, EU data protection law also applies to our handling of your information and you have the same rights.
+11. Complaints
+Please tell us first: info@mindflowpro.com, or the complaint form on our website or in WIZ. We acknowledge a complaint about personal information within 5 working days (and in any case within 30 days) and give you the outcome without undue delay. See our Complaints Procedure. You can also complain to the Information Commissioner’s Office at any time: ico.org.uk, 0303 123 1113. If you live in the EU you can complain to your national data protection authority.
+12. Changes
+We may update this notice. The current version and its date are always on our website and linked in WIZ. If a change matters to you, we will tell you, and we will ask for fresh consent where the law requires it.
+Open points
+Items for you are highlighted in yellow in the text above. These are the ones to decide first.
+For you
+OpenAI. Which WIZ features use OpenAI models, and what is sent? I need this to complete the notice, DPIA and supplier register.
+XLBrain. Is the screenshot read on the device (Option A) or sent to a server and AI provider (Option B)?
+Knowledge base. Which provider creates the search data?
+Suppliers. Names of the WordPress host, email and file provider, video platform, analytics tool, bookkeeper.
+MailerLite. Single or double opt-in? Is open and click tracking on or off? How often will you email?
+ICO. Add the registration number when issued.
+Recordings. How long do you keep recordings of live online sessions?
+Eddie to confirm what WIZ stores in the browser, what is sent to each AI provider, and the regions used by Supabase and Render.
+For the legal team
+Confirm the lawful basis for each purpose, the Article 9 conditions, and the soft opt-in wording.
+Confirm the roles for consultants (independent controllers) and for corporate clients (MFI as controller).
+Confirm the transfer mechanism for each US supplier, including OpenAI once known.
+Confirm the notice meets the transparency rules for EU users, and that no EU representative is needed.
+Check the wording on rights time limits against the Data (Use and Access) Act 2025.

@@ -2221,7 +2221,7 @@ const WIZ_ACCOUNT = (() => {
   const field = (id, label, type = 'text') => '<label>' + label + '<input id="' + id + '" type="' + type + '"></label>';
   const area = (id, label) => '<label>' + label + '<textarea id="' + id + '"></textarea></label>';
   const overlay = document.createElement('div'); overlay.id = 'wizAuthOverlay'; overlay.className = 'account-overlay';
-  overlay.innerHTML = '<div class="account-card"><h2>Your WIZ account</h2><p id="wizAuthError" role="status"></p>' + field('wizEmail','Email','email') + field('wizPassword','Password','password') + field('wizName','Name (optional for sign-up)') + '<label><input id="wizSignupAdult" type="checkbox"> I confirm that I am 18 or over.</label><button id="wizLoginBtn">Sign in</button><button id="wizSignupBtn">Sign up</button><button id="wizForgotBtn">Forgot password?</button><button id="wizAuthCloseBtn">Back to home</button></div>';
+  overlay.innerHTML = '<div class="account-card"><h2>Your WIZ account</h2><p id="wizAuthError" role="status"></p>' + field('wizEmail','Email','email') + field('wizPassword','Password','password') + field('wizName','Name (optional for sign-up)') + '<label><input id="wizSignupAdult" type="checkbox"> I confirm that I am 18 or over.</label><div id="wizSignupTermsBox" hidden><label><input id="wizSignupTerms" type="checkbox"> I accept the Terms of Service.</label><button type="button" id="wizAuthTermsBtn">Read the Terms</button>' + noticeBox('wizAuthNotice', 'Close the Terms') + '</div><button id="wizLoginBtn">Sign in</button><button id="wizSignupBtn">Sign up</button><button id="wizForgotBtn">Forgot password?</button><button id="wizAuthCloseBtn">Back to home</button></div>';
   overlay.style.display = 'none'; // the public homepage shows first; sign-in opens on request
   document.body.appendChild(overlay);
   // Recovery link target (Supabase implicit flow): the tokens arrive in the URL fragment. Read once, scrub the URL at once, keep in memory only.
@@ -2237,6 +2237,10 @@ const WIZ_ACCOUNT = (() => {
   modal.innerHTML = `<div class="account-card" role="dialog" aria-modal="true" aria-label="Your account"><button id="wizCloseAccountBtn">Close account</button><h2>Your account</h2><p id="wizAccountStatus" role="status" aria-live="polite"></p>
     <section><h3>Profile & onboarding</h3>${field('wizProfileName','Name')}${field('wizLanguage','Language code')}${field('wizFocus','What would you like coaching to help with?')}<label><input id="wizAdult" type="checkbox">I am 18 or over</label><button id="wizSaveProfileBtn">Save profile</button><button id="wizSaveOnboardingBtn">Save onboarding</button></section>
     <section><h3>Privacy choices</h3><div id="wizConsents"></div></section>
+    <section id="wizBillingSection" hidden><h3>Subscription</h3><p id="wizBillingState"></p><div id="wizBillingActions"></div></section>
+    <section id="wizHealthSection" hidden><h3>Health information</h3><p id="wizHealthState"></p><p id="wizHealthNote"></p><div id="wizHealthActions"></div><p>You can read the full Privacy Notice below.</p></section>
+    <section><h3>Privacy notice and Terms</h3><p>Read the full wording exactly as WIZ holds it.</p><button type="button" id="wizPrivacyNoticeBtn">Privacy notice</button><button type="button" id="wizTermsNoticeBtn">Terms</button>
+      <div id="wizNoticeView" hidden><h4 id="wizNoticeTitle" tabindex="-1"></h4><p id="wizNoticeMeta" role="status" aria-live="polite" style="font-size:13px"></p><div id="wizNoticeText" tabindex="0" role="document" style="white-space:pre-wrap;overflow:auto;max-height:55vh;border:1px solid var(--border);padding:12px;background:#fff;font-size:14px;line-height:1.5"></div><button type="button" id="wizNoticeRetry" hidden>Try again</button><button type="button" id="wizNoticeBack">Back to account settings</button></div></section>
     <section><h3>Saved sessions</h3><ul id="wizSessionList"></ul><button id="wizNewSessionBtn">Choose a new focus</button>${field('wizCustomFocus','Or enter your own focus')}<button id="wizCustomStartBtn">Start with this focus</button></section>
     <section><h3>Goals</h3><div id="wizGoals"></div></section><section><h3>Journal</h3><div id="wizJournal"></div></section>
     <section><h3>Training progress</h3>${field('wizTrainingKey','Course') }<label>Status<select id="wizTrainingStatus"><option>not_started</option><option>in_progress</option><option>completed</option></select></label>${field('wizTrainingPercent','Percent','number')}<button id="wizSaveTrainingBtn">Save training</button><ul id="wizTrainingList"></ul><div id="wizResearch"></div></section>
@@ -2259,7 +2263,7 @@ const WIZ_ACCOUNT = (() => {
   onb.innerHTML = '<div class="account-card" role="dialog" aria-modal="true" aria-labelledby="wizOnbTitle"><p id="wizOnbStep"></p><h2 id="wizOnbTitle"></h2><p id="wizOnbWhy"></p><div id="wizOnbBody"></div><p id="wizOnbStatus" role="status"></p><div><button type="button" id="wizOnbBack">Back</button><button type="button" id="wizOnbNext">Continue</button><button type="button" id="wizOnbSkip">Skip for now</button></div></div>';
   document.body.appendChild(onb);
   const style2 = document.createElement('style'); style2.textContent = '.side-chats{max-height:220px;overflow-y:auto}.side-chat-btn{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;font:inherit;font-size:13px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.side-chat-btn.active{background:#fff;color:var(--navy);font-weight:600}.account-card .side-chat-btn{background:#fff;color:var(--navy);border-color:var(--border)}.account-card .side-chat-btn.active{background:var(--navy);color:#fff}#wizChatsBtn{display:none;margin-left:8px}#openAccBtn{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-card input[type=radio]{display:inline;width:auto;margin-right:8px}.onb-choice{border:1px solid var(--border);border-radius:8px;padding:10px 12px}.onb-choice small{display:block;color:#444}.account-card .onb-start{display:block;width:100%;text-align:left;padding:12px;margin:8px 0}.account-card .onb-start small{display:block;color:#444;font-weight:400}@media(max-width:768px){body.in-session #wizChatsBtn{display:inline-block}}body.in-session .sidebar h2{font-family:inherit}.sidebar-disclaimer p{color:rgba(255,255,255,.78)}'; document.head.appendChild(style2);
-  let onboarding = {}, complete = false, plan = null, learning = null;
+  let onboarding = {}, complete = false, plan = null, learning = null, readyState = null;
   let sessionRows = [], catalogue = null, onbStep = 0, onbBusy = false, onbSkipped = false;
   const knownTitles = {};
   function updateIdentity(me) {
@@ -2402,7 +2406,7 @@ const WIZ_ACCOUNT = (() => {
     token = refresh = null; localStorage.removeItem('wiz_access_token'); localStorage.removeItem('wiz_refresh_token');
     resetConversation(); sid = null; localStorage.removeItem('wiz_active_session'); showPublicHome();
     const returnOffer = $('wizReturnTrackOffer'); if (returnOffer) { returnOffer.replaceChildren(); returnOffer.style.display = 'none'; }
-    sessionRows = []; catalogue = null; onbSkipped = false; onb.style.display = 'none'; chatsOverlay.style.display = 'none'; renderChats(); updateIdentity(null); Object.keys(knownTitles).forEach(k => delete knownTitles[k]);
+    readyState = null; generalBar.hidden = true; gate.style.display = 'none'; sessionRows = []; catalogue = null; onbSkipped = false; onb.style.display = 'none'; chatsOverlay.style.display = 'none'; renderChats(); updateIdentity(null); Object.keys(knownTitles).forEach(k => delete knownTitles[k]);
     modal.style.display = 'none'; overlay.style.display = 'flex'; modal.querySelectorAll('input,textarea').forEach(el => { el.value = ''; el.checked = false; });
     modal.querySelectorAll('ul,.record-list,#wizResearch,#wizRoutes,#wizConsents').forEach(el => el.replaceChildren()); onboarding = {}; plan = learning = null;
   }
@@ -2446,10 +2450,159 @@ const WIZ_ACCOUNT = (() => {
     updateReturnTrack(rows);
   }
   async function consent() {
+    // health_processing is not listed here: it has its own section (explicit allow / withdraw) below
     const d = await v1('/consents'); $('wizConsents').replaceChildren();
-    d.purposes.forEach(p => { const row = document.createElement('div'); row.className = 'record-row'; const notice = document.createElement('p'); notice.textContent = p.purpose.replaceAll('_',' ') + ' — version ' + p.version + ': ' + p.summary + (p.legal_approved ? ' (Available)' : ' (Awaiting notice approval; grants unavailable)'); row.appendChild(notice);
+    d.purposes.filter(p => p.purpose !== 'health_processing').forEach(p => { const row = document.createElement('div'); row.className = 'record-row'; const notice = document.createElement('p'); notice.textContent = p.purpose.replaceAll('_',' ') + ' — version ' + p.version + ': ' + p.summary + (p.legal_approved ? ' (Available)' : ' (Awaiting notice approval; grants unavailable)'); row.appendChild(notice);
       const label = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.id = 'consent-' + p.purpose; input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; label.appendChild(input); label.append(' Allow ' + p.purpose.replaceAll('_',' ')); row.appendChild(label);
       input.onchange = async () => { const desired = input.checked; input.disabled = true; try { await v1('/consents','POST',{purpose:p.purpose,version:p.version,action:desired ? 'grant' : 'revoke'}); await consent(); status('Privacy choice saved.'); } catch(e) { input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; status(e.message,true); } }; $('wizConsents').appendChild(row); });
+  }
+  // Read-only exact notices from GET /api/v1/notices/:id. Shown as text only (never HTML); on failure nothing is shown in place of the
+  // requested document, and the previous document is cleared before each request so it can never appear under another title.
+  const NOTICES = {privacy:{id:'privacy-2026-10-16-v1', title:'Privacy Notice'}, terms:{id:'terms-2026-10-16-v1', title:'Terms of Service'}};
+  let noticeJob = 0, noticeKind = null, noticeOpener = null;
+  // The same reader is used in account settings (prefix wizNotice), the sign-up form (wizAuthNotice) and the consent dialog (wizGateNotice).
+  function noticeBox(p, back) { return '<div id="' + p + 'View" hidden><h4 id="' + p + 'Title" tabindex="-1"></h4><p id="' + p + 'Meta" role="status" aria-live="polite" style="font-size:13px"></p><div id="' + p + 'Text" tabindex="0" role="document" style="white-space:pre-wrap;overflow:auto;max-height:55vh;border:1px solid var(--border);padding:12px;background:#fff;font-size:14px;line-height:1.5"></div><button type="button" id="' + p + 'Retry" hidden>Try again</button><button type="button" id="' + p + 'Back">' + back + '</button></div>'; }
+  function noticeReset(p = 'wizNotice') { noticeJob++; noticeKind = null; $(p + 'View').hidden = true; $(p + 'Text').textContent = ''; $(p + 'Meta').textContent = ''; $(p + 'Retry').hidden = true; }
+  async function showNotice(kind, opener, p = 'wizNotice') {
+    const n = NOTICES[kind], job = ++noticeJob; noticeKind = kind; noticeOpener = opener || noticeOpener;
+    $(p + 'View').hidden = false; $(p + 'Retry').hidden = true; $(p + 'Text').textContent = '';
+    $(p + 'Title').textContent = n.title; $(p + 'Meta').textContent = 'Loading the ' + n.title + '…'; $(p + 'Title').focus();
+    try {
+      const x = (await v1('/notices/' + n.id)).notice;
+      if (job !== noticeJob) return;
+      if (!x || x.id !== n.id || typeof x.text !== 'string' || !x.text) throw new Error('The server returned an unexpected document.');
+      $(p + 'Meta').textContent = n.title + ' · 16 October 2026';
+      $(p + 'Text').textContent = x.text; $(p + 'Text').scrollTop = 0;
+    } catch(e) {
+      if (job !== noticeJob) return;
+      $(p + 'Text').textContent = ''; $(p + 'Retry').hidden = false;
+      $(p + 'Meta').textContent = 'The ' + n.title + ' could not be loaded (' + e.message + '). Nothing else is shown in its place; try again.';
+    }
+  }
+  function wireNotice(p) { $(p + 'Retry').onclick = () => { if (noticeKind) showNotice(noticeKind, null, p); }; $(p + 'Back').onclick = () => { noticeReset(p); if (noticeOpener) noticeOpener.focus(); }; }
+  wireNotice('wizAuthNotice');
+
+  // ---- Terms at sign-up -----------------------------------------------------------------------------------------------------------
+  // The server decides whether the flow is enforced (GET /terms/current -> enabled). Only then is the unticked acceptance shown/required.
+  let termsInfo = null;
+  async function loadTermsInfo() {
+    try {
+      const r = await fetch('/api/v1/terms/current', {signal: AbortSignal.timeout(15000)}); if (!r.ok) return;
+      const d = await r.json(); if (d && d.enabled === true && d.terms && d.terms.version && d.terms.artifact_sha256) { termsInfo = d.terms; $('wizSignupTermsBox').hidden = false; }
+    } catch(e) { /* the server still enforces; the form simply cannot offer the Terms */ }
+  }
+  $('wizAuthTermsBtn').onclick = function() { showNotice('terms', this, 'wizAuthNotice'); };
+  loadTermsInfo();
+
+  // ---- readiness: Terms accepted + health choice answered (server-enforced; this only asks first) ------------------------------------
+  const gate = document.createElement('div'); gate.id = 'wizGate'; gate.className = 'account-overlay'; gate.style.display = 'none';
+  gate.innerHTML = '<div class="account-card" role="dialog" aria-modal="true" aria-labelledby="wizGateTitle"><h2 id="wizGateTitle">Before you start</h2><p id="wizGateStatus" role="status" aria-live="polite"></p>'
+    + '<section id="wizGateTerms"><h3>Terms of Service</h3><p>Please read and accept the Terms to use WIZ.</p><button type="button" id="wizGateTermsRead">Read the Terms</button><label><input type="checkbox" id="wizGateTermsAccept"> I accept the Terms of Service.</label><button type="button" id="wizGateTermsBtn" disabled>Accept the Terms</button></section>'
+    + '<section id="wizGateHealth"><h3>Health, wellbeing and neurodiversity information</h3><p>You can use WIZ without sharing this information. If you choose to share it, WIZ needs your explicit consent to handle it, as set out in the Privacy Notice. You can withdraw at any time in Account settings or by emailing info@mindflowpro.com. If you continue without sharing, WIZ cannot coach on health-related matters, and your saved profile and earlier conversations are not used. WIZ cannot stop you typing such information, so please avoid it.</p><button type="button" id="wizGateHealthRead">Read the Privacy Notice</button><label><input type="checkbox" id="wizGateHealthAllow"> I explicitly consent to WIZ handling health, wellbeing or neurodiversity information I choose to share.</label><button type="button" id="wizGateHealthYes" disabled>Allow</button><button type="button" id="wizGateHealthNo">Continue without sharing</button></section>'
+    + '<section id="wizGateSave"><h3>Saving your conversations</h3><p id="wizGateSaveText"></p><p>WIZ keeps every conversation on your account so you can come back to it, and cannot chat without saving. You can read, export and delete your chats at any time.</p><label><input type="checkbox" id="wizGateSaveAllow"> I agree to WIZ saving my conversations on my account.</label><button type="button" id="wizGateSaveYes" disabled>Allow saving</button></section>'
+    + noticeBox('wizGateNotice', 'Close the document') + '<button type="button" id="wizGateClose">Not now</button></div>';
+  document.body.appendChild(gate);
+  wireNotice('wizGateNotice');
+  const generalBar = document.createElement('div'); generalBar.id = 'wizGeneralNotice'; generalBar.hidden = true; generalBar.setAttribute('role', 'note');
+  generalBar.style.cssText = 'font-size:12px;line-height:1.4;padding:6px 10px;margin:0 0 6px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:var(--navy)';
+  generalBar.textContent = 'General coaching only: WIZ cannot coach on health-related matters, and your saved profile and earlier conversations are not used. Please avoid sharing health, wellbeing or neurodiversity information; WIZ cannot stop you typing it. You can change this in Account settings.';
+  $('userInput').before(generalBar);
+  function applyMode(r) { generalBar.hidden = !(r && r.enabled && r.ready && r.mode === 'general'); }
+  async function readiness(force) {
+    if (readyState && !force) return readyState;
+    readyState = await v1('/readiness'); applyMode(readyState); return readyState;
+  }
+  const GATE_CODES = ['terms_required', 'health_choice_required', 'consent_required', 'subscription_required'];
+  // chat retention (save_chats) is asked for only when the API reports it as approved and not yet granted; it is never decided for the person
+  const needsDialog = r => !r.ready || !!(r.retention && r.retention.version && r.retention.granted === false);
+  let gateResolve = null;
+  function gateStatus(message, error = false) { $('wizGateStatus').textContent = message; $('wizGateStatus').style.color = error ? '#a12525' : 'var(--navy)'; }
+  function gateRender(r) {
+    $('wizGateTerms').hidden = !!(r.terms && r.terms.accepted); $('wizGateHealth').hidden = !(r.health && r.health.decision === 'unanswered');
+    $('wizGateSave').hidden = !(r.retention && r.retention.version && r.retention.granted === false); $('wizGateSaveText').textContent = (r.retention && r.retention.summary) || '';
+    $('wizGateTermsAccept').checked = false; $('wizGateTermsBtn').disabled = true; $('wizGateHealthAllow').checked = false; $('wizGateHealthYes').disabled = true; $('wizGateSaveAllow').checked = false; $('wizGateSaveYes').disabled = true;
+    if (r.blocker === 'terms_unavailable' || r.blocker === 'health_choice_unavailable') gateStatus('Coaching is not available yet. Please try again later.', true); else gateStatus('');
+  }
+  function gateClose(ok) { gate.style.display = 'none'; noticeReset('wizGateNotice'); const f = gateResolve; gateResolve = null; if (f) f(ok); }
+  function gateDialog(r) {
+    return new Promise(resolve => { if (gateResolve) gateResolve(false); gateResolve = resolve; gateRender(r); gate.style.display = 'flex'; });
+  }
+  async function gateStep(fn) {
+    gateStatus('Saving…');
+    try { await fn(); const r = await readiness(true); if (!needsDialog(r)) gateClose(true); else { gateRender(r); } } catch(e) { gateStatus(e.message, true); }
+  }
+  $('wizGateTermsRead').onclick = function() { showNotice('terms', this, 'wizGateNotice'); };
+  $('wizGateHealthRead').onclick = function() { showNotice('privacy', this, 'wizGateNotice'); };
+  $('wizGateTermsAccept').onchange = function() { $('wizGateTermsBtn').disabled = !this.checked; };
+  $('wizGateHealthAllow').onchange = function() { $('wizGateHealthYes').disabled = !this.checked; };
+  $('wizGateTermsBtn').onclick = () => gateStep(async () => { const t = (await v1('/terms')).terms.current; await v1('/terms/acceptance', 'POST', {version: t.version, artifact_sha256: t.artifact_sha256, accepted: true}); });
+  $('wizGateHealthYes').onclick = () => gateStep(async () => { await v1('/consents', 'POST', {purpose: 'health_processing', version: readyState.health.version, action: 'grant'}); });
+  $('wizGateHealthNo').onclick = () => gateStep(async () => { await v1('/consents', 'POST', {purpose: 'health_processing', version: readyState.health.version, action: 'revoke'}); });
+  $('wizGateSaveAllow').onchange = function() { $('wizGateSaveYes').disabled = !this.checked; };
+  $('wizGateSaveYes').onclick = () => gateStep(async () => { await v1('/consents', 'POST', {purpose: 'save_chats', version: readyState.retention.version, action: 'grant'}); });
+  $('wizGateClose').onclick = () => gateClose(false);
+  // true when coaching may proceed. An unreachable readiness check does not block here: the server enforces and its error codes are handled in chat().
+  async function ensureReady() {
+    if (readyState && readyState.billing && readyState.billing.required && !readyState.billing.entitled) readyState = null; // payment may have changed
+    let r; try { r = await readiness(); } catch(e) { return true; }
+    // a paid subscription comes first; account settings (subscribe, manage billing, privacy tools) stay open without one
+    if (r.billing && r.billing.required && !r.billing.entitled) { alert('A WIZ subscription is needed to start coaching. Your account is opening so you can subscribe; your saved chats, privacy tools and settings stay available.'); accountButton.onclick(); return false; }
+    if (!r.enabled || !needsDialog(r)) return true;
+    return gateDialog(r);
+  }
+
+  // ---- settings: subscription (hosted Checkout / Customer Portal; the browser never decides entitlement or price) --------------------
+  async function billing() {
+    const box = $('wizBillingSection'); let b;
+    try { b = await v1('/billing'); } catch(e) { box.hidden = true; return; }
+    if (!b || typeof b.entitled !== 'boolean') { box.hidden = true; return; }
+    box.hidden = false; const actions = $('wizBillingActions'); actions.replaceChildren();
+    const until = b.paid_through ? new Date(b.paid_through).toLocaleDateString() : '';
+    $('wizBillingState').textContent = (b.entitled ? 'Your subscription is active' + (until ? ' until ' + until : '') + (b.cancel_at_period_end ? ' and will not renew.' : '.')
+      : b.status === 'past_due' || b.status === 'unpaid' ? 'Your last payment did not go through, so coaching is paused. Use Manage billing to update your payment details.'
+      : b.purchase_available ? 'You do not have an active subscription. Coaching needs one; your account, saved chats, export and erasure stay available.'
+      : 'Subscriptions are not available yet. Your account, saved chats, export and erasure stay available.') + (b.mode === 'test' ? ' (Test mode: no real charges.)' : '');
+    const go = (label, path, id) => { const x = document.createElement('button'); x.type = 'button'; x.id = id; x.textContent = label;
+      x.onclick = async () => { x.disabled = true; status('Opening…'); try { const d = await v1(path, 'POST', {}); location.href = d.url; } catch(e) { x.disabled = false; status(e.message, true); } }; actions.appendChild(x); };
+    if (!b.entitled && b.purchase_available) go('Subscribe', '/billing/checkout', 'wizBillingSubscribeBtn');
+    if (b.can_manage) go('Manage billing', '/billing/portal', 'wizBillingPortalBtn');
+    const re = document.createElement('button'); re.type = 'button'; re.id = 'wizBillingRefreshBtn'; re.textContent = 'Check payment status'; re.hidden = !(b.can_manage || b.status !== 'none');
+    re.onclick = async () => { re.disabled = true; status('Checking…'); try { await v1('/billing/refresh', 'POST', {}); readyState = null; await billing(); status('Subscription status updated.'); } catch(e) { re.disabled = false; status(e.message, true); } };
+    actions.appendChild(re);
+  }
+  // back from hosted Checkout / Portal: re-check with the provider (the redirect itself proves nothing)
+  async function billingReturn() {
+    const p = new URLSearchParams(location.search).get('billing'); if (!p) return;
+    history.replaceState(null, '', location.pathname);
+    readyState = null;
+    if (p !== 'cancel') { try { await v1('/billing/refresh', 'POST', {}); } catch(e) { /* the account view shows the current state */ } }
+    accountButton.onclick();
+  }
+
+  // ---- settings: health information (state, explicit allow, explicit withdrawal) ----------------------------------------------------
+  async function health() {
+    const box = $('wizHealthSection'); let r;
+    try { r = await readiness(true); } catch(e) { box.hidden = true; return; }
+    if (!r.enabled) { box.hidden = true; return; }
+    box.hidden = false; const actions = $('wizHealthActions'); actions.replaceChildren();
+    const d = r.health && r.health.decision;
+    $('wizHealthState').textContent = d === 'granted' ? 'You allowed WIZ to handle health, wellbeing and neurodiversity information you choose to share.'
+      : d === 'declined' ? 'You are not sharing health, wellbeing or neurodiversity information. WIZ gives general coaching only and does not use your saved profile or earlier conversations.'
+      : d === 'unanswered' ? 'You have not made this choice yet. You will be asked before your first coaching message.' : 'This choice is not available yet.';
+    $('wizHealthNote').textContent = 'You can also withdraw by emailing info@mindflowpro.com. Your chats stay readable, exportable and deletable.';
+    const save = (action, done) => async function() { this.disabled = true; status('Saving…'); try { await v1('/consents', 'POST', {purpose: 'health_processing', version: r.health.version, action}); await readiness(true); await health(); status(done); } catch(e) { this.disabled = false; status(e.message, true); } };
+    if (d === 'granted') {
+      const b = document.createElement('button'); b.type = 'button'; b.id = 'wizHealthWithdrawBtn'; b.textContent = 'Withdraw health consent';
+      const go = save('revoke', 'Health consent withdrawn.');
+      b.onclick = function() { if (!confirm('Withdraw consent? From now on WIZ will not use your earlier conversations, saved profile or career details in its replies, even if you allow health information again. Your chats stay readable, exportable and deletable. Messages already sent cannot be recalled.')) return; return go.call(this); };
+      actions.appendChild(b);
+    } else if (d === 'declined' || d === 'unanswered') {
+      const label = document.createElement('label'), box2 = document.createElement('input'); box2.type = 'checkbox'; box2.id = 'wizHealthAllowBox'; label.appendChild(box2); label.append(' I explicitly consent to WIZ handling health, wellbeing or neurodiversity information I choose to share.');
+      const yes = document.createElement('button'); yes.type = 'button'; yes.id = 'wizHealthAllowBtn'; yes.textContent = 'Allow health information'; yes.disabled = true; yes.onclick = save('grant', 'Health information allowed.');
+      box2.onchange = () => { yes.disabled = !box2.checked; };
+      actions.append(label, yes);
+      if (d === 'declined') { const n = document.createElement('p'); n.textContent = 'Allowing again does not bring back earlier conversations or saved details that were set aside when you withdrew.'; actions.appendChild(n); }
+    }
   }
   const split = value => value.split('\n').map(s => s.trim()).filter(Boolean);
   // These fields map directly to record APIs; displayed rows always come from the server.
@@ -2511,7 +2664,7 @@ const WIZ_ACCOUNT = (() => {
     status('Loading…');
     const me = await v1('/me'), on = await v1('/me/onboarding');
     onboarding = on.answers || {}; complete = !!on.completed_at; $('wizProfileName').value = me.user.full_name || ''; $('wizLanguage').value = me.profile.preferences.language || ''; $('wizFocus').value = onboarding.focus || ''; $('wizAdult').checked = onboarding.over_18 === true;
-    await consent(); await sessions(); for (const spec of collections) await collection(spec);
+    await consent(); await billing(); await health(); await sessions(); for (const spec of collections) await collection(spec);
     await training(); plan = (await v1('/career-plan')).item; $('wizDirection').value = plan?.plan?.direction || ''; $('wizValues').value = (plan?.plan?.values || []).join('\n'); $('wizCareerAI').checked = !!plan?.ai_use_enabled; routeRows = []; $('wizRoutes').replaceChildren(); (plan?.plan?.routes || []).forEach(routeEditor);
     learning = (await v1('/learning-profile')).item; const lp = learning?.profile || {}; $('wizLearningStyles').value = (lp.learning_styles || []).join('\n'); $('wizLearningFocus').value = lp.focus_notes || ''; $('wizAdjustments').value = lp.useful_adjustments || ''; $('wizRecognition').value = lp.self_recognition || ''; $('wizLearningAI').checked = !!learning?.ai_use_enabled;
     const trend = (await v1('/pulses/trend')).trend; $('wizPulseTrend').textContent = 'Stress: '+trend.stress.direction+'; energy: '+trend.energy.direction; status('Account loaded.');
@@ -2537,9 +2690,11 @@ const WIZ_ACCOUNT = (() => {
   async function auth(signup) {
     $('wizAuthError').textContent = '';
     if (signup && !$('wizSignupAdult').checked) { $('wizAuthError').textContent = 'Please confirm that you are 18 or over to create an account.'; return; }
+    if (signup && termsInfo && !$('wizSignupTerms').checked) { $('wizAuthError').textContent = 'Please read and accept the Terms of Service to create an account.'; return; }
     const b = {email:$('wizEmail').value,password:$('wizPassword').value}; if (signup) b.over_18 = true; if (signup && $('wizName').value.trim()) b.full_name = $('wizName').value.trim();
+    if (signup && termsInfo) { b.accept_terms = true; b.terms_version = termsInfo.version; b.terms_sha256 = termsInfo.artifact_sha256; }
     const d = await v1('/auth/'+(signup ? 'signup' : 'login'),'POST',b);
-    if (d.confirmation_required) { $('wizAuthError').textContent = 'Check your email to confirm your account, then sign in.'; return; }
+    if (d.confirmation_required) { $('wizAuthError').textContent = 'Check your email to confirm your account, then sign in.' + (termsInfo ? ' You will be asked to accept the Terms once you are signed in.' : ''); return; }
     remember(d); await authenticated(!!(d.user && d.user.over_18 === true));
   }
   $('wizLoginBtn').onclick = async () => { try { await auth(false); } catch(e) { $('wizAuthError').textContent = e.message; } };
@@ -2573,8 +2728,12 @@ const WIZ_ACCOUNT = (() => {
     const input = $('wizNewPassword'); this.disabled = true; status('Saving…');
     try { await v1('/me'); await v1('/auth/password','POST',{password:input.value}); input.value = ''; status('Password changed.'); } catch(e) { status(e.message, true); } finally { this.disabled = false; }
   };
-  accountButton.onclick = async () => { if (!token) { overlay.style.display = 'flex'; return; } modal.style.display = 'flex'; try { await reload(); } catch(e) { status(e.message,true); } };
-  $('wizCloseAccountBtn').onclick = () => { modal.style.display = 'none'; };
+  accountButton.onclick = async () => { if (!token) { overlay.style.display = 'flex'; return; } noticeReset(); modal.style.display = 'flex'; try { await reload(); } catch(e) { status(e.message,true); } };
+  $('wizCloseAccountBtn').onclick = () => { noticeReset(); modal.style.display = 'none'; };
+  $('wizPrivacyNoticeBtn').onclick = function() { showNotice('privacy', this); };
+  $('wizTermsNoticeBtn').onclick = function() { showNotice('terms', this); };
+  $('wizNoticeRetry').onclick = () => { if (noticeKind) showNotice(noticeKind); };
+  $('wizNoticeBack').onclick = () => { noticeReset(); if (noticeOpener) noticeOpener.focus(); };
   $('wizSaveProfileBtn').onclick = action(async () => { await v1('/me','PATCH',{full_name:$('wizProfileName').value,preferences:{language:$('wizLanguage').value || null}}); });
   $('wizSaveOnboardingBtn').onclick = action(async () => { await v1('/me/onboarding','PUT',{answers:{...onboarding,focus:$('wizFocus').value,over_18:$('wizAdult').checked},complete:true}); onboarding = (await v1('/me/onboarding')).answers; $('wizAgeGate').style.display = onboarding.over_18 ? 'none' : 'flex'; });
   window.wizAgePass = async () => { try { if (!token) { overlay.style.display = 'flex'; return; } const current = await v1('/me/onboarding'); await v1('/me/onboarding','PUT',{answers:{...current.answers,over_18:true},complete:!!current.completed_at}); onboarding = {...current.answers,over_18:true}; $('wizAgeGate').style.display = 'none'; if (!sid && !complete && !onbSkipped) startOnboarding(); } catch(e) { alert('Age confirmation failed: '+e.message); } };
@@ -2596,6 +2755,7 @@ const WIZ_ACCOUNT = (() => {
     if (!onboarding.over_18) { $('wizAgeGate').style.display = 'flex'; return; }
     busy = true;
     try {
+      if (!(await ensureReady())) return; // Terms + health choice first; the server enforces the same before any message is stored
       if (!opening || JSON.stringify(opening.topic) !== JSON.stringify(topic)) { resetConversation(!!pendingBioUpload); opening = {topic,createKey:key(),startKey:key(),id:null}; }
       if (!opening.id) opening.id = (await v1('/sessions','POST',{topic},opening.createKey)).item.id;
       if (!options.skipStart) await v1('/sessions/'+opening.id+'/start','POST',{},opening.startKey); const id = opening.id; await loadSession(id,true,!!pendingBioUpload); await sessions();
@@ -2608,7 +2768,9 @@ const WIZ_ACCOUNT = (() => {
     if (text === null) { const current = state.messages.at(-1); if (current?.role !== 'user') throw new Error('No upload to send.'); text = current.content; }
     if (pending && pending.text !== text) throw new Error('Retry the previous message before sending a different one.');
     if (!pending) pending = {text,key:key(),sid,epoch}; const request = pending;
-    const d = await v1('/sessions/'+request.sid+'/chat','POST',{messages:[{role:'user',content:text}]},request.key);
+    const send = () => v1('/sessions/'+request.sid+'/chat','POST',{messages:[{role:'user',content:text}]},request.key);
+    let d; // a Terms/health requirement that appeared since the session began is asked for, then the same request (same key) is repeated once
+    try { d = await send(); } catch(e) { if (!GATE_CODES.includes(e.code)) throw e; readyState = null; if (!(await ensureReady())) throw e; d = await send(); }
     if (request.epoch !== epoch) throw new Error('Session changed while waiting for the reply.');
     const reply = typeof d.content === 'string' ? d.content.trim() : ''; if (!reply) throw new Error('WIZ returned an empty reply.'); pending = null;
     if (state.messages.at(-1)?.content !== text) state.messages.push({role:'user',content:text});
@@ -2623,7 +2785,7 @@ const WIZ_ACCOUNT = (() => {
   window.callWIZ = chat;
   window.callReport = () => chat('The coaching session is now complete. Generate the Personal Awareness Report now. Output [REPORT_READY] on its own line, then immediately output ONLY the JSON object as specified in your instructions -- no other text before or after the JSON. Every field must reference something specific the client said in this session.');
   window.restartSession = mode => { const topic = state.track || state.lens ? {kind:'catalogue',area:state.track || state.lens} : {kind:'custom',text:'General coaching'}; closeEndSession(); showOpening(); if (mode === 'fresh') begin(topic); };
-  window.addEventListener('DOMContentLoaded',async () => { if (recovery) { showPublicHome(); overlay.style.display = 'none'; $('wizAgeGate').style.display = 'none'; await recoveryStart(); return; } if (!token) { showPublicHome(); $('wizAgeGate').style.display = 'none'; return; } try { await authenticated(); } catch(e) { $('wizAuthError').textContent = e.message; overlay.style.display = 'flex'; } });
+  window.addEventListener('DOMContentLoaded',async () => { if (recovery) { showPublicHome(); overlay.style.display = 'none'; $('wizAgeGate').style.display = 'none'; await recoveryStart(); return; } if (!token) { showPublicHome(); $('wizAgeGate').style.display = 'none'; return; } try { await authenticated(); await billingReturn(); } catch(e) { $('wizAuthError').textContent = e.message; overlay.style.display = 'flex'; } });
   return {retry:async () => { if (!pending) return; await handleWIZResponse(pending.text); },api:v1};
 })();
 
