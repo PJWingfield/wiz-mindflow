@@ -1,5 +1,8 @@
 # Paid subscription (Stripe) — contract, environment, decisions
 
+> **Three plans (Main / Sol / Shared Info)** are described in the last section, "Three plans". Everything below describes the single-price contract, which stays in force
+> unchanged when no `WIZ_PLAN_*` variable is set.
+
 Migration `supabase/migrations/20261021120000_wiz_billing.sql` (rollback `supabase/rollbacks/20261021120000_wiz_billing.down.sql`); code `lib/billing.js`.
 Needs the foundation, career and privacy migrations first. **The paid gate is ON by default**; only `WIZ_BILLING_GATE=off` disables it (legacy test fixtures).
 If the migration is not applied the gated routes fail closed (500), never open. Runtime: Stripe SDK 23.0.0 needs Node 20+; `.node-version` pins 24.19.0 (what the
@@ -88,6 +91,68 @@ rows are removed with the account (foreign-key cascade). Only this customer's se
   retention rule and whether the Stripe customer is deleted after erasure (not done).
 - Verified price (product, price id, amount, currency, interval) and any trial/grace exception (none implemented).
 - Commercial wording/Terms alignment for the paid flow; refund and cancellation policy copy.
+
+## Three plans (Main / Sol / Shared Info)
+
+Migration `supabase/migrations/20261021180000_wiz_billing_tiers.sql` (rollback `supabase/rollbacks/20261021180000_wiz_billing_tiers.down.sql`); code `lib/plans.js`
+(fixed plans + the one resolver), `lib/openai-provider.js` (OpenAI boundary), `lib/billing.js`, `lib/coaching.js`, `lib/app.js` (legacy `/api/chat`), `lib/config.js`.
+Needs the billing and health-consent-flow migrations first. No new table and no caller-written tier field: the verified paid `price_id` already stored on the entitlement is
+exposed by `wiz_billing_state` (replaced in place, same signature, service-role only) and registered as the ONLY routing input.
+
+| Plan id | GBP / month | Coaching |
+|---|---:|---|
+| `main` | 20 | existing Claude `claude-sonnet-4-6` (unchanged) |
+| `sol` | 30 | OpenAI `gpt-6.1-sol`, reasoning effort `low`, the **non-sharing** OpenAI project |
+| `shared` | 10 | same model/effort, a **different sharing-enabled** OpenAI project, only with the user's explicit current `openai_training` grant |
+
+Identifiers, amounts, currency and interval are fixed in code. Stripe price/product ids and provider settings are configuration (template — no values built in):
+
+```
+WIZ_PLAN_MAIN_PRICE_ID=price_...   WIZ_PLAN_MAIN_PRODUCT_ID=prod_...
+WIZ_PLAN_SOL_PRICE_ID=price_...    WIZ_PLAN_SOL_PRODUCT_ID=prod_...
+WIZ_PLAN_SHARED_PRICE_ID=price_... WIZ_PLAN_SHARED_PRODUCT_ID=prod_...
+OPENAI_API_KEY_SOL=sk-...          OPENAI_PROJECT_ID_SOL=proj_...      WIZ_SOL_PROJECT_NONSHARING_ATTESTED=<the Sol project id>
+OPENAI_API_KEY_SHARED=sk-...       OPENAI_PROJECT_ID_SHARED=proj_...   WIZ_SHARED_PROJECT_SHARING_ATTESTED=<the Shared project id>
+WIZ_SHARED_ELIGIBLE_DATA=message,session_history,profile,knowledge,health
+```
+* **Absent** (no `WIZ_PLAN_*` set): the legacy single price and existing provider, exactly as before. **Present but malformed** (one id of a pair, a bad id, a price reused across plans):
+  purchase and routing fail closed (`plans_misconfigured`, `503 plan_unavailable`); the legacy price is never used instead. A plan with neither id is simply not offered.
+* Each OpenAI plan needs its own key **and** project (sent as `OpenAI-Project`); a plan with incomplete settings has no provider and is unavailable. Nothing falls back to another
+  key, project, model or provider, and a failed call is not retried.
+* The attestations are the operator's statement about the OpenAI **project data-sharing setting**, which this server cannot read: repeat the project id to attest it. Shared and Sol
+  must be different projects with different keys.
+* `store: true` (response retention) is the owner's standing preference and is **not** a training-sharing switch. Sharing is a property of the OpenAI project plus the user's opt-in.
+
+**Purchase.** `GET /billing` returns `plans: [{ id, label, amount, currency, interval, requires_sharing_consent, sharing_granted?, available, reason }]` (safe labels only) and the held `plan`.
+`POST /billing/checkout` reads ONLY `{ plan }` (allowlisted id); price, amount, model, customer and tier fields are ignored. An unknown/unavailable plan is refused before any customer or
+Checkout session is created (`400 invalid_plan`, `503 plan_unavailable`). Shared Info additionally needs an approved current notice and the user's persisted grant
+(`503 shared_unavailable`, `403 sharing_consent_required`). Each plan's Stripe price is verified against the approved amount (GBP, monthly) and product before it is offered. One customer and one
+entitlement row; an existing subscriber gets `409 already_subscribed` and uses **Manage billing** (no upgrade/proration logic). Reconciliation, the collected-invoice proof, leases,
+cancellation and erasure are unchanged and cover all three prices; two live subscriptions (even on different approved plans) are a conflict and grant nothing.
+
+**Routing.** Saved coaching (`/sessions/:id/chat`, `/start`) and legacy `POST /api/chat` resolve the provider from the entitlement's verified `price_id` through the server allowlist
+(`lib/plans.js`). Unknown, tampered or conflicting prices, or incomplete provider configuration, are unavailable (`503 plan_unavailable`) before anything is appended, retrieved or sent.
+Exactly one provider call is made per turn. The actual model is stored with the reply (`model`), with `provenance.route` = `{ plan, provider, sharing_consent_version? }`.
+
+**Shared Info consent.** Purpose `openai_training` (version 1) reuses the versioned consent tables and `POST /consents`; it is independent of saving, personalisation and health choices, unchecked by
+default, shown in the account billing section only for Shared Info (or when already granted, so it can always be withdrawn). It is checked before any work and **again immediately before the
+external send** (after retrieval): a revocation or changed grant during preparation refuses the turn unsent. The Shared Info bundle is limited to: the current message (and any attachment), this
+session's messages created since the current grant, profile/career material that has its own consent, retrieved Mind Flow guide extracts, and the reply. Earlier sessions are never included, an
+earlier opt-in or plan change never copies history, and legacy `/api/chat` sends only the final message. Existing health restrictions apply unchanged; no keyword filtering of personal or health
+data is done and nothing here guarantees training eligibility. Withdrawal stops future sharing; it cannot recall data already sent.
+
+**Compatibility.** Legacy single-price tests/config keep working; with the three-plan configuration the paid gate must be on (an entitlement is the only routing input).
+
+### Unresolved before Shared Info can be sold (left gated, not removed)
+
+1. **Notice approval.** The `openai_training` v1 row is registered `legal_approved = false` with no notice artifact; no grant can be recorded. The summary wording is a DRAFT drafted from the
+   implementation above and has no legal approval or provenance. Publish an approved notice artifact (notices catalogue + SHA-256) and a new approved consent version in a separate migration.
+2. **Eligible-data policy.** The owner must confirm that every category in the bundle (message, session history, profile/career, retrieved Mind Flow KB, health information) may be shared for OpenAI
+   model improvement under OpenAI's terms and Mind Flow's rights in the KB. Until then `WIZ_SHARED_ELIGIBLE_DATA` must not list the category, and Shared Info stays unavailable.
+3. **Project settings.** Verify in OpenAI that the Sol project has data sharing OFF and the Shared project has it ON before setting the two attestation variables.
+4. Stripe: create the three GBP monthly prices/products, configure the Customer Portal (so a plan change reconciles through the webhook), and run TEST-mode checkout → webhook for each plan.
+5. The summary and Terms/Privacy Notice must be aligned (the current Privacy Notice does not describe OpenAI model-improvement sharing). Rollout/refund copy for the three plans is not written.
+6. Rollback note: the tiers rollback hides the price from the API, so a three-plan deployment cannot route until re-applied; roll the app back to the legacy price first.
 
 ## Parent verification (not done here)
 

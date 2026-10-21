@@ -87,7 +87,14 @@ function createDefaultApp(env = process.env) {
     ? createStore(createPostgrestRpc({ url: config.supabase.url, serviceKey: config.supabase.serviceKey }))
     : null;
   const provider = config.anthropicKey ? createAnthropicProvider({ apiKey: config.anthropicKey }) : null;
-  return createApp({ config, auth, store, provider, buildSystem, tracks: Object.keys(TRACK_NOTES), lenses: Object.keys(LENS_NOTES) });
+  // Sol and Shared Info each get their OWN key + project (lib/config.js); an incomplete configuration leaves that plan without a provider.
+  const { createOpenAiProvider } = require('./lib/openai-provider');
+  const providers = {};
+  for (const plan of ['sol', 'shared']) {
+    const c = config.openai[plan];
+    if (c) providers[plan] = createOpenAiProvider({ apiKey: c.apiKey, projectId: c.projectId, fetchImpl: fetch });
+  }
+  return createApp({ config, auth, store, provider, providers, buildSystem, tracks: Object.keys(TRACK_NOTES), lenses: Object.keys(LENS_NOTES) });
 }
 
 const app = createDefaultApp();

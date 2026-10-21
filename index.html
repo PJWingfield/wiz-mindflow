@@ -2452,7 +2452,8 @@ const WIZ_ACCOUNT = (() => {
   async function consent() {
     // health_processing is not listed here: it has its own section (explicit allow / withdraw) below
     const d = await v1('/consents'); $('wizConsents').replaceChildren();
-    d.purposes.filter(p => p.purpose !== 'health_processing').forEach(p => { const row = document.createElement('div'); row.className = 'record-row'; const notice = document.createElement('p'); notice.textContent = p.purpose.replaceAll('_',' ') + ' — version ' + p.version + ': ' + p.summary + (p.legal_approved ? ' (Available)' : ' (Awaiting notice approval; grants unavailable)'); row.appendChild(notice);
+    // openai_training (Shared Info sharing) is shown with the subscription plans below, not here
+    d.purposes.filter(p => p.purpose !== 'health_processing' && p.purpose !== 'openai_training').forEach(p => { const row = document.createElement('div'); row.className = 'record-row'; const notice = document.createElement('p'); notice.textContent = p.purpose.replaceAll('_',' ') + ' — version ' + p.version + ': ' + p.summary + (p.legal_approved ? ' (Available)' : ' (Awaiting notice approval; grants unavailable)'); row.appendChild(notice);
       const label = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.id = 'consent-' + p.purpose; input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; label.appendChild(input); label.append(' Allow ' + p.purpose.replaceAll('_',' ')); row.appendChild(label);
       input.onchange = async () => { const desired = input.checked; input.disabled = true; try { await v1('/consents','POST',{purpose:p.purpose,version:p.version,action:desired ? 'grant' : 'revoke'}); await consent(); status('Privacy choice saved.'); } catch(e) { input.checked = p.granted; input.disabled = !p.legal_approved && !p.granted; status(e.message,true); } }; $('wizConsents').appendChild(row); });
   }
@@ -2556,15 +2557,35 @@ const WIZ_ACCOUNT = (() => {
     const box = $('wizBillingSection'); let b;
     try { b = await v1('/billing'); } catch(e) { box.hidden = true; return; }
     if (!b || typeof b.entitled !== 'boolean') { box.hidden = true; return; }
+    const priorChoice = $('wizPlanChoice')?.querySelector('input[name="wizPlan"]:checked')?.value || null;
     box.hidden = false; const actions = $('wizBillingActions'); actions.replaceChildren();
     const until = b.paid_through ? new Date(b.paid_through).toLocaleDateString() : '';
     $('wizBillingState').textContent = (b.entitled ? 'Your subscription is active' + (until ? ' until ' + until : '') + (b.cancel_at_period_end ? ' and will not renew.' : '.')
       : b.status === 'past_due' || b.status === 'unpaid' ? 'Your last payment did not go through, so coaching is paused. Use Manage billing to update your payment details.'
       : b.purchase_available ? 'You do not have an active subscription. Coaching needs one; your account, saved chats, export and erasure stay available.'
       : 'Subscriptions are not available yet. Your account, saved chats, export and erasure stay available.') + (b.mode === 'test' ? ' (Test mode: no real charges.)' : '');
-    const go = (label, path, id) => { const x = document.createElement('button'); x.type = 'button'; x.id = id; x.textContent = label;
-      x.onclick = async () => { x.disabled = true; status('Opening…'); try { const d = await v1(path, 'POST', {}); location.href = d.url; } catch(e) { x.disabled = false; status(e.message, true); } }; actions.appendChild(x); };
-    if (!b.entitled && b.purchase_available) go('Subscribe', '/billing/checkout', 'wizBillingSubscribeBtn');
+    // three plans: the server lists them (label, GBP price, availability); the browser sends back ONLY the chosen plan id
+    const plans = Array.isArray(b.plans) ? b.plans : []; let chosen = null;
+    let sc = null; if (plans.length) { try { sc = ((await v1('/consents')).purposes || []).find(x => x.purpose === 'openai_training') || null; } catch(e) { sc = null; } }
+    if (plans.length && b.entitled) { const held = plans.find(p => p.id === b.plan); if (held) $('wizBillingState').textContent += ' Plan: ' + held.label + '.'; }
+    if (plans.length && !b.entitled) {
+      chosen = plans.some(p => p.id === priorChoice && p.available) ? priorChoice : (plans.find(p => p.available) || plans[0]).id;
+      const pick = document.createElement('div'); pick.id = 'wizPlanChoice';
+      plans.forEach(p => { const label = document.createElement('label'), input = document.createElement('input'); input.type = 'radio'; input.name = 'wizPlan'; input.value = p.id; input.id = 'wizPlan-' + p.id; input.checked = p.id === chosen; input.disabled = !p.available;
+        input.onchange = () => { chosen = p.id; shareRow.hidden = !(sc && (sc.granted || p.requires_sharing_consent)); };
+        label.appendChild(input); label.append(' ' + p.label + ' — £' + (p.amount / 100) + ' a ' + p.interval + (p.available ? '' : ' (not available yet)') + (p.requires_sharing_consent ? ' — your coaching may be shared with OpenAI to improve its models, only if you turn on the sharing choice below' : '')); pick.appendChild(label); pick.appendChild(document.createElement('br')); });
+      actions.appendChild(pick);
+    }
+    // the sharing choice: unchecked by default, visible only while Shared Info is selectable/held (or already granted, so it can always be withdrawn), independent of every other privacy choice
+    const shareRow = document.createElement('div'); shareRow.id = 'wizSharingChoice';
+    shareRow.hidden = !(sc && (sc.granted || (chosen && (plans.find(p => p.id === chosen) || {}).requires_sharing_consent) || (b.entitled && b.plan === 'shared')));
+    if (sc) { const note = document.createElement('p'); note.textContent = 'Sharing with OpenAI — version ' + sc.version + ': ' + sc.summary + (sc.legal_approved ? '' : ' (Awaiting notice approval; Shared Info is unavailable until then.)'); shareRow.appendChild(note);
+      const label = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.id = 'consent-openai_training'; input.checked = sc.granted; input.disabled = !sc.legal_approved && !sc.granted;
+      input.onchange = async () => { const desired = input.checked; input.disabled = true; try { await v1('/consents', 'POST', { purpose: sc.purpose, version: sc.version, action: desired ? 'grant' : 'revoke' }); await billing(); status('Sharing choice saved.'); } catch(e) { input.checked = sc.granted; input.disabled = !sc.legal_approved && !sc.granted; status(e.message, true); } };
+      label.appendChild(input); label.append(' Allow WIZ to share my Shared Info coaching with OpenAI for model improvement'); shareRow.appendChild(label); actions.appendChild(shareRow); }
+    const go = (label, path, id, bodyOf) => { const x = document.createElement('button'); x.type = 'button'; x.id = id; x.textContent = label;
+      x.onclick = async () => { x.disabled = true; status('Opening…'); try { const d = await v1(path, 'POST', bodyOf ? bodyOf() : {}); location.href = d.url; } catch(e) { x.disabled = false; status(e.message, true); } }; actions.appendChild(x); };
+    if (!b.entitled && b.purchase_available) go('Subscribe', '/billing/checkout', 'wizBillingSubscribeBtn', plans.length ? () => ({ plan: chosen }) : null);
     if (b.can_manage) go('Manage billing', '/billing/portal', 'wizBillingPortalBtn');
     const re = document.createElement('button'); re.type = 'button'; re.id = 'wizBillingRefreshBtn'; re.textContent = 'Check payment status'; re.hidden = !(b.can_manage || b.status !== 'none');
     re.onclick = async () => { re.disabled = true; status('Checking…'); try { await v1('/billing/refresh', 'POST', {}); readyState = null; await billing(); status('Subscription status updated.'); } catch(e) { re.disabled = false; status(e.message, true); } };

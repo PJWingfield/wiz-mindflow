@@ -140,7 +140,7 @@ async function startApi(opts = {}) {
   const auth = opts.auth === undefined ? createSupabaseAuth({ url: gotrue.url, anonKey: ANON_KEY, timeoutMs: opts.authTimeoutMs || 3000 }) : opts.auth;
   const store = opts.store === undefined ? createStore(rpc) : opts.store;
   const app = createApp({
-    config, auth, store, provider, logger, providerTimeoutMs: opts.providerTimeoutMs, embed: opts.embed,
+    config, auth, store, provider, providers: opts.providers, logger, providerTimeoutMs: opts.providerTimeoutMs, embed: opts.embed,
     buildSystem: (track, lens) => [{ type: 'text', text: 'SYSTEM-STUB' }, { type: 'text', text: `${track}|${lens}` }],
     tracks: TRACKS, lenses: LENSES, now: opts.now
   });

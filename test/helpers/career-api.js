@@ -31,7 +31,7 @@ async function startCareerApi(opts = {}) {
   const store = createStore(rpc);
   const logs = [];
   const app = createApp({
-    config, store, provider, authAdmin: opts.authAdmin, storage: opts.noStorage ? null : storage, retrieval: opts.retrieval, stripe: opts.stripe,
+    config, store, provider, providers: opts.providers, authAdmin: opts.authAdmin, storage: opts.noStorage ? null : storage, retrieval: opts.retrieval, stripe: opts.stripe,
     auth: createSupabaseAuth({ url: gotrue.url, anonKey: ANON_KEY, timeoutMs: 3000 }),
     logger: (event, fields) => logs.push({ event, ...fields }),
     buildSystem: (track, lens) => [{ type: 'text', text: 'SYSTEM-STUB' }, { type: 'text', text: `${track}|${lens}` }],

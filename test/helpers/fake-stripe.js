@@ -95,7 +95,10 @@ function createFakeStripe() {
     }
   } };
   f.billingPortal = { sessions: { async create(params) { const s = { id: 'bps_FIXTURE' + (++n), url: 'https://billing.stripe.test/p/session/' + n }; f.portals.push(clone(params)); return s; } } };
-  f.prices = { async retrieve(id) { if (id !== f.price.id) throw new Error('no such price'); return clone(f.price); } };
+  // price table: the fixture price plus any a test registers (three-plan tests); `f.price` stays the fixture price object tests mutate
+  f.priceTable = new Map([[f.price.id, f.price]]);
+  f.addPrice = ({ id, productId, amount }) => { const p = { ...clone(f.price), id, product: productId, unit_amount: amount }; f.priceTable.set(id, p); return p; };
+  f.prices = { async retrieve(id) { const p = f.priceTable.get(id); if (!p) throw new Error('no such price'); return clone(p); } };
   f.subscriptions = {
     async list(params) {
       f.calls.subscriptionsList++;
