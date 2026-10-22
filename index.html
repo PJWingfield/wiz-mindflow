@@ -70,6 +70,23 @@ body.in-session .app{flex:1 1 0;min-height:0;height:auto}
 .rbp-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
 .rbp-btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy);border-radius:8px;padding:9px 15px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
 .rbp-btn:disabled,.rbp-btn-ghost:disabled{opacity:.5;cursor:default}
+.audit-offer{display:flex;flex-wrap:wrap;gap:10px;padding:4px 0}
+.rbp-btn.chosen:disabled,.rbp-btn-ghost.chosen:disabled{opacity:1;background:var(--navy);color:#fff;border-color:var(--navy)}
+.rbp-btn.chosen::before,.rbp-btn-ghost.chosen::before{content:"\2713\00a0"}
+/* printing the report: let long cards split across pages instead of leaving blank space */
+@media print{
+  .report-card.plan-card{break-inside:auto;page-break-inside:auto}
+  .report-card h3{break-after:avoid;page-break-after:avoid}
+  .report-card li,.action-item,.score-row{break-inside:avoid;page-break-inside:avoid}
+  .report-card p[style*="font-weight:600"]{break-after:avoid;page-break-after:avoid}
+}
+/* sidebar progress: hollow = to come, glow = now, tick = done */
+.domain-dot{width:14px!important;height:14px!important;border-radius:50%;border:1.5px solid rgba(255,255,255,0.45);background:transparent!important;display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1;color:var(--navy);flex-shrink:0;box-shadow:none}
+.domain-dot.active{background:var(--gold)!important;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,173,40,0.3)}
+.domain-dot.done{background:var(--gold)!important;border-color:var(--gold);box-shadow:none}
+.domain-dot.done::after{content:"\2713";font-weight:700}
+.domain-dot.active + .domain-label{color:#fff!important;font-weight:600}
+.domain-dot:not(.active):not(.done) + .domain-label{color:rgba(255,255,255,0.55)!important}
 .wiz-logo-card{width:148px;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px 12px 8px;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
 .wiz-logo-card img{display:block;width:100%;height:auto}
 .wiz-desc{font-size:11px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6}
@@ -998,6 +1015,7 @@ function showMenuPanel(p, panelId) {
 function sendUserMessage(text) {
   // Panel submit path — mirrors sendMessage for correct state management
   if (state.isLoading) return;
+  closeAuditOffer();
   state.turnCount++;
   addMessage('user', text);
   if (state.turnCount >= 3 && state.phase === 1) setPhase(2);
@@ -1020,18 +1038,59 @@ var SKILLS_DATA = {
   "Execution & Drive": ["Getting things done","Working under pressure","Time management","Attention to detail","Persistence","Managing projects","Adaptability"],
   "Technical & Specialist": ["Digital & tech skills","Data & numbers","Research & analysis","Writing & content","Design & creativity","Teaching & training","Languages"]
 };
-var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false};
+var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false,auditScores:null,auditDeclined:false};
 (function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport' || t === 'career') { state.track = t; state.entrySource = 'link'; } } catch(e){} })();
 function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
 function startLens(lens) { state.lens = lens; state.entrySource = 'tile'; beginWIZSession(); }
  
+// ---- Display helpers: signal stripping, dash tidying, escaping for report and conversation copy ----
+var WIZ_SIGNAL_RE = /\[(?:TRAINING_STEP:\s*\d+|TRAINING_END|TRAINING_MENU|EXPLAIN_RBP|RBP_CARD|SKILLS_QUIZ|DIRECTION_AUDIT|REPORT_READY|PHASE:\d+|DOMAIN:[^\]]+|PANEL_[0-9A-Z_]+|CONDITION_[A-Z_]+)\]/gi;
+function wizClean(text) {
+  return String(text == null ? '' : text).replace(WIZ_SIGNAL_RE, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
+}
+function wizDash(t) {
+  return String(t == null ? '' : t).replace(/\s--\s/g, ' – ').replace(/(\w)--(\w)/g, '$1–$2');
+}
+function wizHtml(t) {
+  return wizDash(String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+}
+function wizTitle(t) {
+  var small = /^(and|for|of|the|in|on|to|a|an|at|by|or|with|from|as)$/i;
+  return String(t == null ? '' : t).replace(/([A-Za-z][A-Za-z'’]*)/g, function (w, g, off, str) {
+    if (off === 0) return w;
+    var before = str.slice(0, off).replace(/\s+$/, '');
+    if (/[:–—(]$/.test(before)) return w;
+    return small.test(w) ? w.toLowerCase() : w;
+  });
+}
+function wizInitial() {
+  var n = (state && state.clientName) ? String(state.clientName).trim() : '';
+  return n ? n.charAt(0).toUpperCase() : 'U';
+}
+function wizExtractName(text) {
+  var t = String(text).trim().replace(/[.!]+$/, '');
+  var m = t.match(/(?:my name is|i am|i'm|im|call me|it is|it's|its|this is)\s+([A-Za-z][A-Za-z'’-]{0,24})/i);
+  var w = m ? m[1] : null;
+  if (!w) {
+    var parts = t.split(/\s+/);
+    if (parts.length > 3) return '';
+    w = parts[0];
+    if (/^(hi|hello|hey|morning|evening|afternoon|yes|no|ok|okay|thanks)[,!]?$/i.test(w) && parts[1]) w = parts[1];
+  }
+  w = String(w).replace(/[^A-Za-z'’-]/g, '');
+  if (!w || /^(hi|hello|hey)$/i.test(w)) return '';
+  return w;
+}
+
 function wizFormat(text) {
+  text = wizClean(text);
   // escape HTML first so model output cannot inject tags
   var s = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // headings (# / ## / ###) at line start -> bold line
   s = s.replace(/^#{1,6}\s*(.+)$/gm, '<strong>$1</strong>');
   // horizontal rules (a line of 3+ dashes) -> blank separator
   s = s.replace(/^\s*-{3,}\s*$/gm, '');
+  s = wizDash(s);
   // markdown links [text](https://...) -> safe link; only http(s) addresses
   s = s.replace(/\[([^\]\n]{1,120})\]\((https?:\/\/[^\s)"]{1,300})\)/g, function(m, t, u){ return '<a href="' + u + '" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">' + t + '</a>'; });
   // bold then italic
@@ -1050,7 +1109,7 @@ function addMessage(role, text) {
   div.className = "msg " + role;
   var avatar = document.createElement("div");
   avatar.className = "msg-avatar";
-  avatar.textContent = role === "wiz" ? "W" : "U";
+  avatar.textContent = role === "wiz" ? "W" : wizInitial();
   var inner = document.createElement("div");
   var bubble = document.createElement("div");
   bubble.className = "msg-bubble";
@@ -1130,6 +1189,77 @@ function showSkillsQuiz() {
   msgs.scrollTop = msgs.scrollHeight;
 }
  
+// The Direction Audit is only opened when the person chooses it. If WIZ has just asked a question,
+// show Start / Not now buttons instead of opening the panel straight away.
+function openAuditOrOffer(offerText) {
+  if (offerText && String(offerText).indexOf('?') >= 0) { showAuditOffer(); } else { showDirectionAudit(); }
+}
+function showAuditOffer() {
+  closeAuditOffer();
+  var msgs = document.getElementById('messages');
+  var wrapper = document.createElement('div');
+  wrapper.className = 'msg wiz';
+  wrapper.id = 'auditOffer';
+  var avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = 'W';
+  var box = document.createElement('div');
+  box.className = 'audit-offer';
+  var go = document.createElement('button');
+  go.className = 'rbp-btn';
+  go.textContent = 'Start the audit';
+  var skip = document.createElement('button');
+  skip.className = 'rbp-btn-ghost';
+  skip.textContent = 'Not now';
+  go.onclick = function () {
+    if (state.isLoading) return;
+    go.disabled = true; skip.disabled = true; go.classList.add('chosen');
+    wrapper.removeAttribute('id');
+    showDirectionAudit();
+  };
+  skip.onclick = function () {
+    if (state.isLoading) return;
+    go.disabled = true; skip.disabled = true; skip.classList.add('chosen');
+    wrapper.removeAttribute('id');
+    state.auditDeclined = true;
+    sendUserMessage("Not now, thank you. Let's carry on with what I came for.");
+  };
+  box.appendChild(go);
+  box.appendChild(skip);
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(box);
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function closeAuditOffer() {
+  var o = document.getElementById('auditOffer');
+  if (!o) return;
+  Array.prototype.forEach.call(o.querySelectorAll('button'), function (b) { b.disabled = true; });
+  o.removeAttribute('id');
+}
+
+// The person's own Direction Audit scores: kept in memory when they submit the audit, or read back from the
+// saved conversation (the audit message is a plain user turn) so a reopened report still shows them.
+var WIZ_AUDIT_LABELS = ['Physical','Mental','Financial','Social','Occupational','Family','Close Relationships','Personal Dev','Fun & Recreation','Spirituality'];
+function wizAuditScores() {
+  if (Array.isArray(state.auditScores) && state.auditScores.length) return state.auditScores;
+  var msgs = state.messages || [];
+  for (var i = msgs.length - 1; i >= 0; i--) {
+    var m = msgs[i];
+    if (!m || m.role !== 'user' || typeof m.content !== 'string' || m.content.indexOf('Here are my Direction Audit scores') !== 0) continue;
+    var found = [];
+    WIZ_AUDIT_LABELS.forEach(function (label) {
+      var at = m.content.indexOf(label + ': ');
+      if (at < 0) return;
+      var n = parseInt(m.content.slice(at + label.length + 2), 10);
+      if (n >= 1 && n <= 10) found.push({label: label, score: n});
+    });
+    if (found.length === WIZ_AUDIT_LABELS.length) return found;
+    break;
+  }
+  return [];
+}
+
 function showDirectionAudit() {
   var msgs = document.getElementById("messages");
   var wrapper = document.createElement("div");
@@ -1201,6 +1331,7 @@ function showDirectionAudit() {
     submitBtn.textContent = "Sent ✓";
     submitBtn.parentNode.style.pointerEvents = "none";
     var lines = areas.map(function(a){ return a.label + ": " + selections[a.key] + "/10"; });
+    state.auditScores = areas.map(function(a){ return {label: a.label, score: selections[a.key]}; });
     var msg = "Here are my Direction Audit scores -- " + lines.join(", ") + ".";
     addMessage("user", msg);
     handleWIZResponse(msg);
@@ -1255,11 +1386,23 @@ function setLoading(show, title, text) {
   document.getElementById("sendBtn").disabled = show;
 }
  
+var DOMAIN_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 function activateDomain(d) {
   if (state.assessedDomains.indexOf(d) >= 0) return;
   state.assessedDomains.push(d);
-  var dot = document.getElementById("dot-" + d);
-  if (dot) dot.className = "domain-dot active";
+  var idx = DOMAIN_ORDER.indexOf(d);
+  DOMAIN_ORDER.forEach(function (k, i) {
+    var dot = document.getElementById("dot-" + k);
+    if (!dot) return;
+    if (i < idx) dot.className = "domain-dot done";
+    else if (i === idx) dot.className = "domain-dot active";
+  });
+}
+function finishDomains() {
+  DOMAIN_ORDER.forEach(function (k) {
+    var dot = document.getElementById("dot-" + k);
+    if (dot) dot.className = "domain-dot done";
+  });
 }
  
 function makeContBtn(label, message) {
@@ -1330,12 +1473,12 @@ function buildReport(r) {
   rv.id = "reportView";
   var viewConv = document.createElement("div");
   viewConv.className = "report-nav";
-  viewConv.innerHTML = '<button class="btn-secondary report-nav-btn" onclick="showConversation()">&larr; View your conversation</button>';
+  viewConv.innerHTML = '<button class="btn-secondary report-nav-btn" onclick="showConversation()">&larr; View your conversation</button> <button class="report-nav-btn" onclick="downloadTranscript(\'word\')">Download conversation (Word)</button> <button class="report-nav-btn" onclick="downloadTranscript(\'pdf\')">Conversation as PDF</button>';
   rv.appendChild(viewConv);
  
   var rh = document.createElement("div");
   rh.className = "report-header";
-  rh.innerHTML = '<div class="label">Personal Awareness Report -- Mind Flow</div><h2>Your Session Report, ' + r.name + '</h2><div class="sub">' + new Date().toLocaleDateString("en-GB", {weekday:"long",year:"numeric",month:"long",day:"numeric"}) + ' -- Powered by WIZ</div>';
+  rh.innerHTML = '<div class="label">Personal Awareness Report -- Mind Flow</div><h2>Your Session Report, ' + wizHtml(r.name) + '</h2><div class="sub">' + new Date().toLocaleDateString("en-GB", {weekday:"long",year:"numeric",month:"long",day:"numeric"}) + ' -- Powered by WIZ</div>';
   rv.appendChild(rh);
  
   var grid = document.createElement("div");
@@ -1344,46 +1487,46 @@ function buildReport(r) {
  
   var obs = document.createElement("div");
   obs.className = "report-card full";
-  obs.innerHTML = '<h3>WIZ Observation</h3><p>' + r.summary + '</p>';
+  obs.innerHTML = '<h3>WIZ Observation</h3><p>' + wizHtml(r.summary) + '</p>';
   grid.appendChild(obs);
  
   var str = document.createElement("div");
   str.className = "report-card";
-  str.innerHTML = '<h3>Strengths Identified</h3>' + r.strengths.map(function(s){ return '<p style="margin-bottom:7px">&#10003; ' + s + '</p>'; }).join('');
+  str.innerHTML = '<h3>Strengths Identified</h3>' + r.strengths.map(function(s){ return '<p style="margin-bottom:7px">&#10003; ' + wizHtml(s) + '</p>'; }).join('');
   grid.appendChild(str);
  
   var pat = document.createElement("div");
   pat.className = "report-card";
-  pat.innerHTML = '<h3>Growth Opportunities</h3>' + r.patterns.map(function(p){ return '<p style="margin-bottom:7px">&#8594; ' + p + '</p>'; }).join('');
+  pat.innerHTML = '<h3>Growth Opportunities</h3>' + r.patterns.map(function(p){ return '<p style="margin-bottom:7px">&#8594; ' + wizHtml(p) + '</p>'; }).join('');
   grid.appendChild(pat);
  
   var scores = document.createElement("div");
   scores.className = "report-card full";
-  if (!r.scores || typeof r.scores !== 'object') r.scores = {};
-  scores.innerHTML = '<h3>Domain Scores</h3>' + Object.keys(r.scores).map(function(k){
-    var v = r.scores[k];
-    return '<div class="score-row"><span class="score-label">' + k.charAt(0).toUpperCase() + k.slice(1) + '</span><div class="score-bar"><div class="score-fill" style="width:' + (v*10) + '%"></div></div><span class="score-num">' + v + '/10</span></div>';
+  // Score chart: only the scores the person actually gave in their Direction Audit (never model-estimated figures)
+  var aud = wizAuditScores();
+  scores.innerHTML = '<h3>Your Direction Audit</h3><p style="font-size:12px;color:var(--mid);margin-bottom:10px">Your own scores, from 1 (very low) to 10 (excellent).</p>' + aud.map(function(a){
+    return '<div class="score-row"><span class="score-label" style="min-width:150px">' + wizHtml(a.label) + '</span><div class="score-bar"><div class="score-fill" style="width:' + (a.score*10) + '%"></div></div><span class="score-num">' + a.score + '/10</span></div>';
   }).join('');
-  if (Object.keys(r.scores).length) grid.appendChild(scores);
+  if (aud.length) grid.appendChild(scores);
  
   var t1 = document.createElement("div");
   t1.className = "report-card";
-  t1.innerHTML = '<h3>Recommended Technique 1</h3><p><strong>' + r.technique1.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique1.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique1.reason + '</p>';
+  t1.innerHTML = '<h3>Recommended Technique 1</h3><p><strong>' + wizHtml(r.technique1.name) + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + wizHtml(r.technique1.instructions) + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + wizHtml(r.technique1.reason) + '</p>';
   if (!hasPlan) grid.appendChild(t1);
  
   var t2 = document.createElement("div");
   t2.className = "report-card";
-  t2.innerHTML = '<h3>Recommended Technique 2</h3><p><strong>' + r.technique2.name + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + r.technique2.instructions + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + r.technique2.reason + '</p>';
+  t2.innerHTML = '<h3>Recommended Technique 2</h3><p><strong>' + wizHtml(r.technique2.name) + '</strong></p><p style="margin-top:7px;font-size:12.5px;color:var(--mid)">' + wizHtml(r.technique2.instructions) + '</p><p style="margin-top:6px;font-size:12px;color:var(--teal);font-style:italic">' + wizHtml(r.technique2.reason) + '</p>';
   if (!hasPlan) grid.appendChild(t2);
  
   var acts = document.createElement("div");
   acts.className = "report-card full";
   acts.innerHTML = '<h3>Your Three Priority Actions</h3>' + r.actions.map(function(a,i){
-    return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + a + '</div></div>';
+    return '<div class="action-item"><div class="action-num">' + (i+1) + '</div><div class="action-text">' + wizHtml(a) + '</div></div>';
   }).join('');
   if (hasPlan) { grid.insertBefore(acts, obs.nextSibling); } else { grid.appendChild(acts); }
   if (r.careerPlan && typeof r.careerPlan === 'object') {
-    var escC = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var escC = wizHtml;
     var cp = r.careerPlan;
     var cpHtml = '<h3>Your Career Plan of Action</h3>';
     if (cp.startingFrom) cpHtml += '<p style="margin-bottom:10px"><strong style="color:var(--navy)">Where you\'re starting from.</strong> ' + escC(cp.startingFrom) + '</p>';
@@ -1394,13 +1537,13 @@ function buildReport(r) {
     });
     if (cp.review) cpHtml += '<p style="margin-top:10px"><strong style="color:var(--navy)">When to review this.</strong> ' + escC(cp.review) + '</p>';
     var cpCard = document.createElement("div");
-    cpCard.className = "report-card full";
+    cpCard.className = "report-card full plan-card";
     cpCard.style.borderTopColor = "var(--gold)";
     cpCard.innerHTML = cpHtml;
     grid.appendChild(cpCard);
   }
   if (r.wellbeingPlan && typeof r.wellbeingPlan === 'object') {
-    var escW = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var escW = wizHtml;
     var wp = r.wellbeingPlan;
     var wpHtml = '<h3>Your Personal Well-Being Plan</h3>';
     if (wp.weighingOnYou) wpHtml += '<p style="margin-bottom:10px"><strong style="color:var(--navy)">What has been weighing on you.</strong> ' + escW(wp.weighingOnYou) + '</p>';
@@ -1411,13 +1554,13 @@ function buildReport(r) {
       wpHtml += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">' + sec[0] + '</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + items.map(function(x){ return '<li>' + escW(x) + '</li>'; }).join('') + '</ul>';
     });
     var wpCard = document.createElement("div");
-    wpCard.className = "report-card full";
+    wpCard.className = "report-card full plan-card";
     wpCard.style.borderTopColor = "var(--gold)";
     wpCard.innerHTML = wpHtml;
     grid.appendChild(wpCard);
   }
   if (r.performancePlan && typeof r.performancePlan === 'object') {
-    var esc = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var esc = wizHtml;
     var pp = r.performancePlan;
     var ppSections = [['Preparation','preparation'],['Pressure','pressure'],['Performance','performance'],['Ponder','ponder'],['Recovery','recovery'],['For your players','forYourPlayers']];
     var ppHtml = '<h3>Your Personal Success Performance Plan</h3>';
@@ -1428,7 +1571,7 @@ function buildReport(r) {
       ppHtml += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">' + sec[0] + '</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + items.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
     });
     var ppCard = document.createElement("div");
-    ppCard.className = "report-card full";
+    ppCard.className = "report-card full plan-card";
     ppCard.style.borderTopColor = "var(--gold)";
     ppCard.innerHTML = ppHtml;
     grid.appendChild(ppCard);
@@ -1439,21 +1582,21 @@ function buildReport(r) {
   pw.style.borderTopColor = "var(--gold)";
   pw.style.background = "var(--lnavy)";
   var pwName = String(r.pathway || '').replace(/^\s*pathway\s+[a-z0-9]+\s*[-\u2013\u2014:]+\s*/i, '').replace(/\s*\([^)]*\b(track|lens|panel)\b[^)]*\)/ig, '').trim();
-  pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + pwName + '</h3><p>' + r.closing + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + r.nextStep + '</p>';
+  pw.innerHTML = '<h3 style="color:var(--navy)">Recommended Pathway: ' + wizHtml(pwName) + '</h3><p>' + wizHtml(r.closing) + '</p><p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Next step:</strong> ' + wizHtml(r.nextStep) + '</p>';
   grid.appendChild(pw);
 
   // Your Mind Flow resources: guides, in-app training, human coach
   (function(){
-    var escR = function(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var escR = wizHtml;
     var res = (r.resources && typeof r.resources === 'object') ? r.resources : {};
     var guides = Array.isArray(res.guides) ? res.guides.filter(function(x){ return x && String(x).trim(); }).slice(0,3) : [];
     var training = Array.isArray(res.training) ? res.training.filter(function(x){ return x && String(x).trim(); }).slice(0,2) : [];
     var html = '<h3>Your Mind Flow Resources</h3>';
-    if (guides.length) html += '<p style="margin-top:6px;font-weight:600;color:var(--navy)">Brain Booster Guides</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + guides.map(function(g){ return '<li>' + escR(g) + '</li>'; }).join('') + '</ul><p style="font-size:12px;color:var(--mid);margin-top:4px">The guides are being added to mindflowpro.com. In the meantime you can ask for any guide by messaging Mind Flow through the website.</p>';
+    if (guides.length) html += '<p style="margin-top:6px;font-weight:600;color:var(--navy)">Brain Booster Guides</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + guides.map(function(g){ return '<li>' + escR(wizTitle(g)) + '</li>'; }).join('') + '</ul><p style="font-size:12px;color:var(--mid);margin-top:4px">The guides are being added to mindflowpro.com. In the meantime you can ask for any guide by messaging Mind Flow through the website.</p>';
     if (training.length) html += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">Short training in WIZ</p><ul style="margin:4px 0 0 18px;font-size:13px;line-height:1.6">' + training.map(function(t){ return '<li>' + escR(t) + '</li>'; }).join('') + '</ul><p style="font-size:12px;color:var(--mid);margin-top:4px">Ask WIZ &ldquo;Train me in&hellip;&rdquo; at any time.</p>';
     html += '<p style="margin-top:10px;font-weight:600;color:var(--navy)">A human Mind Flow coach</p><p style="font-size:13px">' + escR(res.humanCoach || 'A one-to-one session with a human Mind Flow coach can take everything you started today further.') + ' <a href="https://mindflowpro.com" target="_blank" style="color:var(--teal);font-weight:600">mindflowpro.com</a></p>';
     var rc = document.createElement("div");
-    rc.className = "report-card full";
+    rc.className = "report-card full plan-card";
     rc.style.borderTopColor = "var(--goldline)";
     rc.innerHTML = html;
     grid.appendChild(rc);
@@ -1467,12 +1610,12 @@ function buildReport(r) {
     arCard.style.borderTopColor = "var(--gold)";
     var arScores = ar.scores ? Object.keys(ar.scores).map(function(k){
       var v = ar.scores[k];
-      return '<div class="score-row"><span class="score-label">' + k + '</span><div class="score-bar"><div class="score-fill" style="width:' + (v*20) + '%"></div></div><span class="score-num">' + v + '/5</span></div>';
+      return '<div class="score-row"><span class="score-label">' + wizHtml(k) + '</span><div class="score-bar"><div class="score-fill" style="width:' + ((Number(v)||0)*20) + '%"></div></div><span class="score-num">' + (Number(v)||0) + '/5</span></div>';
     }).join('') : '';
-    arCard.innerHTML = '<h3>' + ar.name + ' -- Results</h3>' +
+    arCard.innerHTML = '<h3>' + wizHtml(ar.name) + ' -- Results</h3>' +
       (arScores ? arScores : '') +
-      '<p style="margin-top:12px;font-size:13px;color:var(--mid)">' + (ar.overall || '') + '</p>' +
-      (ar.topFocus ? '<p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Priority focus:</strong> ' + ar.topFocus + '</p>' : '') +
+      '<p style="margin-top:12px;font-size:13px;color:var(--mid)">' + wizHtml(ar.overall || '') + '</p>' +
+      (ar.topFocus ? '<p style="margin-top:8px;font-size:13px;color:var(--teal)"><strong>Priority focus:</strong> ' + wizHtml(ar.topFocus) + '</p>' : '') +
       '<p style="margin-top:10px;font-size:12px;color:var(--mid);font-style:italic">The full assessment is available through a one-to-one session with a Mind Flow coach. Visit <a href="https://mindflowpro.com" target="_blank" style="color:var(--teal)">mindflowpro.com</a> to find out more.</p>';
     grid.appendChild(arCard);
   }
@@ -1494,14 +1637,20 @@ function buildReport(r) {
   btnSave.textContent = "Save as PDF / Print";
   btnSave.title = "Opens your print window. To keep a copy, choose Save as PDF as the destination.";
   btnSave.onclick = function(){ window.print(); };
+  var btnConv = document.createElement("button");
+  btnConv.className = "btn-secondary";
+  btnConv.textContent = "Download conversation";
+  btnConv.title = "Saves a copy of this conversation as a Word file, created in your browser. It is not an export of your account data.";
+  btnConv.onclick = function(){ downloadTranscript('word'); };
   ctaBtns.appendChild(btnBook);
   ctaBtns.appendChild(btnSave);
+  ctaBtns.appendChild(btnConv);
   cta.appendChild(ctaLeft);
   cta.appendChild(ctaBtns);
   rv.appendChild(cta);
   var saveHint = document.createElement("p");
   saveHint.className = "report-save-hint";
-  saveHint.textContent = "To keep a copy of your report: choose Save as PDF / Print, then select \u201cSave as PDF\u201d as the destination.";
+  saveHint.textContent = "To keep a copy of your report: choose Save as PDF / Print, then select \u201cSave as PDF\u201d as the destination. For a cleaner file, untick \u201cHeaders and footers\u201d in the print window.";
   rv.appendChild(saveHint);
 
   // Post-report continuation panel -- WIZ offers to keep going
@@ -1521,24 +1670,27 @@ function buildReport(r) {
  
   var foot = document.createElement("p");
   foot.style.cssText = "font-size:11px;color:var(--mid);text-align:center;margin-top:20px;padding-bottom:28px";
-  foot.textContent = r.disclaimer || "WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This report is for personal development purposes only and does not constitute medical, psychological, or clinical advice. If you have concerns about your mental health or wellbeing, please consult your GP or a qualified professional. Samaritans: 116 123 (free, 24/7). Mind Flow International Ltd | mindflowpro.com | PJ Wingfield 2026";
+  foot.textContent = wizDash(r.disclaimer || "WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This report is for personal development purposes only and does not constitute medical, psychological, or clinical advice. If you have concerns about your mental health or wellbeing, please consult your GP or a qualified professional. Samaritans: 116 123 (free, 24/7). Mind Flow International Ltd | mindflowpro.com | PJ Wingfield 2026");
   rv.appendChild(foot);
- 
+
   ca.appendChild(rv);
+  finishDomains();
   setPhase(4);
 }
  
 async function generateReport() {
+  var requestSession = state.sessionId;
   setLoading(true, "WIZ is crafting your report...", "Pulling together everything from your session");
   var raw;
   try {
     raw = await callReport();
   } catch(e) {
-    setLoading(false);
     if (state.sessionId !== requestSession) return;
+    setLoading(false);
     addMessage("wiz", "I am having difficulty generating the full report right now. Please try typing 'generate my report' and I will try again.");
     return;
   }
+  if (state.sessionId !== requestSession) return;
   setLoading(false);
 
   // Robust JSON extraction - strip everything before first { and after last }
@@ -1564,10 +1716,14 @@ async function generateReport() {
     setLoading(true, "Retrying report...", "One moment");
     try {
       var retryText = await callReport();
+      if (state.sessionId !== requestSession) return;
       var rs = retryText.indexOf('{');
       var re = retryText.lastIndexOf('}');
       if (rs >= 0 && re >= 0) report = JSON.parse(retryText.substring(rs, re + 1));
-    } catch(e2) {}
+    } catch(e2) {
+      if (state.sessionId !== requestSession) return;
+    }
+    if (state.sessionId !== requestSession) return;
     setLoading(false);
     if (!report) {
       addMessage("wiz", "The report could not be generated or displayed. Please retry generate report.");
@@ -1575,6 +1731,7 @@ async function generateReport() {
     }
   }
 
+  if (state.sessionId !== requestSession) return;
   state.reportData = report;
   buildReport(report);
 }
@@ -1620,7 +1777,7 @@ async function handleWIZResponse(userMsg) {
     if (reply.indexOf('[DIRECTION_AUDIT]') >= 0) {
       var textBefore = reply.replace('[DIRECTION_AUDIT]', '').trim();
       if (textBefore) addMessage("wiz", textBefore);
-      showDirectionAudit();
+      openAuditOrOffer(textBefore);
       return;
     }
 
@@ -1666,7 +1823,7 @@ async function handleWIZResponse(userMsg) {
       var panelId = panelMatch[1].replace(/_/g, '.');
       var textBefore2 = reply.replace(/\[PANEL_[\d_A-Z]+\]/gi, '').trim();
       if (textBefore2) addMessage('wiz', textBefore2);
-      showWIZPanel(panelId);
+      if (panelId === '1.1') { openAuditOrOffer(textBefore2); } else { showWIZPanel(panelId); }
       return;
     }
 
@@ -1713,11 +1870,12 @@ async function sendMessage() {
   if (!text || state.isLoading) return;
   input.value = "";
   input.style.height = "auto";
+  closeAuditOffer();
   state.turnCount++;
 
   if (state.turnCount <= 3 && !state.clientName && text.length < 40) {
-    var w = text.trim().split(" ");
-    if (w.length <= 3) state.clientName = w[0];
+    var name = wizExtractName(text);
+    if (name) state.clientName = name;
   }
 
   addMessage("user", text);
@@ -1731,6 +1889,14 @@ async function sendMessage() {
   if (state.turnCount >= 11) activateDomain("E");
   if (state.turnCount >= 13) activateDomain("F");
   if (state.turnCount >= 15) activateDomain("G");
+
+  // A request for a copy of the conversation is answered by the app, not the model. The request is not sent
+  // to WIZ or saved as a turn.
+  if (wizAsksTranscript(text.toLowerCase()) && state.messages.length) {
+    state.turnCount--;
+    offerTranscript();
+    return;
+  }
 
   // Check if user is explicitly asking for report
   var lower = text.toLowerCase();
@@ -2118,6 +2284,109 @@ function openEndSession(){
 }
 function closeEndSession(){ var m = document.getElementById('endSessionModal'); if (m) m.className = 'wiz-modal'; }
 function endSessionReport(){ closeEndSession(); generateReport(); }
+
+// ---- Conversation copy: made in the browser from this conversation only. It is not an export of account or privacy data. ----
+var WIZ_REPORT_REQUEST = 'The coaching session is now complete. Generate the Personal Awareness Report now.';
+function wizTranscriptItems() {
+  var items = [];
+  var who = state.clientName || 'You';
+  (state.messages || []).forEach(function (m) {
+    if (!m) return;
+    var text = '';
+    if (typeof m.content === 'string') { text = m.content; }
+    else if (Array.isArray(m.content)) {
+      text = m.content.filter(function (b) { return b && b.type === 'text' && typeof b.text === 'string'; }).map(function (b) { return b.text; }).join('\n');
+      if (m.role === 'user') text = (text ? text + ' ' : '') + '(a biofeedback file was attached; it is not included in this copy)';
+    }
+    if (!text) return;
+    if (m.role === 'assistant') {
+      // The report is its own document; the raw report data is not copied into the conversation.
+      if (/\[REPORT_READY\]/i.test(text)) { items.push({who: 'WIZ', text: 'Your session report was created here.', notes: []}); return; }
+      var notes = [];
+      if (/\[EXPLAIN_RBP\]/i.test(text)) notes.push('The Red, Blue = Purple explainer card was shown here.');
+      if (/\[PANEL_1_1\]|\[DIRECTION_AUDIT\]/i.test(text)) notes.push('The Direction Audit was offered here.');
+      else if (/\[PANEL_[0-9A-Z_]+\]/i.test(text)) notes.push('An interactive panel was shown here.');
+      if (/\[TRAINING_MENU\]/i.test(text)) notes.push('The training menu was shown here.');
+      if (/\[SKILLS_QUIZ\]/i.test(text)) notes.push('The skills questionnaire was shown here.');
+      if (/\[CONDITION_[A-Z_]+\]/i.test(text)) notes.push('A characteristics questionnaire was shown here.');
+      text = text.replace(/\[CHOICES(?::[^\]]*)?\]([\s\S]*?)\[\/CHOICES\]/gi, function (_, body) {
+        var opts = body.split('\n').map(function (l) { return l.trim().replace(/^(?:[-*•]|\d+[.)])\s*/, ''); }).filter(Boolean);
+        return 'Options: ' + opts.join('; ') + '.';
+      });
+      items.push({who: 'WIZ', text: wizClean(text), notes: notes});
+    } else {
+      if (text.indexOf(WIZ_REPORT_REQUEST) === 0) return;
+      items.push({who: who, text: wizClean(text), notes: []});
+    }
+  });
+  return items;
+}
+// Every piece of conversation text goes through wizHtml / wizFormat, which escape markup first. For the print window
+// (which shares this page's origin) a Content-Security-Policy meta also blocks any script, as a second safeguard.
+function buildTranscriptHTML(forWindow) {
+  var when = new Date().toLocaleDateString('en-GB', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+  var body = wizTranscriptItems().map(function (it) {
+    var cls = it.who === 'WIZ' ? 'wiz' : 'you';
+    var h = '<div class="turn ' + cls + '"><p class="who">' + wizHtml(it.who) + '</p><p>' + wizFormat(it.text) + '</p>';
+    (it.notes || []).forEach(function (n) { h += '<p class="note">' + wizHtml(n) + '</p>'; });
+    return h + '</div>';
+  }).join('');
+  var css = 'body{font-family:Calibri,Arial,sans-serif;color:#1A1A2E;line-height:1.55;max-width:760px;margin:24px auto;padding:0 18px}' +
+    'h1{font-family:Georgia,serif;font-weight:400;color:#1B2A6B;margin:0 0 4px;font-size:26px}' +
+    '.sub{color:#555570;font-size:13px;margin:0 0 18px;border-bottom:2px solid #f5ad28;padding-bottom:12px}' +
+    '.turn{margin:0 0 14px;page-break-inside:avoid}.turn p{margin:0 0 4px;font-size:14px}' +
+    '.who{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase}.wiz .who{color:#1B2A6B}.you .who{color:#8a6a10}' +
+    '.you{background:#F4F5FB;padding:8px 12px;border-radius:6px}.note{font-style:italic;color:#555570;font-size:12px!important}' +
+    '.foot{font-size:11px;color:#555570;border-top:1px solid #ddd;margin-top:22px;padding-top:10px}' +
+    '@page{size:A4;margin:16mm 14mm}';
+  // Copy that accompanies exported conversation documents only; it is not the privacy policy or terms.
+  var foot = 'WIZ is a coaching intelligence, not a therapist, psychologist or clinician. For adults aged 18 and over only. This is a copy of a personal development conversation, not medical, psychological, legal or financial advice. If you have concerns about your mental health or safety, please contact your GP or Samaritans: 116 123 (free, 24/7). Mind Flow International Ltd | mindflowpro.com | PJ Wingfield 2026.';
+  var csp = forWindow ? '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'">' : '';
+  return '<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">' + csp + '<title>Your WIZ conversation</title><style>' + css + '</style></head><body>' +
+    '<h1>Your WIZ conversation</h1><p class="sub">' + wizHtml(when) + (state.clientName ? ' – prepared for ' + wizHtml(state.clientName) : '') + ' – Mind Flow</p>' +
+    body + '<p class="foot">' + wizHtml(foot) + '</p></body></html>';
+}
+function downloadTranscript(kind) {
+  if (!state.messages || !state.messages.length) { alert('There is no conversation to save yet.'); return; }
+  if (kind === 'pdf') {
+    var w = window.open('', '_blank');
+    if (!w) { alert('Your browser blocked the new window. Please allow pop-ups for this site, or use the Word download.'); return; }
+    try { w.opener = null; } catch (e) {}
+    w.document.open(); w.document.write(buildTranscriptHTML(true)); w.document.close(); w.focus();
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 500);
+    return;
+  }
+  var stamp = new Date().toISOString().slice(0, 10);
+  var blob = new Blob(['﻿', buildTranscriptHTML(false)], {type: 'application/msword'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'WIZ-conversation-' + stamp + '.doc';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function wizAsksTranscript(lower) {
+  return /\b(transcript|(copy|record|log) of (this|the|our|my) (chat|conversation|session)|(download|save|export|print|send me|email me) (this|the|our|my)? ?(whole |full |entire )?(chat|conversation|session))\b/.test(lower) ||
+    /\bfull copy of (this|the|our) (chat|conversation|session)\b/.test(lower);
+}
+function offerTranscript() {
+  addMessage('wiz', 'You can have a copy of this conversation. Choose a Word file or a PDF. Either is created in your browser from this conversation only. It is not an export of your account data.');
+  var msgs = document.getElementById('messages');
+  var wrapper = document.createElement('div');
+  wrapper.className = 'msg wiz';
+  var avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = 'W';
+  var box = document.createElement('div');
+  box.className = 'audit-offer';
+  var b1 = document.createElement('button'); b1.className = 'rbp-btn'; b1.textContent = 'Download as Word';
+  var b2 = document.createElement('button'); b2.className = 'rbp-btn-ghost'; b2.textContent = 'Save as PDF';
+  b1.onclick = function () { downloadTranscript('word'); };
+  b2.onclick = function () { downloadTranscript('pdf'); };
+  box.appendChild(b1); box.appendChild(b2);
+  wrapper.appendChild(avatar); wrapper.appendChild(box);
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+}
 function startWithKey() {
   // Server-side API key - auto start
   if (false) {
@@ -2410,13 +2679,18 @@ const WIZ_ACCOUNT = (() => {
     modal.style.display = 'none'; overlay.style.display = 'flex'; modal.querySelectorAll('input,textarea').forEach(el => { el.value = ''; el.checked = false; });
     modal.querySelectorAll('ul,.record-list,#wizResearch,#wizRoutes,#wizConsents').forEach(el => el.replaceChildren()); onboarding = {}; plan = learning = null;
   }
-  function renderAssistant(text) {
+  function renderAssistant(text, isLast = true) {
     text = processTrainingMarkers(text);
     const choices = parseChoices(text);
     if (choices) { if (choices.before) addMessage('wiz',choices.before); showChoicesTable(choices); if (choices.after) addMessage('wiz',choices.after); return; }
     if (text.includes('[REPORT_READY]')) { try { const report = JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1)); state.reportData = report; buildReport(report); return; } catch(e) { /* display received text with markers removed */ } }
     const panel = text.match(/\[PANEL_([\d_A-Z]+)\]/i);
-    if (panel) { const before = text.replace(/\[PANEL_[\d_A-Z]+\]/gi,'').trim(); if (before) addMessage('wiz',before); showWIZPanel(panel[1].replaceAll('_','.')); return; }
+    if (panel) {
+      const before = text.replace(/\[PANEL_[\d_A-Z]+\]/gi,'').trim(); if (before) addMessage('wiz',before);
+      // A Direction Audit offer from earlier in a saved chat is not offered again; only an unanswered final offer is.
+      if (panel[1] === '1_1') { if (isLast) openAuditOrOffer(before); } else showWIZPanel(panel[1].replaceAll('_','.'));
+      return;
+    }
     const signal = [['DIRECTION_AUDIT',showDirectionAudit],['SKILLS_QUIZ',showSkillsQuiz],['EXPLAIN_RBP',showRBPCard],['TRAINING_MENU',showTrainingMenu]].find(([name]) => text.includes('['+name+']'));
     if (signal) { const before = text.replace('['+signal[0]+']','').trim(); if (before) addMessage('wiz',before); signal[1](); return; }
     const condition = text.match(/\[CONDITION_([A-Z_]+)\]/i);
@@ -2432,7 +2706,7 @@ const WIZ_ACCOUNT = (() => {
     if (loadEpoch !== epoch) return;
     resetConversation(preserveUpload); sid = id; localStorage.setItem('wiz_active_session',id);
     state.sessionId = id; state.track = session.track; state.lens = session.lens; state.sessionStarted = true; state.messages = rows.map(m => ({role:m.sender === 'user' ? 'user' : 'assistant',content:m.content})); state.turnCount = rows.filter(m => m.sender === 'user').length;
-    showChat(); rows.forEach(m => m.sender === 'user' ? addMessage('user',m.content) : renderAssistant(m.content));
+    showChat(); rows.forEach((m, i) => m.sender === 'user' ? addMessage('user',m.content) : renderAssistant(m.content, i === rows.length - 1));
     // A historical report remains available; later turns open as conversation.
     if (state.reportData && !String(rows.at(-1)?.content || '').includes('[REPORT_READY]')) showConversation();
     if (close) modal.style.display = 'none';

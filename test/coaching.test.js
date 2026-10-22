@@ -477,8 +477,9 @@ test('Jon\'s prompt, tracks, lenses and opening pathways are preserved exactly',
   const expression = promptLine.slice('var WIZ_SYSTEM = '.length, -1);
   const decoded = (0, eval)(expression);
   const sha = value => createHash('sha256').update(value, 'utf8').digest('hex');
-  assert.equal(decoded.length, 117584);
-  assert.equal(sha(decoded), '8799a0cd551187498914120e9dc10e7ed5dd42293f40579fbb40440cf1f0d7a3');
+  assert.equal(decoded.length, 125414);
+  assert.equal(sha(decoded), '8ef8d0971d38c10b2f8c780b87e1affe4c99dd97e60e27da9854adf269fa45ab');
+  assert.ok(decoded.includes('ANSWER FIRST WHEN ASKED:') && decoded.includes('PLAN NAME AND PHYSICAL RECOVERY'));
   assert.equal(sha(block(cur)), '44cb8ef0b9e69b9a7f68ff7bdc3db2c7ab37f24286482d190db182ee354c7f98');
   const keys = block(cur).match(/^\s{2}([a-z_]+):/gm).map(k => k.trim().replace(':', ''));
   const pathways = require('../lib/pathways.json');
