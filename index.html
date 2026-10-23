@@ -444,6 +444,51 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
   .os-hero-copy{padding:30px 0 40px}
   .os-step{padding:18px 14px}
 }
+
+/* ---- 21 Oct 2026 refinements ---- */
+/* header logo: white backing so the Mind Flow wordmark is readable on navy (artwork unchanged) */
+header .logo-area img{background:#fff;border-radius:10px;padding:3px 12px;box-sizing:border-box;height:48px!important;width:auto}
+/* sidebar progress: hollow = to come, glow = now, tick = done */
+.domain-dot{width:14px!important;height:14px!important;border-radius:50%;border:1.5px solid rgba(255,255,255,0.45);background:transparent!important;display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1;color:var(--navy);flex-shrink:0;box-shadow:none}
+.domain-dot.active{background:var(--gold)!important;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,173,40,0.3)}
+.domain-dot.done{background:var(--gold)!important;border-color:var(--gold);box-shadow:none}
+.domain-dot.done::after{content:"\2713";font-weight:700}
+.domain-dot.active + .domain-label{color:#fff!important;font-weight:600}
+.domain-dot:not(.active):not(.done) + .domain-label{color:rgba(255,255,255,0.55)!important}
+/* choice buttons */
+.audit-offer{display:flex;flex-wrap:wrap;gap:10px;padding:4px 0}
+.rbp-btn.chosen:disabled,.rbp-btn-ghost.chosen:disabled{opacity:1;background:var(--navy);color:#fff;border-color:var(--navy)}
+.rbp-btn.chosen::before,.rbp-btn-ghost.chosen::before{content:"\2713\00a0"}
+/* keep the sidebar (including the disclaimer) on screen on shorter windows */
+@media (max-height:1000px){
+  .sidebar{padding:16px 16px;gap:10px}
+  .wiz-logo-card{width:104px;margin-bottom:8px;padding:7px 9px 5px}
+  .wiz-desc{font-size:11.5px!important;line-height:1.45!important}
+  .domain-item{padding:4px 9px;margin-bottom:1px}
+  .sidebar-coach{padding:9px 12px;margin:2px 0}
+  .mfi-tagline{font-size:12.5px!important;line-height:1.45;margin-top:0}
+  .sidebar-disclaimer{margin-top:6px;padding:9px 10px}
+  .sidebar-disclaimer p{font-size:10.5px!important;line-height:1.45!important}
+}
+/* printing the report: let long cards split across pages instead of leaving blank space */
+@page{size:A4;margin:14mm 12mm}
+@media print{
+  .report-card.plan-card{break-inside:auto;page-break-inside:auto}
+  .report-card h3{break-after:avoid;page-break-after:avoid}
+  .report-card li,.action-item,.score-row{break-inside:avoid;page-break-inside:avoid}
+  .report-card p[style*="font-weight:600"]{break-after:avoid;page-break-after:avoid}
+}
+
+/* ---- paced breathing card ---- */
+.breath-card{max-width:420px!important;text-align:center}
+.breath-stage{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0 4px}
+.breath-orb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8e9be0,#1B2A6B);transform:scale(.55);transition:transform 4s linear;box-shadow:0 0 0 6px rgba(245,173,40,.25)}
+.breath-orb.big{transform:scale(1)}
+.breath-label{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy)}
+.breath-count{font-size:28px;font-weight:600;color:var(--gold);min-height:34px}
+.breath-round{font-size:12px;color:var(--mid);min-height:16px;margin-bottom:8px}
+.breath-btns{display:flex;justify-content:center;gap:10px}
+@media (prefers-reduced-motion:reduce){.breath-orb{transition:none}}
 </style>
 
 <section class="os-hero"><script>document.write('<img src="'+HERO_COMPOSITE+'" alt="WIZ - your personal performance coaching platform">');</script></section>
@@ -639,7 +684,7 @@ footer.os-footer{padding:35px 20px;text-align:center;font-size:13px;color:#50627
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only -- not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 9 Oct 2026 c</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 22 Oct 2026 a</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
@@ -1038,18 +1083,18 @@ var SKILLS_DATA = {
   "Execution & Drive": ["Getting things done","Working under pressure","Time management","Attention to detail","Persistence","Managing projects","Adaptability"],
   "Technical & Specialist": ["Digital & tech skills","Data & numbers","Research & analysis","Writing & content","Design & creativity","Teaching & training","Languages"]
 };
-var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false,auditScores:null,auditDeclined:false};
+var state = {messages:[],phase:1,turnCount:0,reportData:null,assessedDomains:[],clientName:"",isLoading:false,sessionId:null,sessionStarted:false,track:null,entrySource:null,lens:null,rbpShown:false,breathShown:false,auditScores:null,auditDeclined:false};
 (function(){ try { var t = new URLSearchParams(window.location.search).get('track'); if (t === 'sport' || t === 'career') { state.track = t; state.entrySource = 'link'; } } catch(e){} })();
 function startTrack(track, source) { state.track = track; state.entrySource = source; beginWIZSession(); }
 function startLens(lens) { state.lens = lens; state.entrySource = 'tile'; beginWIZSession(); }
  
 // ---- Display helpers: signal stripping, dash tidying, escaping for report and conversation copy ----
-var WIZ_SIGNAL_RE = /\[(?:TRAINING_STEP:\s*\d+|TRAINING_END|TRAINING_MENU|EXPLAIN_RBP|RBP_CARD|SKILLS_QUIZ|DIRECTION_AUDIT|REPORT_READY|PHASE:\d+|DOMAIN:[^\]]+|PANEL_[0-9A-Z_]+|CONDITION_[A-Z_]+)\]/gi;
+var WIZ_SIGNAL_RE = /\[(?:TRAINING_STEP:\s*\d+|TRAINING_END|TRAINING_MENU|EXPLAIN_RBP|RBP_CARD|BREATH_BOX|SKILLS_QUIZ|DIRECTION_AUDIT|REPORT_READY|PHASE:\d+|DOMAIN:[^\]]+|PANEL_[0-9A-Z_]+|CONDITION_[A-Z_]+)\]/gi;
 function wizClean(text) {
   return String(text == null ? '' : text).replace(WIZ_SIGNAL_RE, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
 }
 function wizDash(t) {
-  return String(t == null ? '' : t).replace(/\s--\s/g, ' – ').replace(/(\w)--(\w)/g, '$1–$2');
+  return String(t == null ? '' : t).replace(/\s--\s/g, ' – ').replace(/(\w)--(\w)/g, '$1–$2').replace(/\s*—\s*/g, ' – ');
 }
 function wizHtml(t) {
   return wizDash(String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
@@ -1436,6 +1481,69 @@ function showRBPCard() {
   var msgs = document.getElementById('messages'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
 }
 
+// Paced box-breathing card: 4 in, 4 hold, 4 out, 4 hold, three rounds. Runs in the browser; nothing is sent until the person chooses.
+function showBreathCard() {
+  if (state.breathShown) return;
+  state.breathShown = true;
+  var panel = panelWrapper('Box breathing', 'In for four, hold for four, out for four, hold for four. Three rounds, about 48 seconds. Sit comfortably and let your shoulders drop.');
+  panel.classList.add('breath-card');
+  panel.insertAdjacentHTML('beforeend',
+    '<div class="breath-stage"><div class="breath-orb"></div><div class="breath-label">Ready when you are</div><div class="breath-count">&nbsp;</div></div>' +
+    '<div class="breath-round">&nbsp;</div>' +
+    '<div class="breath-btns"><button class="rbp-btn" data-b="go">Start</button><button class="rbp-btn-ghost" data-b="stop" style="display:none">Stop</button></div>');
+  var orb = panel.querySelector('.breath-orb');
+  var label = panel.querySelector('.breath-label');
+  var count = panel.querySelector('.breath-count');
+  var roundEl = panel.querySelector('.breath-round');
+  var go = panel.querySelector('[data-b="go"]');
+  var stop = panel.querySelector('[data-b="stop"]');
+  var PH = [['Breathe in', true], ['Hold', true], ['Breathe out', false], ['Hold', false]];
+  var ROUNDS = 3, r = 0, ph = 0, sec = 1, timer = null;
+  function applyPhase() {
+    label.textContent = PH[ph][0];
+    if (ph === 0) orb.classList.add('big');
+    if (ph === 2) orb.classList.remove('big');
+    roundEl.textContent = 'Round ' + (r + 1) + ' of ' + ROUNDS;
+  }
+  function end(finished) {
+    clearInterval(timer); timer = null;
+    stop.style.display = 'none';
+    count.innerHTML = '&nbsp;';
+    label.textContent = finished ? 'Done. Breathe naturally.' : 'Stopped';
+    roundEl.innerHTML = '&nbsp;';
+    go.style.display = '';
+    go.disabled = false;
+    go.textContent = finished ? 'Tell WIZ how it felt' : 'Carry on with WIZ';
+    go.setAttribute('data-b', 'done');
+    go.setAttribute('data-finished', finished ? '1' : '');
+  }
+  function tick() {
+    sec++;
+    if (sec > 4) {
+      sec = 1; ph++;
+      if (ph > 3) { ph = 0; r++; if (r >= ROUNDS) { end(true); return; } }
+      applyPhase();
+    }
+    count.textContent = sec;
+  }
+  go.onclick = function () {
+    if (go.getAttribute('data-b') === 'done') {
+      if (state.isLoading) return;
+      go.disabled = true; go.classList.add('chosen');
+      sendUserMessage(go.getAttribute('data-finished') ? "I've finished the three rounds of box breathing." : "I stopped the breathing exercise early.");
+      return;
+    }
+    r = 0; ph = 0; sec = 1;
+    orb.classList.remove('big');
+    void orb.offsetWidth;
+    go.style.display = 'none'; stop.style.display = '';
+    applyPhase(); count.textContent = sec;
+    timer = setInterval(tick, 1000);
+  };
+  stop.onclick = function () { end(false); };
+  var msgs = document.getElementById('messages'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
 function showConversation() {
   var ca = document.getElementById("chatArea");
   var rv = document.getElementById("reportView");
@@ -1806,6 +1914,14 @@ async function handleWIZResponse(userMsg) {
       var textBeforeR = reply.replace(/\[EXPLAIN_RBP\]/g, '').trim();
       if (textBeforeR) addMessage('wiz', textBeforeR);
       showRBPCard();
+      return;
+    }
+
+    // Paced box-breathing card
+    if (reply.indexOf('[BREATH_BOX]') >= 0) {
+      var textBeforeB = reply.replace(/\[BREATH_BOX\]/g, '').trim();
+      if (textBeforeB) addMessage('wiz', textBeforeB);
+      showBreathCard();
       return;
     }
 
@@ -2304,6 +2420,7 @@ function wizTranscriptItems() {
       if (/\[REPORT_READY\]/i.test(text)) { items.push({who: 'WIZ', text: 'Your session report was created here.', notes: []}); return; }
       var notes = [];
       if (/\[EXPLAIN_RBP\]/i.test(text)) notes.push('The Red, Blue = Purple explainer card was shown here.');
+      if (/\[BREATH_BOX\]/i.test(text)) notes.push('A paced box-breathing card was shown here.');
       if (/\[PANEL_1_1\]|\[DIRECTION_AUDIT\]/i.test(text)) notes.push('The Direction Audit was offered here.');
       else if (/\[PANEL_[0-9A-Z_]+\]/i.test(text)) notes.push('An interactive panel was shown here.');
       if (/\[TRAINING_MENU\]/i.test(text)) notes.push('The training menu was shown here.');
@@ -2691,7 +2808,7 @@ const WIZ_ACCOUNT = (() => {
       if (panel[1] === '1_1') { if (isLast) openAuditOrOffer(before); } else showWIZPanel(panel[1].replaceAll('_','.'));
       return;
     }
-    const signal = [['DIRECTION_AUDIT',showDirectionAudit],['SKILLS_QUIZ',showSkillsQuiz],['EXPLAIN_RBP',showRBPCard],['TRAINING_MENU',showTrainingMenu]].find(([name]) => text.includes('['+name+']'));
+    const signal = [['DIRECTION_AUDIT',showDirectionAudit],['SKILLS_QUIZ',showSkillsQuiz],['EXPLAIN_RBP',showRBPCard],['BREATH_BOX',showBreathCard],['TRAINING_MENU',showTrainingMenu]].find(([name]) => text.includes('['+name+']'));
     if (signal) { const before = text.replace('['+signal[0]+']','').trim(); if (before) addMessage('wiz',before); signal[1](); return; }
     const condition = text.match(/\[CONDITION_([A-Z_]+)\]/i);
     if (condition) { const before = text.replace(/\[CONDITION_[A-Z_]+\]/gi,'').trim(); if (before) addMessage('wiz',before); const conditionKey = condition[1].toLowerCase(); const questionnaire = CONDITION_QUESTIONNAIRES[conditionKey]; if (questionnaire) showRatingPanel(questionnaire,'condition_'+conditionKey); return; }

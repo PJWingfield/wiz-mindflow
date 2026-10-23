@@ -9,8 +9,8 @@ const { createHash } = require('node:crypto');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const SERVER_PATH = path.join(ROOT_DIR, 'server.js');
-const MERGED_PROMPT_LENGTH = 125414;
-const MERGED_PROMPT_SHA256 = '8ef8d0971d38c10b2f8c780b87e1affe4c99dd97e60e27da9854adf269fa45ab';
+const MERGED_PROMPT_LENGTH = 129861;
+const MERGED_PROMPT_SHA256 = '8bfb297381f5127c84134d4d40232d69113c89051843217d797d525c818f5d39';
 
 function extractWizSystemFromContent(content) {
   const lines = content.split(/\r?\n/);
