@@ -408,6 +408,39 @@ header .logo-area img{background:#fff;border-radius:10px;padding:3px 12px;box-si
 .breath-round{font-size:12px;color:var(--mid);min-height:16px;margin-bottom:8px}
 .breath-btns{display:flex;justify-content:center;gap:10px}
 @media (prefers-reduced-motion:reduce){.breath-orb{transition:none}}
+
+/* ---- professional brief, practitioner's plan, report provenance ---- */
+#briefOverlay{display:none;position:fixed;inset:0;background:rgba(27,42,107,.55);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px}
+.brief-sheet{position:relative;background:#fff;color:#1A1A2E;border-radius:12px;max-width:720px;width:100%;margin:auto;padding:22px 20px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.brief-sheet h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#1B2A6B;margin:0 30px 8px 0}
+.brief-x{position:absolute;top:10px;right:12px;background:none;border:0;font-size:26px;line-height:1;color:#555570;cursor:pointer;padding:4px 8px}
+.brief-lead{font-size:14px;color:#555570;margin:0 0 12px}
+.brief-note{font-size:12px;color:#555570;margin:12px 0}
+.brief-lab{display:block;font-size:13px;font-weight:600;color:#1B2A6B;margin:12px 0 4px}
+.brief-sheet select,.brief-sheet textarea,.plan-role,.plan-date,.plan-text{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c9cbe0;border-radius:8px;background:#fff;color:#1A1A2E}
+.brief-sheet textarea{resize:vertical}
+.brief-check{display:flex;align-items:flex-start;gap:6px;font-size:14px;margin:10px 0;cursor:pointer}
+.brief-sec{border:1px solid #e1e3f0;border-radius:10px;padding:8px 12px 10px;margin:10px 0;background:#FAFAFE}
+.brief-sec.off{opacity:.55}
+.brief-sec-head{font-weight:600;color:#1B2A6B;margin:2px 0 6px}
+.brief-item{display:flex;gap:8px;align-items:flex-start;margin:6px 0}
+.brief-item .brief-text{flex:1;min-height:40px;overflow:hidden}
+.brief-tag{flex:0 0 auto;font-size:11px;border:0;border-radius:12px;padding:4px 9px;cursor:pointer;margin-top:6px;background:#EEE9F8;color:#4B3A8A;white-space:nowrap}
+.brief-tag.wiz{background:#FFF1D6;color:#7A5200}
+.brief-del{flex:0 0 auto;background:none;border:0;font-size:22px;line-height:1;color:#8a8aa3;cursor:pointer;padding:2px 6px;margin-top:4px}
+.brief-add{background:none;border:0;color:#1B2A6B;font-size:13px;text-decoration:underline;cursor:pointer;padding:4px 0}
+.brief-plan{white-space:pre-wrap;font-size:13px;background:#F4F5FB;border-radius:6px;padding:8px 10px}
+.brief-msg{font-size:13px;color:#8a1f1f;min-height:18px;margin:6px 0}
+.brief-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.plan-lab{display:block;font-size:13px;font-weight:600;color:#1B2A6B;margin:10px 0 4px}
+.plan-count{font-size:11px;color:#555570;text-align:right;margin:2px 0 8px}
+.prov{display:inline-block;font-size:10.5px;border-radius:10px;padding:2px 8px;margin-bottom:6px;background:#EEE9F8;color:#4B3A8A}
+.prov-wiz{background:#FFF1D6;color:#7A5200}
+.prov-own{background:#E6EAF8;color:#1B2A6B}
+.prov-both{background:#F1E9FA;color:#5B2F86}
+.report-legend{font-size:12px;color:#555570;margin:0 0 4px}
+@media (max-width:520px){#briefOverlay{padding:0}.brief-sheet{border-radius:0;min-height:100%;padding:18px 14px}.brief-item{flex-wrap:wrap}.brief-item .brief-text{flex-basis:100%;order:3}}
+@media print{#briefOverlay{display:none!important}}
 </style>
 
 <section class="os-hero"><script>document.write('<img src="'+HERO_COMPOSITE+'" alt="WIZ - your personal performance coaching platform">');</script></section>
@@ -603,7 +636,7 @@ header .logo-area img{background:#fff;border-radius:10px;padding:3px 12px;box-si
     <div class="sidebar-disclaimer">
       <p>WIZ is a coaching intelligence, not a therapist, psychologist or clinician. This session is for personal development only – not medical or psychological advice. If you have concerns about your mental health, please consult your GP.<br><br>
       <a href="tel:116123" style="color:rgba(255,255,255,0.35)">Samaritans: 116 123</a> (free, 24/7)<br>
-      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 22 Oct 2026 a</span></p>
+      Mind Flow International Ltd &copy; PJ Wingfield 2026<br><span id="wizBuild" style="opacity:.55">Version 23 Oct 2026 a</span></p>
     </div>
   </aside>
   <div class="chat-area" id="chatArea" style="display:none">
@@ -1068,7 +1101,7 @@ async function callReport() {
 }
  
 // ---- Display helpers: signal stripping, dash tidying, report escaping ----
-var WIZ_SIGNAL_RE = /\[(?:TRAINING_STEP:\s*\d+|TRAINING_END|TRAINING_MENU|EXPLAIN_RBP|BREATH_BOX|SKILLS_QUIZ|DIRECTION_AUDIT|REPORT_READY|PANEL_[0-9A-Z_]+|CONDITION_[A-Z_]+)\]/gi;
+var WIZ_SIGNAL_RE = /\[(?:TRAINING_STEP:\s*\d+|TRAINING_END|TRAINING_MENU|EXPLAIN_RBP|BREATH_BOX|BRIEF_BUILDER|PLAN_INPUT|SKILLS_QUIZ|DIRECTION_AUDIT|REPORT_READY|PANEL_[0-9A-Z_]+|CONDITION_[A-Z_]+)\]/gi;
 function wizClean(text) {
   return String(text == null ? '' : text).replace(WIZ_SIGNAL_RE, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
 }
@@ -1137,7 +1170,7 @@ function addMessage(role, text) {
   var inner = document.createElement("div");
   var bubble = document.createElement("div");
   bubble.className = "msg-bubble";
-  bubble.innerHTML = wizFormat(text);
+  if (role === 'user' && /^My practitioner's plan \(from my /.test(text)) { bubble.style.whiteSpace = 'pre-wrap'; bubble.textContent = text; } else { bubble.innerHTML = wizFormat(text); }
   var meta = document.createElement("div");
   meta.className = "msg-meta";
   meta.textContent = (role === "wiz" ? "WIZ" : "You") + " - " + now;
@@ -1502,6 +1535,405 @@ function showBreathCard() {
   var msgs = document.getElementById('messages'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
 }
 
+// ---- Professional brief and practitioner's plan --------------------------------------------
+// The brief is a draft made from the conversation. The person checks it, edits it and downloads it.
+// Nothing is stored or sent by this code: the file is made in the browser.
+var BRIEF_RECIPIENTS = [
+  ['coach', 'a coach or mentor'],
+  ['sport', 'a sports or exercise professional'],
+  ['physio', 'a physiotherapist or other health professional'],
+  ['gp', 'my GP or doctor'],
+  ['therapist', 'a therapist or counsellor'],
+  ['other', 'another professional']
+];
+var BRIEF_SECTIONS = [
+  ['purpose', 'What I would like from this appointment'],
+  ['goals', 'What I want to achieve'],
+  ['whyNow', 'Why now'],
+  ['background', 'Relevant background'],
+  ['tried', 'What I have tried, and how it went'],
+  ['helped', 'What has helped'],
+  ['notHelped', 'What has not helped'],
+  ['questions', 'Questions I would like to ask'],
+  ['strengths', 'Strengths I bring']
+];
+var PLAN_ROLES = [
+  ['physio', 'physiotherapist'],
+  ['doctor', 'doctor or specialist'],
+  ['coach', 'coach'],
+  ['therapist', 'therapist or counsellor'],
+  ['trainer', 'personal trainer'],
+  ['other', 'practitioner']
+];
+
+function wizRaw(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function wizDateGB(iso) { if (!iso) return ''; var p = String(iso).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; }
+function bEl(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function briefLabel(key) { for (var i = 0; i < BRIEF_RECIPIENTS.length; i++) { if (BRIEF_RECIPIENTS[i][0] === key) return BRIEF_RECIPIENTS[i][1]; } return 'a professional'; }
+function briefFit(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }
+function briefState() {
+  if (!state.brief) state.brief = {version: 0, recipient: 'coach', purpose: '', sections: null, on: {}, includePlan: false};
+  return state.brief;
+}
+
+async function callBrief(recipientLabel, purpose) {
+  var ins = [
+    "The person now wants to prepare a brief to take to " + recipientLabel + ". Draft it now from this conversation.",
+    "Output ONLY one JSON object, with no other text and no [REPORT_READY] marker.",
+    "Shape: {\"goals\":[{\"t\":\"...\",\"s\":\"you\"}],\"whyNow\":[],\"background\":[],\"tried\":[],\"helped\":[],\"notHelped\":[],\"questions\":[],\"strengths\":[]}.",
+    "Rules: use ONLY what the person said in this conversation. Write each item as one short sentence in the first person, as the person would say it (\"I ...\"), in their own words where possible.",
+    "Set \"s\" to \"you\" when the person said it, and to \"wiz\" only when the item is your own suggestion, such as a question they could ask.",
+    "Never diagnose. Never write \"observed\", \"presents with\" or other clinical language. Never praise. Never state anything the person did not say.",
+    "Do not restate or change any practitioner's plan they entered.",
+    "Leave a list empty rather than invent anything. At most 5 items per list.",
+    "\"questions\" are questions the person could ask the professional, taken from what they said they want to know or worry about.",
+    "Put the emphasis on what matters most to " + recipientLabel + ", but add no new content.",
+    purpose ? ("The person says they would like this from the appointment: " + purpose) : "",
+    "British English. No double hyphens."
+  ].join(" ");
+  var msgs = state.messages.concat([{role: "user", content: ins}]);
+  var lastErr;
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      var response = await fetch("/api/chat", {
+        method: "POST",
+        headers: window.WIZ_HEADERS(),
+        body: JSON.stringify({messages: msgs, track: state.track, lens: state.lens})
+      });
+      if (!response.ok) {
+        if ((response.status === 429 || response.status === 529) && attempt < 2) {
+          await new Promise(function (r) { setTimeout(r, 3000 + attempt * 2000); });
+          continue;
+        }
+        throw new Error("Brief API error " + response.status);
+      }
+      var data = await response.json();
+      return (data.content || []).map(function (b) { return b.text || ''; }).join('').trim();
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 2) await new Promise(function (r) { setTimeout(r, 2000); });
+    }
+  }
+  throw lastErr || new Error("Brief failed after retries");
+}
+
+function briefParse(raw) {
+  var t = String(raw || '');
+  var s = t.indexOf('{'), e = t.lastIndexOf('}');
+  if (s < 0 || e < 0) return null;
+  var o;
+  try { o = JSON.parse(t.substring(s, e + 1)); } catch (x) { return null; }
+  var out = {};
+  BRIEF_SECTIONS.forEach(function (sec) {
+    if (sec[0] === 'purpose') return;
+    var arr = Array.isArray(o[sec[0]]) ? o[sec[0]] : [];
+    out[sec[0]] = arr.slice(0, 6).map(function (it) {
+      var txt = typeof it === 'string' ? it : (it && it.t);
+      var src = (it && typeof it === 'object' && it.s === 'you') ? 'you' : 'wiz';
+      return {t: wizDash(String(txt || '')).slice(0, 400), s: src};
+    }).filter(function (it) { return it.t.trim(); });
+  });
+  return out;
+}
+
+function briefOverlay() {
+  var ov = document.getElementById('briefOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'briefOverlay';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.setAttribute('aria-label', 'Prepare a brief for a professional');
+    ov.innerHTML = '<div class="brief-sheet" id="briefSheet"></div>';
+    ov.addEventListener('click', function (e) { if (e.target === ov) briefClose(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') briefClose(); });
+    document.body.appendChild(ov);
+  }
+  ov.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  var sh = document.getElementById('briefSheet');
+  sh.scrollTop = 0; ov.scrollTop = 0;
+  return sh;
+}
+function briefClose() {
+  var ov = document.getElementById('briefOverlay');
+  if (ov) ov.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function briefSetup() {
+  var b = briefState();
+  var sh = briefOverlay();
+  var turns = (state.messages || []).filter(function (m) { return m.role === 'user'; }).length;
+  sh.innerHTML = '';
+  var x = bEl('button', 'brief-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = briefClose;
+  sh.appendChild(x);
+  sh.appendChild(bEl('h3', '', 'Prepare a brief for a professional'));
+  if (turns < 3) {
+    sh.appendChild(bEl('p', 'brief-lead', 'There is not enough in our conversation yet to prepare a brief. Talk with WIZ a little more, then ask again.'));
+    var c0 = bEl('button', 'rbp-btn', 'Close'); c0.type = 'button'; c0.onclick = briefClose;
+    var a0 = bEl('div', 'brief-actions'); a0.appendChild(c0); sh.appendChild(a0);
+    return;
+  }
+  sh.appendChild(bEl('p', 'brief-lead', 'WIZ drafts this from your conversation. You check it, change it and choose what goes in. WIZ does not store or send it: you download the file yourself and decide who sees it.'));
+  var l1 = bEl('label', 'brief-lab', 'Who is it for?'); l1.setAttribute('for', 'briefWho'); sh.appendChild(l1);
+  var sel = bEl('select'); sel.id = 'briefWho';
+  BRIEF_RECIPIENTS.forEach(function (r) { var o = bEl('option', '', r[1].charAt(0).toUpperCase() + r[1].slice(1)); o.value = r[0]; if (r[0] === b.recipient) o.selected = true; sel.appendChild(o); });
+  sh.appendChild(sel);
+  var l2 = bEl('label', 'brief-lab', 'What would you like from the appointment? (optional)'); l2.setAttribute('for', 'briefPurpose'); sh.appendChild(l2);
+  var pu = bEl('textarea'); pu.id = 'briefPurpose'; pu.rows = 3; pu.maxLength = 500; pu.value = b.purpose || ''; sh.appendChild(pu);
+  var chk = null;
+  if (state.practitionerPlan) {
+    var lc = bEl('label', 'brief-check');
+    chk = document.createElement('input'); chk.type = 'checkbox'; chk.id = 'briefPlanChk'; chk.checked = !!b.includePlan;
+    lc.appendChild(chk); lc.appendChild(document.createTextNode(" Include my practitioner's plan, exactly as I entered it"));
+    sh.appendChild(lc);
+  }
+  sh.appendChild(bEl('p', 'brief-note', 'This may include personal and sometimes health information. The draft is written by the same AI service as your session. Once you download it, the file is only on your device.'));
+  var go = bEl('button', 'rbp-btn', 'Prepare draft'); go.type = 'button';
+  var cn = bEl('button', 'rbp-btn-ghost', 'Cancel'); cn.type = 'button'; cn.onclick = briefClose;
+  go.onclick = function () {
+    b.recipient = sel.value; b.purpose = pu.value.trim(); b.includePlan = !!(chk && chk.checked);
+    briefGenerate();
+  };
+  var act = bEl('div', 'brief-actions'); act.appendChild(go); act.appendChild(cn); sh.appendChild(act);
+}
+
+async function briefGenerate() {
+  var b = briefState();
+  var sh = document.getElementById('briefSheet');
+  sh.innerHTML = '';
+  sh.appendChild(bEl('h3', '', 'Preparing your draft'));
+  sh.appendChild(bEl('p', 'brief-lead', 'This takes a few seconds.'));
+  var parsed = null;
+  try { parsed = briefParse(await callBrief(briefLabel(b.recipient), b.purpose)); } catch (e) { parsed = null; }
+  if (!parsed) {
+    sh.innerHTML = '';
+    sh.appendChild(bEl('h3', '', 'The draft did not come through'));
+    sh.appendChild(bEl('p', 'brief-lead', 'Something went wrong while preparing your brief. Nothing has been lost. Please try again.'));
+    var r1 = bEl('button', 'rbp-btn', 'Try again'); r1.type = 'button'; r1.onclick = briefSetup;
+    var r2 = bEl('button', 'rbp-btn-ghost', 'Close'); r2.type = 'button'; r2.onclick = briefClose;
+    var ra = bEl('div', 'brief-actions'); ra.appendChild(r1); ra.appendChild(r2); sh.appendChild(ra);
+    return;
+  }
+  b.version++;
+  b.sections = parsed;
+  b.sections.purpose = b.purpose ? [{t: b.purpose, s: 'you'}] : [];
+  b.on = {};
+  BRIEF_SECTIONS.forEach(function (sec) { b.on[sec[0]] = (b.sections[sec[0]] || []).length > 0; });
+  briefEdit();
+}
+
+function briefEdit() {
+  var b = briefState();
+  var sh = briefOverlay();
+  sh.innerHTML = '';
+  var x = bEl('button', 'brief-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = briefClose;
+  sh.appendChild(x);
+  sh.appendChild(bEl('h3', '', 'Your brief for ' + briefLabel(b.recipient)));
+  sh.appendChild(bEl('p', 'brief-lead', 'Draft ' + b.version + '. Read every line. Edit anything, remove what you do not want to share, and untick whole sections. Tap a label to change it if it is wrong: "In my words" is what you said, "WIZ suggestion" is something WIZ added.'));
+  BRIEF_SECTIONS.forEach(function (sec) {
+    var key = sec[0];
+    if (!b.sections[key]) b.sections[key] = [];
+    var wrap = bEl('div', 'brief-sec' + (b.on[key] ? '' : ' off'));
+    var lab = bEl('label', 'brief-check brief-sec-head');
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!b.on[key];
+    cb.onchange = function () { b.on[key] = cb.checked; wrap.classList.toggle('off', !cb.checked); };
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' ' + sec[1]));
+    wrap.appendChild(lab);
+    var list = bEl('div', 'brief-list'); wrap.appendChild(list);
+    function addRow(it, focus) {
+      var row = bEl('div', 'brief-item');
+      var tag = bEl('button', 'brief-tag'); tag.type = 'button';
+      function paint() { tag.textContent = it.s === 'you' ? 'In my words' : 'WIZ suggestion'; tag.className = 'brief-tag ' + it.s; }
+      paint();
+      tag.title = 'Tap to change this label if it is wrong';
+      tag.onclick = function () { it.s = it.s === 'you' ? 'wiz' : 'you'; paint(); };
+      var ta = bEl('textarea', 'brief-text'); ta.rows = 2; ta.value = it.t; ta.setAttribute('aria-label', sec[1]);
+      ta.oninput = function () { it.t = ta.value; briefFit(ta); if (!b.on[key]) { b.on[key] = true; cb.checked = true; wrap.classList.remove('off'); } };
+      var del = bEl('button', 'brief-del', '×'); del.type = 'button'; del.setAttribute('aria-label', 'Remove this line');
+      del.onclick = function () { var i = b.sections[key].indexOf(it); if (i >= 0) b.sections[key].splice(i, 1); row.remove(); };
+      row.appendChild(tag); row.appendChild(ta); row.appendChild(del);
+      list.appendChild(row);
+      if (focus) { briefFit(ta); ta.focus(); }
+    }
+    b.sections[key].forEach(function (it) { addRow(it, false); });
+    var add = bEl('button', 'brief-add', '+ Add a line of my own'); add.type = 'button';
+    add.onclick = function () { var it = {t: '', s: 'you'}; b.sections[key].push(it); addRow(it, true); };
+    wrap.appendChild(add);
+    sh.appendChild(wrap);
+  });
+  if (state.practitionerPlan) {
+    var p = state.practitionerPlan;
+    var pw = bEl('div', 'brief-sec' + (b.includePlan ? '' : ' off'));
+    var pl = bEl('label', 'brief-check brief-sec-head');
+    var pc = document.createElement('input'); pc.type = 'checkbox'; pc.checked = !!b.includePlan;
+    pc.onchange = function () { b.includePlan = pc.checked; pw.classList.toggle('off', !pc.checked); };
+    pl.appendChild(pc); pl.appendChild(document.createTextNode(" Include my practitioner's plan, exactly as I entered it"));
+    pw.appendChild(pl);
+    pw.appendChild(bEl('div', 'brief-plan', p.text));
+    sh.appendChild(pw);
+  }
+  sh.appendChild(bEl('p', 'brief-note', 'Only ticked sections go in the file. WIZ can misunderstand what you meant, so please check it all before you share it.'));
+  var msg = bEl('p', 'brief-msg', ''); msg.id = 'briefMsg'; msg.setAttribute('role', 'status'); sh.appendChild(msg);
+  var act = bEl('div', 'brief-actions');
+  var bw = bEl('button', 'rbp-btn', 'Download as Word'); bw.type = 'button'; bw.onclick = function () { downloadBrief('word'); };
+  var bp = bEl('button', 'rbp-btn-ghost', 'Save as PDF'); bp.type = 'button'; bp.onclick = function () { downloadBrief('pdf'); };
+  var bn = bEl('button', 'rbp-btn-ghost', 'Make a new draft (replaces my edits)'); bn.type = 'button'; bn.onclick = briefSetup;
+  var bc = bEl('button', 'rbp-btn-ghost', 'Close'); bc.type = 'button'; bc.onclick = briefClose;
+  act.appendChild(bw); act.appendChild(bp); act.appendChild(bn); act.appendChild(bc);
+  sh.appendChild(act);
+  Array.prototype.forEach.call(sh.querySelectorAll('.brief-text'), briefFit);
+}
+
+function briefHTML() {
+  var b = briefState();
+  var name = state.clientName || '';
+  var when = new Date().toLocaleDateString('en-GB', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+  var parts = [];
+  BRIEF_SECTIONS.forEach(function (sec) {
+    var key = sec[0];
+    if (!b.on[key]) return;
+    var items = (b.sections[key] || []).filter(function (it) { return it.t && it.t.trim(); });
+    if (!items.length) return;
+    parts.push('<h2>' + wizHtml(sec[1]) + '</h2><ul>' + items.map(function (it) {
+      return '<li>' + wizHtml(it.t).replace(/\n/g, '<br>') + ' <span class="tag">' + (it.s === 'you' ? 'In my words' : 'WIZ suggestion') + '</span></li>';
+    }).join('') + '</ul>');
+  });
+  if (b.includePlan && state.practitionerPlan) {
+    var p = state.practitionerPlan, d = wizDateGB(p.date);
+    parts.push('<h2>My practitioner\'s plan</h2><p class="meta">Entered by me exactly as I have it, from my ' + wizRaw(p.roleLabel) + (d ? ', dated ' + wizRaw(d) : '') + '. WIZ has not changed it.</p><div class="plan">' + wizRaw(p.text) + '</div>');
+  }
+  if (!parts.length) return '';
+  var css = 'body{font-family:Calibri,Arial,sans-serif;color:#1A1A2E;line-height:1.55;max-width:760px;margin:24px auto;padding:0 18px}' +
+    'h1{font-family:Georgia,serif;font-weight:400;color:#1B2A6B;margin:0 0 4px;font-size:26px}' +
+    '.sub{color:#555570;font-size:13px;margin:0 0 18px;border-bottom:2px solid #f5ad28;padding-bottom:12px}' +
+    'h2{font-size:15px;color:#1B2A6B;margin:20px 0 6px}ul{margin:0 0 6px 20px;padding:0}li{font-size:14px;margin-bottom:5px}' +
+    '.tag{font-size:10.5px;color:#555570;background:#F1F2F8;border-radius:10px;padding:1px 7px;margin-left:4px;white-space:nowrap}' +
+    '.meta{font-size:12px;color:#555570;margin:0 0 6px}.plan{white-space:pre-wrap;font-size:13.5px;background:#F4F5FB;border-radius:6px;padding:10px 12px}' +
+    '.foot{font-size:11px;color:#555570;border-top:1px solid #ddd;margin-top:24px;padding-top:10px}@page{size:A4;margin:16mm 14mm}';
+  var foot = 'This is a preparation aid written by the person with the help of WIZ, an AI coaching assistant. It is not a diagnosis, an assessment or a document written by a clinician, and WIZ has not examined or assessed the person. It may contain personal and health information: please share it only with the person it is intended for. Mind Flow International Ltd | mindflowpro.com.';
+  return '<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8"><title>Brief for ' + wizHtml(briefLabel(b.recipient)) + '</title><style>' + css + '</style></head><body>' +
+    '<h1>Brief for ' + wizHtml(briefLabel(b.recipient)) + '</h1>' +
+    '<p class="sub">Prepared by ' + (name ? wizHtml(name) : 'me') + ' with WIZ – draft ' + b.version + ' – ' + wizHtml(when) + '</p>' +
+    parts.join('') + '<p class="foot">' + wizHtml(foot) + '</p></body></html>';
+}
+
+function downloadBrief(kind) {
+  var html = briefHTML();
+  var msg = document.getElementById('briefMsg');
+  if (!html) { if (msg) msg.textContent = 'There is nothing ticked to include yet. Tick at least one section that has a line in it.'; return; }
+  if (msg) msg.textContent = '';
+  if (kind === 'pdf') {
+    var w = window.open('', '_blank');
+    if (!w) { if (msg) msg.textContent = 'Your browser blocked the new window. Please allow pop-ups for this site, or use the Word download.'; return; }
+    w.document.open(); w.document.write(html); w.document.close(); w.focus();
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 500);
+    return;
+  }
+  var b = briefState();
+  var stamp = new Date().toISOString().slice(0, 10);
+  var blob = new Blob(['﻿', html], {type: 'application/msword'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'WIZ-brief-draft-' + b.version + '-' + stamp + '.doc';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+// WIZ offers the builder; the person chooses
+function showBriefOffer() {
+  var msgs = document.getElementById('messages');
+  var wrapper = bEl('div', 'msg wiz');
+  var avatar = bEl('div', 'msg-avatar', 'W');
+  var box = bEl('div', 'audit-offer');
+  var go = bEl('button', 'rbp-btn', 'Prepare my brief'); go.type = 'button';
+  var skip = bEl('button', 'rbp-btn-ghost', 'Not now'); skip.type = 'button';
+  go.onclick = function () { go.disabled = true; skip.disabled = true; go.classList.add('chosen'); briefSetup(); };
+  skip.onclick = function () { go.disabled = true; skip.disabled = true; skip.classList.add('chosen'); };
+  box.appendChild(go); box.appendChild(skip);
+  wrapper.appendChild(avatar); wrapper.appendChild(box);
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// The person pastes in a plan from their own practitioner. WIZ never changes it.
+function showPlanCard() {
+  if (document.getElementById('planCard')) return;
+  var panel = panelWrapper("My practitioner's plan", "Paste your plan exactly as you have it. WIZ will not change it. It stays in this session only, and your report quotes it exactly as you enter it.");
+  panel.id = 'planCard';
+  var l1 = bEl('label', 'plan-lab', 'Who is it from?');
+  var sel = bEl('select', 'plan-role');
+  PLAN_ROLES.forEach(function (r) { var o = bEl('option', '', r[1].charAt(0).toUpperCase() + r[1].slice(1)); o.value = r[0]; sel.appendChild(o); });
+  var l2 = bEl('label', 'plan-lab', 'Date of the plan (optional)');
+  var dt = bEl('input', 'plan-date'); dt.type = 'date';
+  var l3 = bEl('label', 'plan-lab', 'The plan');
+  var ta = bEl('textarea', 'plan-text'); ta.rows = 7; ta.maxLength = 3000; ta.placeholder = 'Paste or type it here';
+  var cnt = bEl('div', 'plan-count', '0 / 3000');
+  var box = bEl('div', 'audit-offer');
+  var go = bEl('button', 'rbp-btn', 'Add to my session'); go.type = 'button'; go.disabled = true;
+  var skip = bEl('button', 'rbp-btn-ghost', 'Not now'); skip.type = 'button';
+  ta.oninput = function () { cnt.textContent = ta.value.length + ' / 3000'; go.disabled = !ta.value.trim(); };
+  function lock() { sel.disabled = true; dt.disabled = true; ta.disabled = true; go.disabled = true; skip.disabled = true; }
+  go.onclick = function () {
+    if (state.isLoading || !ta.value.trim()) return;
+    var role = PLAN_ROLES.filter(function (r) { return r[0] === sel.value; })[0] || PLAN_ROLES[5];
+    var plan = {roleKey: role[0], roleLabel: role[1], date: dt.value || '', text: ta.value.trim()};
+    state.practitionerPlan = plan;
+    lock(); go.classList.add('chosen');
+    var d = wizDateGB(plan.date);
+    sendUserMessage("My practitioner's plan (from my " + plan.roleLabel + (d ? ", dated " + d : "") + "). I have entered it exactly as I have it:\n\n" + plan.text + "\n\nPlease keep it exactly as it is. I would like your help with the mental side of following it.");
+  };
+  skip.onclick = function () { lock(); skip.classList.add('chosen'); };
+  box.appendChild(go); box.appendChild(skip);
+  [l1, sel, l2, dt, l3, ta, cnt, box].forEach(function (n) { panel.appendChild(n); });
+  var msgs = document.getElementById('messages'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+// Report: where each part of the report comes from
+function wizReportProvenance(grid) {
+  var map = [
+    ['WIZ Observation', 'sum', 'Summarised from what you told WIZ'],
+    ['Strengths Identified', 'sum', 'Summarised from what you told WIZ'],
+    ['Growth Opportunities', 'sum', 'Summarised from what you told WIZ'],
+    ['Your Direction Audit', 'own', 'Your own scores'],
+    ['Recommended Technique', 'wiz', "WIZ's suggestion"],
+    ['Your Three Priority Actions', 'wiz', "WIZ's suggestion"],
+    ['Your Career Plan', 'both', 'Built with you in this session'],
+    ['Your Personal Well-Being Plan', 'both', 'Built with you in this session'],
+    ['Your Personal Success Performance Plan', 'both', 'Built with you in this session'],
+    ['Recommended Pathway', 'wiz', "WIZ's suggestion"],
+    ['Your Mind Flow Resources', 'wiz', "WIZ's suggestion"],
+    ["Your practitioner's plan", 'own', 'Entered by you']
+  ];
+  Array.prototype.forEach.call(grid.querySelectorAll('.report-card'), function (card) {
+    var h = card.querySelector('h3');
+    if (!h) return;
+    var t = h.textContent || '';
+    for (var i = 0; i < map.length; i++) {
+      if (t.indexOf(map[i][0]) === 0) {
+        card.insertAdjacentHTML('afterbegin', '<span class="prov prov-' + map[i][1] + '">' + wizRaw(map[i][2]) + '</span>');
+        return;
+      }
+    }
+  });
+  var legend = document.createElement('div');
+  legend.className = 'report-legend';
+  legend.style.gridColumn = '1/-1';
+  legend.textContent = "The small labels show where each part comes from: your own words, WIZ's suggestions, or text you entered yourself. Please check anything that does not sound like you.";
+  grid.insertBefore(legend, grid.firstChild);
+}
+
+function wizReportPlanCard(grid) {
+  var p = state.practitionerPlan;
+  if (!p) return;
+  var d = wizDateGB(p.date);
+  var card = document.createElement('div');
+  card.className = 'report-card full plan-card prac-plan';
+  card.innerHTML = "<h3>Your practitioner's plan, as you entered it</h3><p style=\"font-size:12px;color:var(--mid);margin-bottom:8px\">From your " + wizRaw(p.roleLabel) + (d ? ', dated ' + wizRaw(d) : '') + '. WIZ has not changed it.</p><p style="white-space:pre-wrap;font-size:13px">' + wizRaw(p.text) + '</p>';
+  grid.appendChild(card);
+}
+
 function showConversation() {
   var ca = document.getElementById("chatArea");
   var rv = document.getElementById("reportView");
@@ -1539,7 +1971,7 @@ function buildReport(r) {
   rv.id = "reportView";
   var viewConv = document.createElement("div");
   viewConv.className = "report-nav";
-  viewConv.innerHTML = '<button class="btn-secondary report-nav-btn" onclick="showConversation()">&larr; View your conversation</button> <button class="report-nav-btn" onclick="downloadTranscript(\'word\')">Download conversation (Word)</button> <button class="report-nav-btn" onclick="downloadTranscript(\'pdf\')">Conversation as PDF</button>';
+  viewConv.innerHTML = '<button class="btn-secondary report-nav-btn" onclick="showConversation()">&larr; View your conversation</button> <button class="report-nav-btn" onclick="downloadTranscript(\'word\')">Download conversation (Word)</button> <button class="report-nav-btn" onclick="downloadTranscript(\'pdf\')">Conversation as PDF</button> <button class="report-nav-btn" onclick="briefSetup()">Prepare a brief for a professional</button>';
   rv.appendChild(viewConv);
  
   var rh = document.createElement("div");
@@ -1686,6 +2118,8 @@ function buildReport(r) {
     grid.appendChild(arCard);
   }
  
+  wizReportPlanCard(grid);
+  wizReportProvenance(grid);
   rv.appendChild(grid);
  
   var cta = document.createElement("div");
@@ -1711,6 +2145,12 @@ function buildReport(r) {
   ctaBtns.appendChild(btnBook);
   ctaBtns.appendChild(btnSave);
   ctaBtns.appendChild(btnConv);
+  var btnBrief = document.createElement("button");
+  btnBrief.className = "btn-secondary";
+  btnBrief.textContent = "Prepare a brief for a professional";
+  btnBrief.title = "Drafts a one-page brief you can edit and download. Nothing is stored or sent.";
+  btnBrief.onclick = function(){ briefSetup(); };
+  ctaBtns.appendChild(btnBrief);
   cta.appendChild(ctaLeft);
   cta.appendChild(ctaBtns);
   rv.appendChild(cta);
@@ -1862,6 +2302,20 @@ async function handleWIZResponse(userMsg) {
       var textBeforeR = reply.replace(/\[EXPLAIN_RBP\]/g, '').trim();
       if (textBeforeR) addMessage('wiz', textBeforeR);
       showRBPCard();
+      return;
+    }
+
+    // Professional brief offer and practitioner's plan card
+    if (reply.indexOf('[BRIEF_BUILDER]') >= 0) {
+      var textBeforeBr = reply.replace(/\[BRIEF_BUILDER\]/g, '').trim();
+      if (textBeforeBr) addMessage('wiz', textBeforeBr);
+      showBriefOffer();
+      return;
+    }
+    if (reply.indexOf('[PLAN_INPUT]') >= 0) {
+      var textBeforeP = reply.replace(/\[PLAN_INPUT\]/g, '').trim();
+      if (textBeforeP) addMessage('wiz', textBeforeP);
+      showPlanCard();
       return;
     }
 
@@ -2374,6 +2828,8 @@ function wizTranscriptItems() {
       var notes = [];
       if (/\[EXPLAIN_RBP\]/i.test(text)) notes.push('The Red, Blue = Purple explainer card was shown here.');
       if (/\[BREATH_BOX\]/i.test(text)) notes.push('A paced box-breathing card was shown here.');
+      if (/\[BRIEF_BUILDER\]/i.test(text)) notes.push('An offer to prepare a brief for a professional was shown here.');
+      if (/\[PLAN_INPUT\]/i.test(text)) notes.push("A card for entering a practitioner's plan was shown here.");
       if (/\[PANEL_1_1\]|\[DIRECTION_AUDIT\]/i.test(text)) notes.push('The Direction Audit was offered here.');
       else if (/\[PANEL_[0-9A-Z_]+\]/i.test(text)) notes.push('An interactive panel was shown here.');
       if (/\[TRAINING_MENU\]/i.test(text)) notes.push('The training menu was shown here.');
