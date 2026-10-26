@@ -13,14 +13,18 @@ const { startNoticeApi, applyNoticesUp, applyNoticesDown } = require('./helpers/
 const { openPrivacyDb } = require('./helpers/privacy-api');
 const { loadConfig } = require('../lib/config');
 const { createApp } = require('../lib/app');
-const { createNotices, NOTICE_DIR } = require('../lib/notices');
+const { createNotices, NOTICE_DIR, APPROVAL, APPROVAL_20261024 } = require('../lib/notices');
 const { client } = require('./helpers/api');
 
 const PRIVACY_ID = 'privacy-2026-10-16-v1';
 const TERMS_ID = 'terms-2026-10-16-v1';
+const PRIVACY_V2_ID = 'privacy-2026-10-24-v2';
+const TERMS_V2_ID = 'terms-2026-10-24-v2';
 const PRIVACY_SHA = 'ba1a8f905d6b3af9ede6d5bfa7ac18fc520629847f49448530044fc4339e6f70';
 const TERMS_SHA = '8570e1f5fac7f9a67597a672024fcdbe48bc85e90de9e6df907352ea987ed60d';
 const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
+const PRIVACY_V2_SHA = sha(fs.readFileSync(path.join(NOTICE_DIR, PRIVACY_V2_ID + '.txt')));
+const TERMS_V2_SHA = sha(fs.readFileSync(path.join(NOTICE_DIR, TERMS_V2_ID + '.txt')));
 const accept = (ctx, u, body) => ctx.request('POST', '/api/v1/terms/acceptance', { token: u.token, body });
 const GOOD = { version: '1.0', artifact_sha256: TERMS_SHA, accepted: true };
 
@@ -37,11 +41,27 @@ test('notices: exact preserved bytes + hash + provenance are retrievable without
       assert.equal(r.json.notice.bytes, onDisk.length);
       assert.equal(sha(Buffer.from(r.json.notice.text, 'utf8')), sum, 'returned wording re-hashes to the recorded hash');
       assert.equal(r.json.notice.approval.basis, 'owner_instruction');
+      assert.equal(r.json.notice.approval.source_control, APPROVAL.source_control);
       assert.equal(r.json.notice.approval.independent_legal_approval, false);
+    }
+    for (const [id, sum] of [[PRIVACY_V2_ID, PRIVACY_V2_SHA], [TERMS_V2_ID, TERMS_V2_SHA]]) {
+      const onDisk = fs.readFileSync(path.join(NOTICE_DIR, id + '.txt'));
+      assert.ok(onDisk.length > 0, '2026-10-24 v2 artifact exists on disk');
+      const r = await ctx.request('GET', `/api/v1/notices/${id}`);
+      assert.equal(r.status, 200);
+      assert.equal(r.json.notice.id, id);
+      assert.equal(r.json.notice.sha256, sum);
+      assert.equal(r.json.notice.bytes, onDisk.length);
+      assert.equal(sha(Buffer.from(r.json.notice.text, 'utf8')), sum, 'returned v2 wording re-hashes to the recorded hash');
+      assert.equal(r.json.notice.approval.basis, 'owner_delegated_technical_revision');
+      assert.equal(r.json.notice.approval.revised_on, '2026-10-24');
+      assert.equal(r.json.notice.approval.source_control, undefined, 'no PJW signature claim on 2026-10-24 technical revision');
+      assert.equal(r.json.notice.approval.independent_legal_approval, false);
+      assert.deepEqual(r.json.notice.approval, APPROVAL_20261024);
     }
     const list = await ctx.request('GET', '/api/v1/notices');
     assert.equal(list.status, 200);
-    assert.deepEqual(list.json.items.map(x => x.id).sort(), [PRIVACY_ID, TERMS_ID]);
+    assert.deepEqual(list.json.items.map(x => x.id).sort(), [PRIVACY_ID, PRIVACY_V2_ID, TERMS_ID, TERMS_V2_ID]);
     assert.ok(list.json.items.every(x => x.text === undefined), 'the list carries no wording');
     // only catalogue ids: unknown id, traversal and an unsupported verb are all refused
     assert.equal((await ctx.request('GET', '/api/v1/notices/terms-2099-01-01-v9')).status, 404);
@@ -292,4 +312,165 @@ test('migration: re-apply is a no-op; rollback keeps every acceptance and stops 
     const st = await h.asRole(db, 'service_role', null, tx => tx.query('select public.wiz_terms_state($1) as s', [uid]));
     assert.equal(st.rows[0].s.accepted, true, 'service restored over the preserved record');
   } finally { await db.close(); }
+});
+
+test('ops 2026-10-24 publication & rollback lifecycle: retires v1 by status, requires fresh explicit v3 consent & terms 2.0 acceptance, refuses version 3 collision, and rolls back to the actual 2/2/2/1 prior map', async () => {
+  const ctx = await startNoticeApi();
+  try {
+    const rawPublish = fs.readFileSync(path.join(__dirname, '..', 'ops', 'publish-notices-20261024.sql'), 'utf8');
+    const rollbackSql = fs.readFileSync(path.join(__dirname, '..', 'ops', 'rollback-notices-20261024.sql'), 'utf8');
+    const publishSql = rawPublish
+      .replaceAll('EXPLICIT_PARENT_SHA_PRIVACY_2026_10_24_V2', PRIVACY_V2_SHA)
+      .replaceAll('EXPLICIT_PARENT_SHA_TERMS_2026_10_24_V2', TERMS_V2_SHA);
+    const unpinnedSql = publishSql.replace(
+      /(^\s*v_privacy_sha\s+constant\s+text\s*:=\s*')[0-9a-f]{64}(';)/m,
+      "$1EXPLICIT_PARENT_SHA_PRIVACY_2026_10_24_V2$2",
+    );
+
+    // The SQL's own pins must be the runtime artifact hashes (placeholders, if any, were substituted above).
+    const pinnedIn = name => new RegExp(`^\\s*${name}\\s+constant\\s+text\\s*:=\\s*'([0-9a-f]{64})';`, 'm').exec(publishSql);
+    assert.equal(pinnedIn('v_privacy_sha') && pinnedIn('v_privacy_sha')[1], PRIVACY_V2_SHA, 'publication SQL pins the runtime privacy v2 hash');
+    assert.equal(pinnedIn('v_terms_sha') && pinnedIn('v_terms_sha')[1], TERMS_V2_SHA, 'publication SQL pins the runtime terms v2 hash');
+
+    // The local harness applies foundation/career/privacy/notices only, so openai_training may legitimately have no rows; capture whatever
+    // exists BEFORE publication and require it to be identical afterwards (never approved, never activated, never touched).
+    const openaiBefore = (await ctx.db.query("select purpose, version, status, legal_approved, artifact_id, artifact_sha256, approval_provenance from public.wiz_consent_versions where purpose = 'openai_training' order by version")).rows;
+
+    // 1. Fails closed if parent SHA placeholder is unpinned or if an expected current purpose is absent.
+    await assert.rejects(ctx.db.exec(unpinnedSql), /parent must pin exact 64-char hex SHA-256 hashes/);
+    await ctx.db.exec('rollback').catch(() => {});
+    // Local fixtures still hold the original v1 placeholders as current, but staging's actual prior map is 2/2/2/1: refused before seeding.
+    await assert.rejects(ctx.db.exec(publishSql), /purpose career_records expected current version 2, found 1/);
+    await ctx.db.exec('rollback').catch(() => {});
+
+    // Seed the representative staging state: approve save_chats v1 (original history), then seed health_processing v1 as already current.
+    const PJW = 'Approved by and date: PJW 16/10/2026. Recorded by engineering as owner instruction; not independently verified solicitor approval.';
+    await ctx.db.exec(`
+      insert into public.wiz_consent_versions (purpose, version, status, summary, legal_approved, artifact_id, artifact_sha256, approval_provenance)
+      values ('health_processing', '1', 'current',
+        'Let WIZ handle health, wellbeing or neurodiversity information I choose to share while it coaches me, as set out in the Privacy Notice. I can use WIZ without sharing it and can withdraw at any time.',
+        true, '${PRIVACY_ID}', '${PRIVACY_SHA}', '${PJW}');
+      update public.wiz_consent_versions
+         set legal_approved = true, artifact_id = '${PRIVACY_ID}', artifact_sha256 = '${PRIVACY_SHA}', approval_provenance = '${PJW}'
+       where purpose = 'save_chats' and version = '1';
+    `);
+
+    const u = await ctx.newAccount('pub-20261024');
+    assert.equal((await accept(ctx, u, GOOD)).status, 201);
+    const grantV1 = await ctx.request('POST', '/api/v1/consents', { token: u.token, body: { purpose: 'save_chats', version: '1', action: 'grant' } });
+    assert.equal(grantV1.status, 200);
+    assert.equal(grantV1.json.purposes.find(x => x.purpose === 'save_chats').granted, true, 'original v1 grant recorded while v1 was current');
+
+    // Now move career_records / personalisation / save_chats to a current version 2 (v1 kept as retired history), linked to the 16 Oct artifact.
+    await ctx.db.exec(`
+      update public.wiz_consent_versions set status = 'retired'
+       where version = '1' and purpose in ('career_records', 'personalisation', 'save_chats');
+      insert into public.wiz_consent_versions (purpose, version, status, summary, legal_approved, artifact_id, artifact_sha256, approval_provenance)
+      select purpose, '2', 'current', summary, true, '${PRIVACY_ID}', '${PRIVACY_SHA}', '${PJW}'
+        from public.wiz_consent_versions
+       where version = '1' and purpose in ('career_records', 'personalisation', 'save_chats');
+    `);
+    const priorMap = { career_records: '2', health_processing: '1', personalisation: '2', save_chats: '2' };
+    const currentMap = async () => Object.fromEntries((await ctx.db.query("select purpose, version from public.wiz_consent_versions where status = 'current' and purpose <> 'openai_training' order by purpose")).rows.map(r => [r.purpose, r.version]));
+    assert.deepEqual(await currentMap(), priorMap, 'fixture mirrors actual staging current versions');
+    const v1History = (await ctx.db.query("select purpose, version, status, legal_approved, artifact_id from public.wiz_consent_versions where version = '1' and purpose in ('career_records', 'personalisation', 'save_chats') order by purpose")).rows;
+    assert.equal(v1History.length, 3);
+    assert.ok(v1History.every(r => r.status === 'retired'), 'original v1 rows preserved as retired history');
+
+    // Explicit pre-publication grants on the current versions: v1 for health_processing, v2 for the other three.
+    const preGrants = {};
+    for (const [purpose, version] of Object.entries(priorMap)) {
+      const r = await ctx.request('POST', '/api/v1/consents', { token: u.token, body: { purpose, version, action: 'grant' } });
+      assert.equal(r.status, 200, `pre-publication grant ${purpose} v${version}`);
+      assert.equal(r.json.purposes.find(x => x.purpose === purpose).granted, true);
+      preGrants[purpose] = version;
+    }
+    const eventsBeforePublish = (await ctx.db.query('select count(*)::int n from public.wiz_consent_events where user_id = $1', [u.id])).rows[0].n;
+    assert.equal(eventsBeforePublish, 5, 'original save_chats v1 grant plus four pre-publication grants');
+
+    // 2. Fails closed on version 3 collision if a conflicting version '3' row exists.
+    await assert.rejects(
+      ctx.db.exec(`
+        begin;
+        insert into public.wiz_consent_versions (purpose, version, status, summary, legal_approved, artifact_id, artifact_sha256, approval_provenance)
+        values ('save_chats', '3', 'retired', 'conflicting row', true, '${PRIVACY_ID}', '${PRIVACY_SHA}', 'prior conflicting v3');
+        ${publishSql.replace(/^\s*begin\s*;/im, '').replace(/commit\s*;\s*$/im, '')}
+        commit;
+      `),
+      /consent version 3 collision on purpose save_chats/
+    );
+    await ctx.db.exec('rollback').catch(() => {});
+    assert.deepEqual(await currentMap(), priorMap, 'collision refusal changed nothing');
+
+    // 3. Apply 2026-10-24 publication (and re-run to verify idempotent no-op).
+    await ctx.db.exec(publishSql);
+    await ctx.db.exec(publishSql);
+
+    // Old v1 rows are retired with original hashes/provenance intact; v2 rows are current; openai_training remains unapproved.
+    const termsRows = (await ctx.db.query('select version, status, artifact_id, artifact_sha256 from public.wiz_terms_versions order by version')).rows;
+    assert.deepEqual(termsRows, [
+      { version: '1.0', status: 'retired', artifact_id: TERMS_ID, artifact_sha256: TERMS_SHA },
+      { version: '2.0', status: 'current', artifact_id: TERMS_V2_ID, artifact_sha256: TERMS_V2_SHA }
+    ]);
+    const openaiAfter = (await ctx.db.query("select purpose, version, status, legal_approved, artifact_id, artifact_sha256, approval_provenance from public.wiz_consent_versions where purpose = 'openai_training' order by version")).rows;
+    assert.deepEqual(openaiAfter, openaiBefore, 'openai_training rows unchanged by publication');
+    assert.ok(openaiAfter.every(r => r.legal_approved === false), 'openai_training stays unapproved (nonactivation)');
+    assert.equal(openaiAfter.filter(r => r.status === 'current' && r.legal_approved).length, 0, 'no approved current openai_training');
+
+    // 4. No silent grant or terms carry-over: u must explicitly accept Terms 2.0 and grant v2 consents; v1 history is preserved.
+    const termsState = (await ctx.request('GET', '/api/v1/terms', { token: u.token })).json.terms;
+    assert.equal(termsState.current.version, '2.0');
+    assert.equal(termsState.current.artifact_id, TERMS_V2_ID);
+    assert.equal(termsState.current.artifact_sha256, TERMS_V2_SHA);
+    assert.equal(termsState.accepted, false, 'v1.0 acceptance does not satisfy Terms 2.0');
+    assert.equal(termsState.acceptances.length, 1, 'v1.0 acceptance preserved in history');
+
+    const consentPurposes = (await ctx.request('GET', '/api/v1/consents', { token: u.token })).json.purposes;
+    for (const p of ['save_chats', 'personalisation', 'career_records', 'health_processing']) {
+      const row = consentPurposes.find(x => x.purpose === p);
+      assert.ok(row, `purpose ${p} returned`);
+      assert.equal(row.version, '3');
+      assert.equal(row.legal_approved, true);
+      assert.equal(row.granted, false, `prior v${preGrants[p]} grant not carried over silently to v3 for ${p}`);
+    }
+    // The consent API does not expose artifact fields; verify the current v3 rows' pinned artifact in the database instead.
+    const v3Rows = (await ctx.db.query("select purpose, artifact_id, artifact_sha256 from public.wiz_consent_versions where version = '3' and status = 'current' order by purpose")).rows;
+    assert.deepEqual(v3Rows.map(r => r.purpose), ['career_records', 'health_processing', 'personalisation', 'save_chats']);
+    for (const r of v3Rows) {
+      assert.equal(r.artifact_id, PRIVACY_V2_ID);
+      assert.equal(r.artifact_sha256, PRIVACY_V2_SHA);
+    }
+    // Every prior row (v1 history, v2 retired, health v1 retired) is preserved; only status moved.
+    const priorRows = (await ctx.db.query("select purpose, version, status from public.wiz_consent_versions where purpose <> 'openai_training' and version <> '3' order by purpose, version")).rows;
+    assert.ok(priorRows.every(r => r.status === 'retired'), 'all prior versions retired');
+    for (const [purpose, version] of Object.entries(priorMap)) assert.ok(priorRows.some(r => r.purpose === purpose && r.version === version), `${purpose} v${version} retained`);
+    assert.equal(priorRows.filter(r => r.version === '1' && r.purpose !== 'health_processing').length, 3, 'original v1 history retained');
+    assert.equal((await ctx.db.query('select count(*)::int n from public.wiz_consent_events where user_id = $1', [u.id])).rows[0].n, eventsBeforePublish, 'publication wrote no consent events');
+
+    // Record fresh explicit Terms 2.0 acceptance and v3 grants (explicit grants on the new version, one per purpose).
+    const accV2 = await accept(ctx, u, { version: '2.0', artifact_sha256: TERMS_V2_SHA, accepted: true });
+    assert.equal(accV2.status, 201);
+    assert.deepEqual(accV2.json.terms.acceptances.map(x => x.version), ['1.0', '2.0']);
+    for (const p of Object.keys(priorMap)) {
+      const stale = await ctx.request('POST', '/api/v1/consents', { token: u.token, body: { purpose: p, version: priorMap[p], action: 'grant' } });
+      assert.notEqual(stale.status, 200, `grant on retired prior version for ${p} is refused`);
+      const g = await ctx.request('POST', '/api/v1/consents', { token: u.token, body: { purpose: p, version: '3', action: 'grant' } });
+      assert.equal(g.status, 200, `v3 grant for ${p}`);
+      assert.equal(g.json.purposes.find(x => x.purpose === p).granted, true);
+    }
+
+    // 5. Rollback retires v3 by status only, restores the actual prior map (2/2/2/1) to current, and preserves all rows, acceptances, and consent events.
+    await ctx.db.exec(rollbackSql);
+    await ctx.db.exec(rollbackSql);
+
+    const afterRollbackTerms = (await ctx.request('GET', '/api/v1/terms', { token: u.token })).json.terms;
+    assert.equal(afterRollbackTerms.current.version, '1.0');
+    assert.equal(afterRollbackTerms.accepted, true, 'restored v1.0 current version recognises preserved v1.0 acceptance');
+    assert.deepEqual(afterRollbackTerms.acceptances.map(x => x.version), ['1.0', '2.0'], 'v2.0 acceptance record preserved after rollback');
+    assert.deepEqual(await currentMap(), priorMap, 'rollback restores the actual prior purpose map');
+    assert.equal((await ctx.db.query("select count(*)::int n from public.wiz_consent_versions where version = '3' and status = 'retired'")).rows[0].n, 4, 'all 4 v3 consent rows preserved as retired');
+    assert.equal((await ctx.db.query("select count(*)::int n from public.wiz_consent_versions where version = '1' and purpose <> 'health_processing' and status = 'retired'")).rows[0].n, 3, 'original v1 history untouched');
+    assert.equal((await ctx.db.query('select count(*)::int n from public.wiz_consent_events where user_id = $1', [u.id])).rows[0].n, eventsBeforePublish + 4, 'pre-publication and v3 consent events preserved');
+    assert.deepEqual((await ctx.db.query("select purpose, version, status, legal_approved, artifact_id from public.wiz_consent_versions where purpose = 'openai_training' order by version")).rows.map(r => r.legal_approved), openaiBefore.map(r => r.legal_approved), 'openai_training still unapproved after rollback');
+  } finally { await ctx.close(); }
 });

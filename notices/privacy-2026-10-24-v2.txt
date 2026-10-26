@@ -1,0 +1,92 @@
+# WIZ Privacy Notice
+
+**Mind Flow International Ltd**
+**Privacy Notice for WIZ (`app.mindflowpro.com`)**
+**Version date:** 24 October 2026
+
+---
+
+### 1. Who We Are and How to Contact Us
+Mind Flow International Ltd ("Mind Flow", "we", "us") is the data controller for personal information processed through the WIZ coaching application.
+
+* **Company Registration:** Registered in England and Wales under company number 13453759.
+* **Registered Office:** Fernlea, House Newby, Penrith, Cumbria CA10 3EX.
+* **Contact & Privacy Lead:** Email info@mindflowpro.com (Data Protection Lead: PJ Wingfield).
+* **Supervisory Authority:** You have the right to lodge a complaint with the UK Information Commissioner's Office (ICO) at [ico.org.uk](https://ico.org.uk) or by calling 0303 123 1113.
+
+---
+
+### 2. Who WIZ Is For (Age Requirement)
+WIZ is exclusively for individuals aged 18 and over. We do not knowingly collect personal information from or provide services to anyone under 18. If we learn that an account has been created by someone under 18, we will close the account and erase their information.
+
+---
+
+### 3. What WIZ Is (and What It Is Not)
+WIZ is an artificial intelligence conversational coaching tool designed to assist with personal reflection, thinking frameworks, goal-setting, resilience, and general wellbeing exploration.
+
+* **Not Medical or Diagnostic:** WIZ is not healthcare, medical diagnosis, clinical treatment, psychotherapy, counselling, or regulated professional advice.
+* **Not an Emergency or Crisis Service:** WIZ cannot contact anyone on your behalf and does not monitor sessions in real time. If you are experiencing distress, an emergency, or danger to your safety, call 999 (UK) or Samaritans on 116 123 immediately.
+
+---
+
+### 4. What Information We Process and How Conversations Are Handled
+We process information necessary to run WIZ, provide AI coaching, manage your account, and fulfill your choices:
+
+1. **Account & Authentication Details:** Name, email address, password/auth credentials, verification of 18+ age status, subscription status, and recorded consent choices (granted or withdrawn).
+2. **Onboarding & Coaching Profile:** Onboarding responses, checkpoints, reports, goals, journal reflections, training records, and evidence logs you choose to complete.
+3. **Conversations:**
+   * **Transmission to Providers:** All submitted messages and active turn inputs are transmitted to our AI model providers to generate conversational replies.
+   * **Saved Coaching Requires Your Permission:** Normal saved coaching in WIZ requires your explicit permission to save chats (`save_chats`) before it starts. Once you give it, conversation text, message titles, and session checkpoints are stored in your account database and retained so you can revisit them. You can read, export and delete your saved chats at any time.
+   * **If You Do Not Give Permission:** Saved coaching does not start. Your account privacy controls, including viewing and exporting your account data, deleting it, and closing your account, remain available.
+   * **Chat Media:** Images or documents submitted during a chat turn are sent to the AI provider for that turn only and represented by a placeholder in session records, not stored as permanent media files.
+4. **Career Module & Attachments:** Career records and private career file attachments. Saving career records is decoupled from enabling AI processing on career data. No automatic sharing or handoff to employers or coaches is implemented; users retain personal control to export or share records independently.
+5. **Device Pairing Feature:** Where wearable or biofeedback device pairing is supported, WIZ stores the connection pairing status only (connected/disconnected). The pairing feature does not record or retain a stream of raw biofeedback or biometric readings; however, user-submitted chat messages or uploaded images may contain biofeedback readings or metrics that you choose to input.
+6. **Billing Information:** Payment card details, billing addresses, and transactions are managed directly by Stripe. We never view or store full payment card numbers.
+7. **Technical Logs:** IP addresses, browser/device user agents, error codes, and access timestamps captured by server hosting infrastructure for operational integrity and security.
+
+*Note on Identifiers:* Because text messages and attachments may contain personal identifiers that you submit, we do not guarantee inputs are completely redacted or stripped of identifying details. Please avoid entering sensitive personal details of others.
+
+---
+
+### 5. Returning Personalisation, Health Choices, and Context Boundaries
+* **Personalisation Grant:** Enabling returning personalisation requires an explicit user grant, separate from your permission to save chats. This allows WIZ to reference past reflections, profile context, and saved goals in future coaching sessions. Withdrawing this grant stops past context from being reused in future new requests; it does not cancel an already in-flight provider request or trigger immediate erasure of historical records (which can be deleted separately).
+* **Health and Wellbeing Choices:** If you choose to discuss health, wellbeing, or neurodiversity, this involves special category information. Your explicit choice determines whether WIZ provides health-related coaching and context reuse. Context fences apply to separate health discussions. If health-related coaching is declined, WIZ provides general coaching only; declining health coaching does not guarantee that health details you submit in a prompt are filtered or redacted, and a request already in progress is not cancelled, so users who decline health coaching are advised to avoid entering health details.
+* **No Automatic Employer or Coach Sharing:** WIZ implements no automatic sharing, reporting, or handoff pipelines to employers, sponsors, or third-party coaches.
+
+---
+
+### 6. Service Providers, Public Policies, and Data Locations
+To operate WIZ, we use third-party infrastructure and AI model providers. We do not sell your personal information:
+
+* **Anthropic:** Powers WIZ conversational responses via the Claude commercial API. By default under official policies, customer API inputs and outputs are not used to train models (unless explicit feedback/opt-in is provided). Anthropic maintains standard API retention of up to 30 days for safety and legal compliance before deletion, subject to legal or agreement exceptions. See Anthropic's policies: [privacy.claude.com](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data).
+* **Voyage AI:** Generates vector embeddings for search and retrieval across coaching knowledge bases. See Voyage AI's privacy policy at [voyageai.com](https://www.voyageai.com).
+* **Supabase:** Manages authentication, user databases, and private attachment storage. See Supabase's privacy policy at [supabase.com](https://supabase.com/privacy).
+* **Render:** Cloud hosting platform running the WIZ application server and processing logs. See Render's privacy policy at [render.com](https://render.com/privacy).
+* **Stripe:** Processes payments and subscriptions as an independent financial controller. See Stripe's privacy policy at [stripe.com](https://stripe.com/gb/privacy).
+
+*Data Locations and International Transfers:* Provider servers and processing locations may differ and may be located outside the UK, primarily in the United States and the European Economic Area. Specific international transfer safeguards (such as the UK International Data Transfer Agreement, UK Addendum, or adequacy frameworks) depend on provider account configurations and data processing terms; contact info@mindflowpro.com for details regarding transfer safeguards.
+
+---
+
+### 7. Lawful Bases for Processing (UK GDPR)
+We process personal data under the following lawful bases:
+
+1. **Contractual Performance (Article 6(1)(b)):** Providing your user account, enabling conversational features, processing subscription access, and maintaining your paid service.
+2. **Consent (Article 6(1)(a) & Article 9(2)(a)):** Explicit consent for processing health/wellbeing disclosures, enabling returning personalisation, saving your chats, and processing uploaded Career files. Consent may be withdrawn at any time.
+3. **Legal Obligations (Article 6(1)(c)):** Retaining required statutory accounting, tax, and consumer records, and managing statutory rights requests.
+4. **Legitimate Interests (Article 6(1)(f)):** Securing application infrastructure, investigating technical issues, preventing abuse, and defending legal rights, balanced with user privacy rights.
+
+---
+
+### 8. Data Retention and Control
+* **Active WIZ Storage:** Saved chats, checkpoints, goals, reports, and journal entries are retained in active storage until you choose to delete them or close your account. WIZ does not apply an automatic chat expiration duration.
+* **Session Deletion & Account Erasure:** You may delete individual sessions or request account erasure. If you have an active paid subscription, you must cancel the chargeable subscription before account erasure can be finalized.
+* **Data Export:** You can export your saved account data in JSON format from your account settings.
+* **Backups and Provider Records:** Server logs, financial records, and third-party provider systems (e.g., Stripe financial logs, Anthropic 30-day API safety logs) follow their respective retention schedules and policies. We do not guarantee immediate deletion across external provider systems or immutable backups.
+
+---
+
+### 9. Your Rights
+Under applicable data protection law, you have rights to request access to, rectification of, or erasure of your personal data; to restrict or object to certain processing; to data portability (JSON export); and to withdraw consent at any time.
+
+To exercise these rights, email info@mindflowpro.com. We respond within one calendar month. If you have concerns, you have the right to raise them with the Information Commissioner's Office (ICO).

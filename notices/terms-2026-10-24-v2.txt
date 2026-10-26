@@ -1,0 +1,85 @@
+# WIZ Terms of Service
+
+**Mind Flow International Ltd**
+**Terms of Service for WIZ (`app.mindflowpro.com`)**
+**Version date:** 24 October 2026
+
+---
+
+### 1. Introduction and Formation of Agreement
+These Terms of Service ("Terms") govern your individual access to and use of the WIZ coaching application at `app.mindflowpro.com`.
+
+* **Company Details:** Mind Flow International Ltd, registered in England and Wales under company number 13453759. Registered office: Fernlea, House Newby, Penrith, Cumbria CA10 3EX. Contact: info@mindflowpro.com.
+* **Formation of Agreement:** The agreement between you and Mind Flow is formed only when you complete sign-up and provide explicit acceptance through an active, recorded confirmation checkbox or explicit API grant confirming you have read and agreed to these Terms. Acceptance is not deemed merely by browsing, creating an account shell without confirming, or completing checkout without explicit affirmative acceptance. Please review these Terms together with the WIZ Privacy Notice.
+
+---
+
+### 2. Eligibility (Age 18+ Only)
+WIZ is strictly intended for individuals aged 18 and older. By completing registration, you confirm that you are at least 18 years of age. If we learn that an account has been established by an individual under 18, we will terminate the account immediately.
+
+---
+
+### 3. Nature of WIZ (AI Coaching, Not Medical or Crisis Care)
+* **General AI Coaching:** WIZ is an automated conversational coaching application powered by artificial intelligence. It offers interactive frameworks to explore personal reflection, goal setting, productivity, and general wellbeing. You are communicating with an AI software model, not a human professional.
+* **No Medical, Clinical, or Therapeutic Advice:** WIZ does not provide medical care, psychiatric diagnosis, psychological counselling, psychotherapy, clinical therapy, or regulated professional advice (including legal or financial advice). WIZ is not a healthcare provider.
+* **No Crisis or Emergency Support:** WIZ cannot contact emergency services or intervene in real-world situations. If you are experiencing distress, mental health crisis, or immediate danger, please immediately contact emergency services (999 in the UK) or call Samaritans on 116 123.
+
+---
+
+### 4. Subscription, Pricing, and Billing
+* **Current Plan:** The subscription plan currently available is the Main plan at £20 per month, billed on a month-to-month recurring basis via Stripe.
+* **Other Plans:** Other plan tiers, annual subscription packages, trial periods, and discount promotions are not currently offered.
+* **Pricing as Displayed:** The price payable is as clearly displayed at checkout prior to purchase. Mind Flow International Ltd does not assert any specific VAT registration status in checkout flows beyond the exact amount presented at payment.
+* **Renewal:** Month-to-month subscriptions automatically renew at the end of each billing cycle unless cancelled prior to the renewal date.
+
+---
+
+### 5. Cancellations and the 14-Day Cancellation Right
+* **14-Day Cancellation and Full Refund:** You may cancel your subscription within 14 days of your initial purchase for any reason and receive a full refund.
+* **Exercising Your 14-Day Right:** To exercise this right, notify us within the 14-day cancellation window via your account settings, available billing portal, or by emailing info@mindflowpro.com with a clear statement requesting cancellation and refund. Upon receipt, your refund will be processed to the original payment method without undue delay (and within 14 days).
+* **Ongoing Month-to-Month Cancellation:** Following the initial 14-day period, you may cancel your subscription at any time using your available account billing portal or by emailing info@mindflowpro.com. Cancelling stops future recurring billing renewals. You will retain access to your paid features through the end of the current billing cycle already paid for. There is no automated pro-rata refund feature for mid-month cancellation after day 14; manual support assistance remains available for genuine billing disputes or statutory non-conformity claims.
+
+---
+
+### 6. User Accounts, Content, and Permissions
+* **Account Responsibility:** You must maintain accurate account information and safeguard your login credentials. You are responsible for all activity conducted under your account.
+* **Ownership of Your Content:** You retain all ownership rights to the prompts, notes, reflections, goals, and files you enter into WIZ ("User Content"). You grant Mind Flow a non-exclusive license to process your content solely to deliver, maintain, and secure the WIZ application.
+* **Saved Coaching:** Normal saved coaching in WIZ requires your explicit permission to save chats (`save_chats`) before it starts. Once given, your conversations are saved to your account and retained until you delete them or close your account. All submitted messages are also transmitted to the AI provider to generate the response. If you do not give this permission, saved coaching does not start; your account privacy controls, including viewing and exporting your account data, deleting it, and closing your account, remain available.
+* **Returning Personalisation:** Reusing past context across sessions requires an independent, explicit personalisation grant. Withdrawing this grant stops past context reuse in future new requests; it does not cancel an in-flight request or automatically erase historical records.
+* **Career Module:** Saving career notes and attachments is controlled separately from enabling AI processing for career records. Career data and attachments are stored privately. No automatic sharing or handoff to employers or coaches is implemented; users retain sole discretion to export or share records independently.
+* **Device Pairing:** Where wearable or biofeedback pairing is supported, WIZ records pairing connection status only. The pairing feature does not retain a continuous stream of raw readings, though user-submitted prompts or uploads may contain readings.
+
+---
+
+### 7. Permitted Use and Restrictions
+You agree to use WIZ for personal, non-commercial purposes in accordance with these Terms and applicable law. You agree not to:
+* Attempt to bypass, compromise, or circumvent safety guardrails, security controls, or context fences.
+* Reverse engineer, decompile, crawl, or scrape WIZ systems or extract proprietary coaching methodologies.
+* Input illegal, abusive, infringing, or harmful material, or input sensitive personal data belonging to third parties without lawful authorisation.
+* Represent or portray output from WIZ as professional medical diagnosis, therapeutic care, or regulated advice.
+
+---
+
+### 8. Intellectual Property
+All software, application designs, proprietary coaching prompts, frameworks, trademarks, logos, and materials created or provided by Mind Flow International Ltd remain the exclusive intellectual property of Mind Flow or its licensors. Except for the limited personal licence to use the service, no intellectual property rights are transferred to you.
+
+---
+
+### 9. Warranties, Disclaimers, and Limitation of Liability
+* **Reasonable Care and Consumer Rights:** We provide WIZ with reasonable skill and care. Nothing in these Terms limits or excludes statutory consumer rights under UK law that cannot be lawfully excluded (including rights that digital services must match description and be of satisfactory quality).
+* **AI Output Disclaimer:** WIZ uses advanced artificial intelligence models. AI-generated outputs may occasionally be inaccurate, incomplete, or inappropriate. You are responsible for evaluating and verifying any information provided by WIZ before acting on it.
+* **Service Availability:** While we strive for high availability, WIZ is provided on an "as is" and "as available" basis. We do not warrant that operation will be uninterrupted, error-free, or compatible with every hardware device.
+* **Limitation of Liability:** To the maximum extent permitted by law, Mind Flow is not liable for indirect, incidental, or unforeseeable losses, business losses, or reliance placed on AI outputs as a substitute for regulated professional counsel. Nothing in these Terms excludes liability for death or personal injury caused by negligence, fraud, or fraudulent misrepresentation.
+
+---
+
+### 10. Termination and Account Deletion
+* **By You:** You may stop using WIZ and close your account at any time. If you have an active paid subscription, you must cancel the recurring subscription through the billing portal before initiating account erasure.
+* **By Us:** We may suspend or terminate your account if you materially breach these Terms, misuse the service, or fail to pay applicable subscription fees, with notice where appropriate.
+* **Effect of Termination:** Upon account closure, your access ends, and your stored content will be queued for deletion in accordance with the WIZ Privacy Notice.
+
+---
+
+### 11. Complaints and Governing Law
+* **Complaints:** If you have concerns, feedback, or complaints regarding WIZ, please email info@mindflowpro.com. We aim to acknowledge complaints within 5 working days and resolve matters promptly.
+* **Governing Law:** These Terms and any dispute arising from them are governed by the laws of England and Wales. The courts of England and Wales have non-exclusive jurisdiction, and UK consumers retain their statutory rights to bring claims in their local home jurisdiction (including Scotland or Northern Ireland).

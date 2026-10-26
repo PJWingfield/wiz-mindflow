@@ -2850,7 +2850,7 @@ const WIZ_ACCOUNT = (() => {
   }
   // Read-only exact notices from GET /api/v1/notices/:id. Shown as text only (never HTML); on failure nothing is shown in place of the
   // requested document, and the previous document is cleared before each request so it can never appear under another title.
-  const NOTICES = {privacy:{id:'privacy-2026-10-16-v1', title:'Privacy Notice'}, terms:{id:'terms-2026-10-16-v1', title:'Terms of Service'}};
+  const NOTICES = {privacy:{id:'privacy-2026-10-24-v2', title:'Privacy Notice'}, terms:{id:'terms-2026-10-24-v2', title:'Terms of Service'}};
   let noticeJob = 0, noticeKind = null, noticeOpener = null;
   // The same reader is used in account settings (prefix wizNotice), the sign-up form (wizAuthNotice) and the consent dialog (wizGateNotice).
   function noticeBox(p, back) { return '<div id="' + p + 'View" hidden><h4 id="' + p + 'Title" tabindex="-1"></h4><p id="' + p + 'Meta" role="status" aria-live="polite" style="font-size:13px"></p><div id="' + p + 'Text" tabindex="0" role="document" style="white-space:pre-wrap;overflow:auto;max-height:55vh;border:1px solid var(--border);padding:12px;background:#fff;font-size:14px;line-height:1.5"></div><button type="button" id="' + p + 'Retry" hidden>Try again</button><button type="button" id="' + p + 'Back">' + back + '</button></div>'; }
@@ -2863,7 +2863,7 @@ const WIZ_ACCOUNT = (() => {
       const x = (await v1('/notices/' + n.id)).notice;
       if (job !== noticeJob) return;
       if (!x || x.id !== n.id || typeof x.text !== 'string' || !x.text) throw new Error('The server returned an unexpected document.');
-      $(p + 'Meta').textContent = n.title + ' · 16 October 2026';
+      $(p + 'Meta').textContent = n.title + ' · 24 October 2026';
       $(p + 'Text').textContent = x.text; $(p + 'Text').scrollTop = 0;
     } catch(e) {
       if (job !== noticeJob) return;

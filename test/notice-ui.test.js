@@ -9,14 +9,14 @@ const path = require('node:path');
 
 const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const ORIGIN = 'http://wiz.test';
-const PRIVACY = '/api/v1/notices/privacy-2026-10-16-v1';
-const TERMS = '/api/v1/notices/terms-2026-10-16-v1';
+const PRIVACY = '/api/v1/notices/privacy-2026-10-24-v2';
+const TERMS = '/api/v1/notices/terms-2026-10-24-v2';
 const INJECTION = '<img src=x onerror="window.__pwn=1"><script>window.__pwn=1</script>&amp; **not bold**';
 const body = label => `${label} synthetic paragraph one\n\n${label} paragraph two ${INJECTION}\n` + Array.from({ length: 150 }, (_, i) => `${label} line ${i}`).join('\n');
 const doc = (id, kind, label) => ({ notice: { id, kind, content_type: 'text/plain; charset=utf-8', sha256: 'a'.repeat(64), bytes: 1, text: body(label), approval: { basis: 'owner_instruction', instructed_on: '2026-10-19', independent_legal_approval: false } } });
 
 test('notice UI (static): fixed catalogue ids, text-only rendering, no acceptance or consent calls, no internal sources', () => {
-  assert.ok(INDEX.includes("'/notices/' + n.id") && INDEX.includes('privacy-2026-10-16-v1') && INDEX.includes('terms-2026-10-16-v1'));
+  assert.ok(INDEX.includes("'/notices/' + n.id") && INDEX.includes('privacy-2026-10-24-v2') && INDEX.includes('terms-2026-10-24-v2'));
   const start = INDEX.indexOf('async function showNotice');
   const fn = INDEX.slice(start, INDEX.indexOf('function wireNotice', start)); // the reader itself; the consent dialog that reuses it follows
   assert.ok(fn.length > 100 && !/innerHTML|insertAdjacentHTML|outerHTML|document\.write/.test(fn), 'notice text is set with textContent only');
@@ -42,9 +42,9 @@ test('notice UI (browser): exact endpoint, safe rendering, failures, retry and r
       if (!u.pathname.startsWith('/api/v1/')) return route.fulfill({ status: 404, body: '' });
       calls.push(route.request().method() + ' ' + u.pathname);
       const p = u.pathname.slice('/api/v1'.length);
-      if (p === '/notices/privacy-2026-10-16-v1') return json(route, 200, doc('privacy-2026-10-16-v1', 'privacy', 'PRIVACY'));
-      if (p === '/notices/terms-2026-10-16-v1') {
-        return state.failTerms ? json(route, 503, { error: { code: 'notice_unavailable', message: 'This notice is temporarily unavailable.' } }) : json(route, 200, doc('terms-2026-10-16-v1', 'terms', 'TERMS'));
+      if (p === '/notices/privacy-2026-10-24-v2') return json(route, 200, doc('privacy-2026-10-24-v2', 'privacy', 'PRIVACY'));
+      if (p === '/notices/terms-2026-10-24-v2') {
+        return state.failTerms ? json(route, 503, { error: { code: 'notice_unavailable', message: 'This notice is temporarily unavailable.' } }) : json(route, 200, doc('terms-2026-10-24-v2', 'terms', 'TERMS'));
       }
       if (p === '/me') return json(route, 200, { user: { id: 'u1', email: 'fixture@example.test', full_name: 'Fixture' }, profile: { preferences: {} } });
       if (p === '/me/onboarding') return json(route, 200, { answers: { over_18: true }, version: 1, completed_at: '2026-10-19T00:00:00Z' });
@@ -72,8 +72,8 @@ test('notice UI (browser): exact endpoint, safe rendering, failures, retry and r
     assert.deepEqual(calls.filter(c => c.includes('/notices')), ['GET ' + PRIVACY]);
     assert.equal(await page.textContent('#wizNoticeTitle'), 'Privacy Notice');
     const meta = await page.textContent('#wizNoticeMeta');
-    assert.equal(meta, 'Privacy Notice · 16 October 2026');
-    assert.ok(!/privacy-2026-10-16-v1|[a-f0-9]{64}|approval|owner_instruction/i.test(meta), 'internal metadata is not displayed');
+    assert.equal(meta, 'Privacy Notice · 24 October 2026');
+    assert.ok(!/privacy-2026-10-24-v2|[a-f0-9]{64}|approval|owner_instruction/i.test(meta), 'internal metadata is not displayed');
     assert.equal(await page.textContent('#wizNoticeText'), body('PRIVACY'), 'text rendered exactly, as text');
     assert.equal(await page.locator('#wizNoticeText img, #wizNoticeText script').count(), 0, 'no HTML injected');
     assert.equal(await page.evaluate(() => window.__pwn), undefined, 'payload never executed');
